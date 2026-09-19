@@ -1301,7 +1301,7 @@ function vAuth(){
   if(!AUTH.ready)return `<section class="panel center" style="margin-top:40px"><div style="font-size:2.4rem">📘</div><p class="muted">جاري التحميل…</p></section>`;
   const m=AUTH.mode,b=AUTH.busy?"disabled":"";let form;
   if(m==="check")form=`<h2>شيّك إيميلك 📧</h2><p>بعتنالك رابط تأكيد على <b class="en">${esc(AUTH.email)}</b>. افتحه، وبعدين ارجع سجّل دخول.</p><button class="btn" data-act="authmode" data-m="login">تسجيل الدخول</button>`;
-  else if(m==="signup")form=`<h2>حساب جديد</h2>${fld("suName","الاسم الكامل","text","name")}${fld("suPhone","رقم الجوال (واتساب)","tel","tel")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
+  else if(m==="signup")form=`<h2>حساب جديد</h2>${fld("suName","الاسم الكامل","text","name")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
     <button class="btn hl big wide" data-act="dosignup" ${b}>${AUTH.busy?"لحظة…":"إنشاء الحساب"}</button><p class="center" style="margin-top:12px">عندك حساب؟ <button class="linkbtn" data-act="authmode" data-m="login">سجّل دخول</button></p>`;
   else if(m==="forgot")form=`<h2>نسيت كلمة السر</h2><p class="muted">اكتب إيميلك وبنبعتلك رابط تغيير كلمة السر.</p>${fld("fgEmail","الإيميل","email","email")}
     <button class="btn wide" data-act="doforgot" ${b}>ابعت الرابط</button><p class="center" style="margin-top:12px"><button class="linkbtn" data-act="authmode" data-m="login">رجوع لتسجيل الدخول</button></p>`;
@@ -1389,7 +1389,7 @@ Object.assign(A,{
   authmode:d=>{AUTH.mode=d.m;AUTH.err=null;AUTH.msg=null;render()},
   dologin:async()=>{const e=val("liEmail"),p=($("#liPass")||{}).value||"";if(!e||!p){AUTH.err="عبّي الإيميل وكلمة السر.";render();return}
     AUTH.busy=true;AUTH.err=null;render();const {error}=await sb.auth.signInWithPassword({email:e,password:p});if(error){AUTH.busy=false;AUTH.err=authErr(error);render()}},
-  dosignup:async()=>{const n=val("suName"),ph=val("suPhone"),e=val("suEmail"),p=($("#suPass")||{}).value||"";
+  dosignup:async()=>{const n=val("suName"),ph="",e=val("suEmail"),p=($("#suPass")||{}).value||"";
     if(!n||!e||!p){AUTH.err="عبّي الاسم والإيميل وكلمة السر.";render();return}if(p.length<6){AUTH.err="كلمة السر لازم تكون 6 أحرف على الأقل.";render();return}
     AUTH.busy=true;AUTH.err=null;render();
     const {data,error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n,phone:ph},emailRedirectTo:location.href.split("#")[0]}});
