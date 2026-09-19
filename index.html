@@ -548,6 +548,7 @@ function addMistake(en,ar,src){S.mistakes=S.mistakes.filter(m=>m.en!==en);S.mist
 
 /* ================== HELPERS ================== */
 const $=s=>document.querySelector(s);
+function clearField(id){KEEP[id]="";const el=document.getElementById(id);if(el)el.value=""}
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 const pick=a=>a[Math.random()*a.length|0];
@@ -848,7 +849,7 @@ Give exactly 3 questions.`;
     if(!r||!Array.isArray(r.paragraphs)||!r.paragraphs.length||!Array.isArray(r.questions))throw{code:"invalid_json"};
     const st={id:"ai"+Date.now(),lv,t:String(r.title||topic),ar:String(r.title_ar||""),en:r.paragraphs.map(String),tr:(r.translation||[]).map(String),
       q:r.questions.filter(q=>q&&Array.isArray(q.options)&&q.options.includes(q.answer)).slice(0,5).map(q=>[String(q.q),q.options.map(String),String(q.answer)])};
-    S.aiStories=[st,...(S.aiStories||[])].slice(0,20);save();KEEP.aiTopic="";R.id=st.id;R.ans={};R.tr=false;R.hide=false;addXP(3)}
+    S.aiStories=[st,...(S.aiStories||[])].slice(0,20);save();clearField("aiTopic");R.id=st.id;R.ans={};R.tr=false;R.hide=false;addXP(3)}
   catch(e){if(!e||e.code!=="cancelled")R.err=aiErr(e)}
   R.busy=false;render();window.scrollTo(0,0)}
 function lookup(w){const c=w.toLowerCase().replace(/[^a-z']/g,"").replace(/'s$/,"");
@@ -886,7 +887,7 @@ function vDialogs(){
 /* ================== DICTATION ================== */
 function poolWords(){return ALL.filter(w=>lvOK(w.lv))}
 function poolSent(){return SENT.filter(s=>lvOK(s.lv))}
-function newD(){D.item=D.mode==="word"?pick(poolWords()):pick(poolSent());D.done=false;D.hint=0;D.res=null;KEEP.dIn="";AFTER=()=>speak(D.item.en)}
+function newD(){D.item=D.mode==="word"?pick(poolWords()):pick(poolSent());D.done=false;D.hint=0;D.res=null;clearField("dIn");AFTER=()=>speak(D.item.en)}
 function vDictation(){
   if(!D.item)newD();const t=D.item.en;
   const hint=D.hint?`<p class="en muted center">تلميح: ${esc(D.mode==="word"?t.slice(0,D.hint)+"…":t.split(" ").slice(0,D.hint).join(" ")+" …")}</p>`:"";
@@ -928,7 +929,7 @@ function vSpeaking(){
     <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="sknext">${SK.mode==="word"?"كلمة":"جملة"} ثانية</button></div></section>`}
 
 /* ================== WRITING ================== */
-function newWR(){WR.item=pick(poolSent());WR.res=null;WR.picked=[];WR.typed=null;KEEP.wrIn="";
+function newWR(){WR.item=pick(poolSent());WR.res=null;WR.picked=[];WR.typed=null;clearField("wrIn");
   const words=WR.item.en.split(" ");let t;do{t=shuffle(words)}while(words.length>1&&t.join(" ")===WR.item.en);WR.tiles=t}
 function vWriting(){
   if(!WR.item)newWR();
@@ -1078,7 +1079,7 @@ Rules:
 4. Stay in character except for the ✏️ line. No markdown headings.`}
 async function tuSend(text){
   text=(text||"").trim();if(!text||TU.busy)return;if(!AI){render();return}
-  const sc=TUTOR.find(x=>x.id===TU.sc),msgs=tuMsgs();msgs.push({role:"user",content:text});KEEP.tuIn="";
+  const sc=TUTOR.find(x=>x.id===TU.sc),msgs=tuMsgs();msgs.push({role:"user",content:text});clearField("tuIn");
   TU.busy=true;TU.err=null;render();aiCtl=new AbortController();
   const hist=msgs.slice(-16);const turns=[{role:"user",content:tuRules(sc)},...(hist[0].role==="user"?[{role:"assistant",content:sc.start}]:[]),...hist];
   const bot={role:"assistant",content:""};let added=false;
@@ -1151,7 +1152,7 @@ const A={
   vbtab:d=>{VB.tab=d.m;render()},
   vbcheck:()=>{const v=VB.item,p=($("#vbP").value||"").trim().toLowerCase(),pp=($("#vbPP").value||"").trim().toLowerCase();if(!p||!pp){toast("عبّي الخانتين");return}
     const good=v[1].split("/").includes(p)&&v[2]===pp;VB.res={good};if(good)addXP(5);else addMistake(`${v[0]} - ${v[1]} - ${v[2]}`,v[3],"أفعال شاذة");render()},
-  vbnext:()=>{KEEP.vbP="";KEEP.vbPP="";newVB();render()},
+  vbnext:()=>{clearField("vbP");clearField("vbPP");newVB();render()},
   ropen:d=>{R.id=d.id;R.ans={};R.tr=false;R.hide=false;render();window.scrollTo(0,0)},
   rback:()=>{stopSpeak();R.playing=false;R.id=null;render()},
   rtr:()=>{R.tr=!R.tr;render()},
@@ -1360,7 +1361,7 @@ async function subSend(){
       const {error}=await sb.storage.from("proofs").upload(path,f,{contentType:f.type||undefined});if(error)throw error}
     const {error}=await sb.from("payment_requests").insert({user_id:AUTH.user.id,plan_id:SUB.plan,method:SUB.method,reference:ref,proof_path:path});
     if(error)throw error;
-    KEEP.subRef="";SUB.msg="وصلنا طلبك ✅ رح نفعّل حسابك "+CFG.ACTIVATION_TIME+".";SUB.plans=null;await loadSub()}
+    clearField("subRef");const sf=$("#subFile");if(sf)sf.value="";SUB.msg="وصلنا طلبك ✅ رح نفعّل حسابك "+CFG.ACTIVATION_TIME+".";SUB.plans=null;await loadSub()}
   catch(e){SUB.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
   SUB.busy=false;render()}
 
