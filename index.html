@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>دفتري الإنجليزي — تعلّم الإنجليزي من الصفر للاحتراف</title>
+<title>SpeakUp — تعلّم الإنجليزي من الصفر للاحتراف</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -174,7 +174,7 @@ a.btn{text-decoration:none;display:inline-block}
 </head>
 <body>
 <header class="top"><div class="bar">
-  <div class="brand"><b>دفتري الإنجليزي</b><small>My English Notebook</small></div>
+  <div class="brand"><b class="en" style="text-align:right">SpeakUp</b><small>تعلّم الإنجليزي بثقة</small></div>
   <span class="chip" title="نقاط">⭐ <span id="xp">0</span></span>
   <span class="chip" title="أيام متتالية">🔥 <span id="streak">0</span></span>
   <span class="chip" title="هدف اليوم">🎯 <span id="goal">0%</span></span>
@@ -1030,7 +1030,7 @@ function plResult(){const by={};LVS.forEach(l=>by[l]={ok:0,n:0});PL.log.forEach(
   let lv="A1";for(const l of LVS){const r=by[l];if(r.n&&r.ok/r.n>=0.6)lv=l;else break}return{lv,by}}
 function vPlacement(){
   const gated=!S.done.placed;
-  const head=gated?`<div style="text-align:center"><div style="font-size:2.6rem">🧭</div><h1>أهلاً فيك بدفتري الإنجليزي</h1></div>`:topbar("اختبار تحديد المستوى","أعِد الاختبار إذا حاسس مستواك تحسّن");
+  const head=gated?`<div style="text-align:center"><div style="font-size:2.6rem">🧭</div><h1>أهلاً فيك بـ ${esc(CFG.APP_NAME)}</h1></div>`:topbar("اختبار تحديد المستوى","أعِد الاختبار إذا حاسس مستواك تحسّن");
   if(!PL)return `<section class="panel">${head}
     <p style="margin-top:10px">قبل ما نبدأ، رح تعمل <b>اختبار تحديد مستوى</b> قصير (${PLACE.length} سؤال، حوالي 7 دقايق). بناءً على نتيجتك رح نحطك بالمستوى المناسب إلك، وكل الكلمات والدروس والتمارين رح تتظبط عليه.</p>
     <p>الاختبار فيه قواعد، ومفردات، واستماع 🎧 (شغّل الصوت). الأسئلة بتبدأ سهلة وبتصعب تدريجياً.</p>
