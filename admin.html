@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لوحة التحكم — دفتري الإنجليزي</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F5F8FC;--card:#fff;--ink:#1A2B4C;--soft:#5B6B86;--line:#D3DDEA;--hl:#FFE35A;--good:#157F54;--good-bg:#E1F4EA;--bad:#E2463B;--bad-bg:#FCE6E3;--sky:#E8F0FB}
+@media (prefers-color-scheme:dark){:root{--paper:#10182A;--card:#18233A;--ink:#E7EDF8;--soft:#9AA8C2;--line:#2A3957;--hl:#E9CB3B;--good:#46CB91;--good-bg:#143A2B;--bad:#FF6B5E;--bad-bg:#3D1F1F;--sky:#1D2C48}}
+*{box-sizing:border-box}body{margin:0;font-family:'Readex Pro',system-ui,Tahoma,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.bar{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar b{flex:1;font-size:1.15rem}
+main{max-width:1100px;margin:0 auto;padding:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:9px;padding:8px 14px;font-weight:500}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}.btn.good{background:var(--good);border-color:var(--good);color:#fff}.btn.bad{background:transparent;color:var(--bad);border-color:var(--bad)}.btn.sm{padding:4px 10px;font-size:.88rem}
+.btn:disabled{opacity:.5}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px}.tabs button[aria-pressed="true"]{background:var(--hl);border-color:var(--hl);color:#1A2B4C;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.stats div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.stats b{display:block;font-size:1.6rem}.stats span{color:var(--soft);font-size:.88rem}
+table{width:100%;border-collapse:collapse;font-size:.93rem}th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}th{background:var(--sky);font-weight:600}
+.scroll{overflow-x:auto}.muted{color:var(--soft)}.en{direction:ltr;unicode-bidi:isolate}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.8rem;border:1px solid var(--line)}.chip.ok{background:var(--good-bg);border-color:var(--good)}.chip.no{background:var(--bad-bg);border-color:var(--bad)}.chip.wait{background:var(--sky)}
+input.in,select.in{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--paper)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fb{border-radius:10px;padding:10px 14px;margin-bottom:12px}.fb.bad{background:var(--bad-bg)}.fb.good{background:var(--good-bg)}
+.login{max-width:400px;margin:60px auto}.login label{display:block;margin:10px 0}.login input{width:100%}
+</style>
+</head>
+<body>
+<header><div class="bar"><b>👑 لوحة التحكم</b><span id="who" class="muted"></span></div></header>
+<main id="app"><div class="panel">جاري التحميل…</div></main>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const CFG=window.APP_CONFIG,sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const fmt=d=>d?new Date(d).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"—";
+const cur=CFG.CURRENCY||"";
+let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],stats:null,q:"",err:null,msg:null,busy:false};
+const METHOD=id=>(CFG.PAYMENT_METHODS.find(m=>m.id===id)||{name:id}).name;
+const active=u=>u.plan_until&&new Date(u.plan_until)>new Date();
+
+async function load(){
+  const [s,r,u,p]=await Promise.all([
+    sb.rpc("admin_stats"),
+    (()=>{let q=sb.from("payment_requests").select("*, profiles(email,full_name,phone), plans(name,months)").order("created_at",{ascending:false}).limit(200);if(ST.filter!=="all")q=q.eq("status",ST.filter);return q})(),
+    (()=>{let q=sb.from("profiles").select("id,email,full_name,phone,role,plan_until,level,created_at").order("created_at",{ascending:false}).limit(300);
+      const t=ST.q.trim().replace(/[,()%]/g,"");if(t)q=q.or(`email.ilike.%${t}%,full_name.ilike.%${t}%,phone.ilike.%${t}%`);return q})(),
+    sb.from("plans").select("*").order("sort")]);
+  ST.err=s.error||r.error||u.error||p.error?"تعذّر تحميل بعض البيانات: "+((s.error||r.error||u.error||p.error).message):null;
+  ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];render()}
+
+function vLogin(){return `<div class="panel login"><h2>دخول الأدمن</h2>${ST.err?`<div class="fb bad">${esc(ST.err)}</div>`:""}
+  <label>الإيميل<input class="in en" id="em" type="email" autocomplete="email"></label><label>كلمة السر<input class="in en" id="pw" type="password" autocomplete="current-password"></label>
+  <button class="btn" data-a="login" style="width:100%;margin-top:8px">دخول</button></div>`}
+function vMain(){const s=ST.stats||{};
+  return `${ST.err?`<div class="fb bad">${esc(ST.err)}</div>`:""}${ST.msg?`<div class="fb good">${esc(ST.msg)}</div>`:""}
+  <div class="stats" style="margin-bottom:14px">
+    <div><b>${s.pending??"—"}</b><span>طلبات بانتظارك</span></div><div><b>${s.active??"—"}</b><span>مشترك فعّال</span></div>
+    <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
+    <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
+  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["users","👥 المستخدمين"],["plans","🏷️ الخطط والأسعار"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
+    <button data-a="reload">🔄 تحديث</button></div>
+  ${ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():vPlans()}`}
+function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
+  ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
+  ${ST.reqs.map(r=>`<tr><td>${fmt(r.created_at)}</td><td>${esc(r.profiles?.full_name||"")}<br><span class="muted en">${esc(r.profiles?.email||"")}</span><br><span class="muted en">${esc(r.profiles?.phone||"")}</span></td>
+    <td>${esc(r.plans?.name||r.plan_id)}<br><b>${+r.amount} ${cur}</b></td><td>${esc(METHOD(r.method))}</td><td class="en">${esc(r.reference||"—")}</td>
+    <td>${r.proof_path?`<button class="btn ghost sm" data-a="proof" data-v="${esc(r.proof_path)}">عرض</button>`:"—"}</td>
+    <td><span class="chip ${r.status==="approved"?"ok":r.status==="rejected"?"no":"wait"}">${{pending:"معلّق",approved:"مقبول",rejected:"مرفوض"}[r.status]}</span>${r.admin_note?`<br><small class="muted">${esc(r.admin_note)}</small>`:""}</td>
+    <td>${r.status==="pending"?`<div class="row"><button class="btn good sm" data-a="approve" data-v="${r.id}" ${ST.busy?"disabled":""}>قبول وتفعيل</button><button class="btn bad sm" data-a="reject" data-v="${r.id}" ${ST.busy?"disabled":""}>رفض</button></div>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في طلبات هون.</p>`}</div>`}
+function vUsers(){return `<div class="panel"><div class="row" style="margin-bottom:10px"><input class="in" id="q" placeholder="ابحث بالاسم أو الإيميل أو الجوال" value="${esc(ST.q)}" style="flex:1;min-width:200px"><button class="btn" data-a="search">بحث</button></div>
+  <div class="scroll"><table><thead><tr><th>المستخدم</th><th>المستوى</th><th>الاشتراك</th><th>تاريخ التسجيل</th><th>إجراءات</th></tr></thead><tbody>
+  ${ST.users.map(u=>`<tr><td>${esc(u.full_name||"")} ${u.role==="admin"?"👑":""}<br><span class="muted en">${esc(u.email)}</span><br><span class="muted en">${esc(u.phone||"")}</span></td><td>${esc(u.level||"—")}</td>
+    <td>${active(u)?`<span class="chip ok">فعّال</span><br><small>لحد ${fmt(u.plan_until)}</small>`:`<span class="chip">مجاني</span>`}</td><td>${fmt(u.created_at)}</td>
+    <td><div class="row"><select class="in" id="m_${u.id}"><option value="1">+ شهر</option><option value="3">+ 3 شهور</option><option value="12">+ سنة</option></select><button class="btn good sm" data-a="extend" data-v="${u.id}">تمديد</button>${active(u)?`<button class="btn bad sm" data-a="revoke" data-v="${u.id}">إلغاء</button>`:""}</div></td></tr>`).join("")}</tbody></table></div></div>`}
+function vPlans(){return `<div class="panel"><p class="muted">عدّل الأسعار والأسماء، والتغيير بيظهر للمشتركين فوراً.</p><div class="scroll"><table><thead><tr><th>المعرّف</th><th>الاسم</th><th>الشهور</th><th>السعر (${cur})</th><th>مفعّلة</th><th></th></tr></thead><tbody>
+  ${ST.plans.map(p=>`<tr><td class="en">${esc(p.id)}</td><td><input class="in" id="pn_${p.id}" value="${esc(p.name)}"></td><td><input class="in" id="pm_${p.id}" type="number" min="1" value="${p.months}" style="width:80px"></td><td><input class="in" id="pp_${p.id}" type="number" min="0" step="0.5" value="${+p.price}" style="width:100px"></td>
+    <td><input type="checkbox" id="pa_${p.id}" ${p.active?"checked":""}></td><td><button class="btn sm" data-a="saveplan" data-v="${esc(p.id)}">حفظ</button></td></tr>`).join("")}
+  <tr><td><input class="in en" id="np_id" placeholder="id" style="width:110px"></td><td><input class="in" id="np_name" placeholder="اسم الخطة"></td><td><input class="in" id="np_months" type="number" min="1" value="6" style="width:80px"></td><td><input class="in" id="np_price" type="number" min="0" value="100" style="width:100px"></td><td></td><td><button class="btn good sm" data-a="addplan">إضافة</button></td></tr>
+  </tbody></table></div></div>`}
+function render(){$("#who").textContent=ST.user?ST.user.email:"";
+  if(!ST.ready){$("#app").innerHTML=`<div class="panel">جاري التحميل…</div>`;return}
+  if(!ST.user){$("#app").innerHTML=vLogin();return}
+  if(!ST.prof||ST.prof.role!=="admin"){$("#app").innerHTML=`<div class="panel login"><h2>🚫 مش مسموح</h2><p>هاد الحساب مش أدمن.</p><div class="row"><a class="btn ghost" href="index.html">رجوع للموقع</a><button class="btn" data-a="logout">تسجيل خروج</button></div></div>`;return}
+  $("#app").innerHTML=vMain()}
+const act={
+  login:async()=>{const {error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});if(error){ST.err="الإيميل أو كلمة السر غلط.";render()}},
+  logout:()=>sb.auth.signOut(),
+  tab:v=>{ST.tab=v;ST.msg=null;render()},
+  filter:v=>{ST.filter=v;load()},
+  reload:()=>{ST.msg=null;load()},
+  search:()=>{ST.q=$("#q").value;load()},
+  proof:async v=>{const {data,error}=await sb.storage.from("proofs").createSignedUrl(v,600);if(error){alert("تعذّر فتح الإيصال");return}window.open(data.signedUrl,"_blank","noopener")},
+  approve:async v=>{if(!confirm("تأكدت من وصول المبلغ؟ رح يتفعّل الاشتراك."))return;ST.busy=true;render();const {error}=await sb.rpc("approve_payment",{req:+v});ST.busy=false;ST.msg=error?null:"تم التفعيل ✅";ST.err=error?error.message:null;load()},
+  reject:async v=>{const note=prompt("سبب الرفض (بيظهر للمستخدم):","ما وصلنا التحويل");if(note===null)return;const {error}=await sb.rpc("reject_payment",{req:+v,note});ST.msg=error?null:"تم الرفض";ST.err=error?error.message:null;load()},
+  extend:async v=>{const m=+$("#m_"+v).value;const {error}=await sb.rpc("admin_extend",{uid:v,months:m});ST.msg=error?null:"تم التمديد ✅";ST.err=error?error.message:null;load()},
+  revoke:async v=>{if(!confirm("إلغاء اشتراك هاد المستخدم؟"))return;const {error}=await sb.rpc("admin_revoke",{uid:v});ST.msg=error?null:"انلغى الاشتراك";ST.err=error?error.message:null;load()},
+  saveplan:async v=>{const {error}=await sb.from("plans").update({name:$("#pn_"+v).value.trim(),months:+$("#pm_"+v).value,price:+$("#pp_"+v).value,active:$("#pa_"+v).checked}).eq("id",v);ST.msg=error?null:"انحفظت الخطة ✅";ST.err=error?error.message:null;load()},
+  addplan:async()=>{const id=$("#np_id").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,"");if(!id||!$("#np_name").value.trim()){alert("عبّي المعرّف والاسم");return}
+    const {error}=await sb.from("plans").insert({id,name:$("#np_name").value.trim(),months:+$("#np_months").value,price:+$("#np_price").value,sort:ST.plans.length+1});ST.msg=error?null:"انضافت الخطة ✅";ST.err=error?error.message:null;load()}
+};
+document.addEventListener("click",e=>{const el=e.target.closest("[data-a]");if(!el||el.disabled)return;act[el.dataset.a]&&act[el.dataset.a](el.dataset.v)});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="q")act.search();if(e.key==="Enter"&&e.target.id==="pw")act.login()});
+sb.auth.onAuthStateChange((ev,session)=>{setTimeout(async()=>{ST.user=session?session.user:null;ST.prof=null;
+  if(ST.user){const {data}=await sb.from("profiles").select("*").eq("id",ST.user.id).single();ST.prof=data}
+  ST.ready=true;render();if(ST.prof&&ST.prof.role==="admin")load()},0)});
+</script>
+</body>
+</html>
