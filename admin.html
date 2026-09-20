@@ -41,7 +41,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fmt=d=>d?new Date(d).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"—";
 const cur=CFG.CURRENCY||"";
-let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],stats:null,q:"",err:null,msg:null,busy:false};
+let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],coupons:[],settings:{},stats:null,q:"",err:null,msg:null,busy:false};
 const METHOD=id=>(CFG.PAYMENT_METHODS.find(m=>m.id===id)||{name:id}).name;
 const active=u=>u.plan_until&&new Date(u.plan_until)>new Date();
 
@@ -49,11 +49,13 @@ async function load(){
   const [s,r,u,p]=await Promise.all([
     sb.rpc("admin_stats"),
     (()=>{let q=sb.from("payment_requests").select("*, profiles(email,full_name,phone), plans(name,months)").order("created_at",{ascending:false}).limit(200);if(ST.filter!=="all")q=q.eq("status",ST.filter);return q})(),
-    (()=>{let q=sb.from("profiles").select("id,email,full_name,phone,role,plan_until,level,created_at").order("created_at",{ascending:false}).limit(300);
+    (()=>{let q=sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(300);
       const t=ST.q.trim().replace(/[,()%]/g,"");if(t)q=q.or(`email.ilike.%${t}%,full_name.ilike.%${t}%,phone.ilike.%${t}%`);return q})(),
     sb.from("plans").select("*").order("sort")]);
-  ST.err=s.error||r.error||u.error||p.error?"تعذّر تحميل بعض البيانات: "+((s.error||r.error||u.error||p.error).message):null;
-  ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];render()}
+  const [c,g]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings")]);
+  const er=s.error||r.error||u.error||p.error||c.error||g.error;
+  ST.err=er?"تعذّر تحميل بعض البيانات: "+er.message+(/coupons|app_settings|admin_get_settings/.test(er.message||"")?" — شغّل ملف upgrade-v2.sql":""):null;
+  ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];ST.coupons=c.data||[];ST.settings=g.data||{};render()}
 
 function vLogin(){return `<div class="panel login"><h2>دخول الأدمن</h2>${ST.err?`<div class="fb bad">${esc(ST.err)}</div>`:""}
   <label>الإيميل<input class="in en" id="em" type="email" autocomplete="email"></label><label>كلمة السر<input class="in en" id="pw" type="password" autocomplete="current-password"></label>
@@ -64,26 +66,40 @@ function vMain(){const s=ST.stats||{};
     <div><b>${s.pending??"—"}</b><span>طلبات بانتظارك</span></div><div><b>${s.active??"—"}</b><span>مشترك فعّال</span></div>
     <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
     <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
-  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["users","👥 المستخدمين"],["plans","🏷️ الخطط والأسعار"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
+  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
     <button data-a="reload">🔄 تحديث</button></div>
-  ${ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():vPlans()}`}
+  ${ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
 function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
   ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.reqs.map(r=>`<tr><td>${fmt(r.created_at)}</td><td>${esc(r.profiles?.full_name||"")}<br><span class="muted en">${esc(r.profiles?.email||"")}</span><br><span class="muted en">${esc(r.profiles?.phone||"")}</span></td>
-    <td>${esc(r.plans?.name||r.plan_id)}<br><b>${+r.amount} ${cur}</b></td><td>${esc(METHOD(r.method))}</td><td class="en">${esc(r.reference||"—")}</td>
+    <td>${esc(r.plans?.name||r.plan_id)}<br><b>${+r.amount} ${cur}</b>${r.coupon?`<br><small class="muted">🏷️ ${esc(r.coupon)} (كان ${+r.original_amount})</small>`:""}</td><td>${esc(METHOD(r.method))}</td><td class="en">${esc(r.reference||"—")}</td>
     <td>${r.proof_path?`<button class="btn ghost sm" data-a="proof" data-v="${esc(r.proof_path)}">عرض</button>`:"—"}</td>
     <td><span class="chip ${r.status==="approved"?"ok":r.status==="rejected"?"no":"wait"}">${{pending:"معلّق",approved:"مقبول",rejected:"مرفوض"}[r.status]}</span>${r.admin_note?`<br><small class="muted">${esc(r.admin_note)}</small>`:""}</td>
     <td>${r.status==="pending"?`<div class="row"><button class="btn good sm" data-a="approve" data-v="${r.id}" ${ST.busy?"disabled":""}>قبول وتفعيل</button><button class="btn bad sm" data-a="reject" data-v="${r.id}" ${ST.busy?"disabled":""}>رفض</button></div>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في طلبات هون.</p>`}</div>`}
 function vUsers(){return `<div class="panel"><div class="row" style="margin-bottom:10px"><input class="in" id="q" placeholder="ابحث بالاسم أو الإيميل أو الجوال" value="${esc(ST.q)}" style="flex:1;min-width:200px"><button class="btn" data-a="search">بحث</button></div>
   <div class="scroll"><table><thead><tr><th>المستخدم</th><th>المستوى</th><th>الاشتراك</th><th>تاريخ التسجيل</th><th>إجراءات</th></tr></thead><tbody>
   ${ST.users.map(u=>`<tr><td>${esc(u.full_name||"")} ${u.role==="admin"?"👑":""}<br><span class="muted en">${esc(u.email)}</span><br><span class="muted en">${esc(u.phone||"")}</span></td><td>${esc(u.level||"—")}</td>
-    <td>${active(u)?`<span class="chip ok">فعّال</span><br><small>لحد ${fmt(u.plan_until)}</small>`:`<span class="chip">مجاني</span>`}</td><td>${fmt(u.created_at)}</td>
+    <td>${u.role==="admin"?`<span class="chip ok">أدمن</span>`:active(u)?`<span class="chip ${u.is_trial?"wait":"ok"}">${u.is_trial?"🎁 تجربة":"فعّال"}</span><br><small>لحد ${fmt(u.plan_until)}</small>`:`<span class="chip">مجاني</span>`}</td><td>${fmt(u.created_at)}</td>
     <td><div class="row"><select class="in" id="m_${u.id}"><option value="1">+ شهر</option><option value="3">+ 3 شهور</option><option value="12">+ سنة</option></select><button class="btn good sm" data-a="extend" data-v="${u.id}">تمديد</button>${active(u)?`<button class="btn bad sm" data-a="revoke" data-v="${u.id}">إلغاء</button>`:""}</div></td></tr>`).join("")}</tbody></table></div></div>`}
 function vPlans(){return `<div class="panel"><p class="muted">عدّل الأسعار والأسماء، والتغيير بيظهر للمشتركين فوراً.</p><div class="scroll"><table><thead><tr><th>المعرّف</th><th>الاسم</th><th>الشهور</th><th>السعر (${cur})</th><th>مفعّلة</th><th></th></tr></thead><tbody>
   ${ST.plans.map(p=>`<tr><td class="en">${esc(p.id)}</td><td><input class="in" id="pn_${p.id}" value="${esc(p.name)}"></td><td><input class="in" id="pm_${p.id}" type="number" min="1" value="${p.months}" style="width:80px"></td><td><input class="in" id="pp_${p.id}" type="number" min="0" step="0.5" value="${+p.price}" style="width:100px"></td>
     <td><input type="checkbox" id="pa_${p.id}" ${p.active?"checked":""}></td><td><button class="btn sm" data-a="saveplan" data-v="${esc(p.id)}">حفظ</button></td></tr>`).join("")}
   <tr><td><input class="in en" id="np_id" placeholder="id" style="width:110px"></td><td><input class="in" id="np_name" placeholder="اسم الخطة"></td><td><input class="in" id="np_months" type="number" min="1" value="6" style="width:80px"></td><td><input class="in" id="np_price" type="number" min="0" value="100" style="width:100px"></td><td></td><td><button class="btn good sm" data-a="addplan">إضافة</button></td></tr>
   </tbody></table></div></div>`}
+function vCoupons(){return `<div class="panel"><p class="muted">الكود بيعطي خصم على سعر أي خطة. المشترك بيكتبه بصفحة الاشتراك، والخصم بينحسب على السيرفر.</p>
+  <div class="row" style="margin-bottom:12px"><input class="in en" id="c_code" placeholder="CODE مثلاً SPEAK20" style="width:160px"><input class="in" id="c_pct" type="number" min="1" max="100" placeholder="نسبة %" style="width:100px">
+  <input class="in" id="c_max" type="number" min="1" placeholder="أقصى استخدام (اختياري)" style="width:190px"><input class="in" id="c_exp" type="date" title="تاريخ الانتهاء (اختياري)"><button class="btn good" data-a="addcoupon">إضافة كود</button></div>
+  ${ST.coupons.length?`<div class="scroll"><table><thead><tr><th>الكود</th><th>الخصم</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th></th></tr></thead><tbody>
+  ${ST.coupons.map(c=>`<tr><td class="en"><b>${esc(c.code)}</b></td><td>${c.percent}%</td><td>${c.used_count}${c.max_uses?" / "+c.max_uses:""}</td><td>${c.expires_at?fmt(c.expires_at):"—"}</td>
+    <td><span class="chip ${c.active?"ok":"no"}">${c.active?"فعّال":"موقّف"}</span></td><td><div class="row"><button class="btn ghost sm" data-a="togglecoupon" data-v="${esc(c.code)}">${c.active?"إيقاف":"تفعيل"}</button><button class="btn bad sm" data-a="delcoupon" data-v="${esc(c.code)}">حذف</button></div></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في أكواد لسا.</p>`}</div>`}
+function vSettings(){const g=ST.settings||{};return `<div class="panel"><h3>🎁 التجربة المجانية</h3><p class="muted">عدد الأيام اللي بياخدها كل حساب جديد بكل الميزات. حط 0 لإلغاء التجربة.</p>
+  <div class="row"><input class="in" id="s_trial" type="number" min="0" max="60" value="${esc(g.trial_days??3)}" style="width:100px"><span>يوم</span><button class="btn" data-a="savetrial">حفظ</button></div></div>
+  <div class="panel"><h3>🔔 إشعارات تيليجرام</h3><p class="muted">كل ما حدا يبعت طلب اشتراك بتوصلك رسالة على تيليجرام.</p>
+  <ol class="muted" style="line-height:2"><li>بتيليجرام افتح <b class="en">@BotFather</b>، وابعتله <b class="en">/newbot</b>، واختار اسم للبوت. رح يعطيك <b>Token</b>.</li>
+  <li>افتح البوت اللي عملته واضغط <b>Start</b>.</li><li>افتح <b class="en">@userinfobot</b> واضغط Start، رح يعطيك رقمك (<b>Id</b>).</li><li>الصقهم هون واضغط حفظ، وبعدين «إرسال تجربة».</li></ol>
+  <label style="display:block;margin:8px 0">Bot Token<input class="in en" id="s_tok" value="${esc(g.telegram_token||"")}" style="width:100%" autocomplete="off"></label>
+  <label style="display:block;margin:8px 0">Chat Id<input class="in en" id="s_chat" value="${esc(g.telegram_chat_id||"")}" style="width:100%" autocomplete="off"></label>
+  <div class="row"><button class="btn" data-a="savetg">حفظ</button><button class="btn ghost" data-a="testtg">إرسال تجربة</button></div></div>`}
 function render(){$("#who").textContent=ST.user?ST.user.email:"";
   if(!ST.ready){$("#app").innerHTML=`<div class="panel">جاري التحميل…</div>`;return}
   if(!ST.user){$("#app").innerHTML=vLogin();return}
@@ -102,6 +118,14 @@ const act={
   extend:async v=>{const m=+$("#m_"+v).value;const {error}=await sb.rpc("admin_extend",{uid:v,months:m});ST.msg=error?null:"تم التمديد ✅";ST.err=error?error.message:null;load()},
   revoke:async v=>{if(!confirm("إلغاء اشتراك هاد المستخدم؟"))return;const {error}=await sb.rpc("admin_revoke",{uid:v});ST.msg=error?null:"انلغى الاشتراك";ST.err=error?error.message:null;load()},
   saveplan:async v=>{const {error}=await sb.from("plans").update({name:$("#pn_"+v).value.trim(),months:+$("#pm_"+v).value,price:+$("#pp_"+v).value,active:$("#pa_"+v).checked}).eq("id",v);ST.msg=error?null:"انحفظت الخطة ✅";ST.err=error?error.message:null;load()},
+  addcoupon:async()=>{const code=$("#c_code").value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,""),pct=+$("#c_pct").value,mx=$("#c_max").value,ex=$("#c_exp").value;
+    if(!code||!(pct>=1&&pct<=100)){alert("اكتب الكود ونسبة من 1 لـ 100");return}
+    const {error}=await sb.from("coupons").insert({code,percent:pct,max_uses:mx?+mx:null,expires_at:ex?new Date(ex+"T23:59:59").toISOString():null});ST.msg=error?null:"انضاف الكود ✅";ST.err=error?(/duplicate/.test(error.message)?"الكود موجود من قبل":error.message):null;load()},
+  togglecoupon:async v=>{const c=ST.coupons.find(x=>x.code===v);const {error}=await sb.from("coupons").update({active:!c.active}).eq("code",v);ST.msg=error?null:"تم ✅";ST.err=error?error.message:null;load()},
+  delcoupon:async v=>{if(!confirm("حذف الكود "+v+"؟"))return;const {error}=await sb.from("coupons").delete().eq("code",v);ST.msg=error?null:"انحذف";ST.err=error?error.message:null;load()},
+  savetrial:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"trial_days",v:String(Math.max(0,+$("#s_trial").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?error.message:null;load()},
+  savetg:async()=>{const a=await sb.rpc("admin_set_setting",{k:"telegram_token",v:$("#s_tok").value});const b=await sb.rpc("admin_set_setting",{k:"telegram_chat_id",v:$("#s_chat").value});const e=a.error||b.error;ST.msg=e?null:"انحفظ ✅ جرّب «إرسال تجربة»";ST.err=e?e.message:null;load()},
+  testtg:async()=>{const {error}=await sb.rpc("admin_test_telegram");ST.msg=error?null:"انبعتت رسالة تجربة، شيّك تيليجرام 📱";ST.err=error?error.message:null;render()},
   addplan:async()=>{const id=$("#np_id").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,"");if(!id||!$("#np_name").value.trim()){alert("عبّي المعرّف والاسم");return}
     const {error}=await sb.from("plans").insert({id,name:$("#np_name").value.trim(),months:+$("#np_months").value,price:+$("#np_price").value,sort:ST.plans.length+1});ST.msg=error?null:"انضافت الخطة ✅";ST.err=error?error.message:null;load()}
 };

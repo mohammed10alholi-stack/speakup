@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A2B4C">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SpeakUp">
 <title>SpeakUp — تعلّم الإنجليزي من الصفر للاحتراف</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -133,7 +139,8 @@ table.vt th{font-weight:600;background:var(--sky);position:sticky;top:0}table.vt
 .composer{display:flex;gap:8px;margin-top:10px;align-items:stretch}
 .composer textarea{flex:1;resize:vertical;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);font-size:1.02rem}
 .composer .col{display:flex;flex-direction:column;gap:6px;justify-content:flex-end}
-.badges{display:flex;flex-wrap:wrap;gap:8px}.badge{border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--paper)}
+.badges{display:flex;flex-wrap:wrap;gap:8px}.badge{border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--paper);font:inherit;color:inherit}
+.exrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--line)}
 .set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .set:last-child{border-bottom:none}
 select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px}
@@ -168,6 +175,19 @@ body.gated nav.bnav{display:none}body.gated main{padding-bottom:40px}
 .plan[aria-pressed="true"]{border:2.5px solid var(--ink);background:var(--sky)}.plan .price{font-size:1.5rem;font-weight:700}.plan small{color:var(--soft)}
 .paybox{border:1.5px dashed var(--rule);border-radius:12px;padding:10px 14px;background:var(--paper)}.paybox .spread{padding:6px 0;border-bottom:1px solid var(--line)}.paybox .spread:last-child{border-bottom:none}
 a.btn{text-decoration:none;display:inline-block}
+body.guest .bar .chip{display:none}
+.hero{text-align:center;padding:26px 16px 10px}.hero-in{max-width:620px;margin:0 auto}.hero h1{font-size:clamp(1.6rem,6vw,2.3rem);margin:4px 0 10px}.hero p{font-size:1.05rem}
+.hero .trial{display:inline-block;background:var(--hl);color:var(--on-hl);border-radius:999px;padding:6px 16px;margin:6px 0 14px}
+.feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:12px}.feats div{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--paper)}
+.feats .ic{font-size:1.7rem;display:block}.feats b{display:block;margin:4px 0}.feats span{color:var(--soft);font-size:.9rem}
+.how{counter-reset:h;list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.how li{counter-increment:h;border:1px solid var(--line);border-radius:12px;padding:14px;position:relative;padding-top:40px}.how li::before{content:counter(h);position:absolute;top:10px;right:14px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-weight:700}
+.how b{display:block}.how span{color:var(--soft);font-size:.9rem}
+.plan.pro{border:2px solid var(--hl)}
+.coupon{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.coupon input{flex:1;min-width:160px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper)}
+.faq{border-bottom:1px solid var(--line)}.faq button{width:100%;display:flex;justify-content:space-between;gap:10px;border:none;background:none;padding:12px 2px;font-weight:600;text-align:start}.faq p{color:var(--soft);margin:0 0 12px}
+.foot{text-align:center;padding:10px 0 30px}.agree{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:10px 0;font-size:.92rem}.agree input{width:18px;height:18px}
+.terms h3{margin:16px 0 4px}.terms p{color:var(--ink)}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;border-radius:999px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 </style>
@@ -431,7 +451,7 @@ const ACH=[
 ["xp500","500 نقطة","اجمع 500 نقطة","⭐"],["xp2000","2000 نقطة","اجمع 2000 نقطة","💎"],
 ["perfect","علامة كاملة","جيب 10/10 بالاختبار","🎯"],["lessons5","5 دروس","خلّص 5 دروس قواعد","📐"],["alllessons","كل القواعد","خلّص كل دروس القواعد","🧠"],
 ["story1","قارئ","اقرأ أول قصة","📖"],["allstories","قارئ نهم","اقرأ كل القصص","📜"],["dialog3","محاور","خلّص 3 محادثات","💬"],
-["speak10","ناطق","انطق 10 جمل صح","🎙️"],["chat","صاحب المعلم","احكِ مع المعلم الذكي","🤖"],["placed","عرفت مستواك","خلّص اختبار تحديد المستوى","🧭"],["review50","مراجع","راجع 50 كلمة","🔁"],["games10","لاعب","العب 10 ألعاب","🎮"]
+["speak10","ناطق","انطق 10 جمل صح","🎙️"],["chat","صاحب المعلم","احكِ مع المعلم الذكي","🤖"],["placed","عرفت مستواك","خلّص اختبار تحديد المستوى","🧭"],["review50","مراجع","راجع 50 كلمة","🔁"],["games10","لاعب","العب 10 ألعاب","🎮"],["cert","متخرّج","انجح بأول امتحان مستوى","🎓"]
 ];
 
 const TOPICS=["Introduce yourself.","Describe your daily routine.","Write about your family.","Describe your city.","What did you do last weekend?","What are your plans for next year?","Describe your job or studies.","Write about your favorite food.","Write an email to a friend inviting them to dinner.","Why is learning English important for you?","Describe a problem you solved.","Write about a person you admire."];
@@ -607,14 +627,14 @@ const aiMissing=()=>aiLockedMsg();
 
 /* ================== ACHIEVEMENTS ================== */
 function achState(){const k=knownCount(),les=LESSONS.filter(l=>S.done["g:"+l.id]).length,st=STORIES.filter(s=>S.done["s:"+s.id]).length,dg=DIALOGS.filter(d=>S.done["d:"+d.id]).length;
-  return{first_word:k>=1,w50:k>=50,w150:k>=150,w300:k>=300,streak3:S.streak>=3,streak7:S.streak>=7,streak30:S.streak>=30,xp500:S.xp>=500,xp2000:S.xp>=2000,perfect:S.best>=10,lessons5:les>=5,alllessons:les>=LESSONS.length,story1:st>=1,allstories:st>=STORIES.length,dialog3:dg>=3,speak10:S.st.speak>=10,chat:S.st.chat>=1,placed:!!S.done.placed,review50:S.st.review>=50,games10:S.st.games>=10}}
+  return{first_word:k>=1,w50:k>=50,w150:k>=150,w300:k>=300,streak3:S.streak>=3,streak7:S.streak>=7,streak30:S.streak>=30,xp500:S.xp>=500,xp2000:S.xp>=2000,perfect:S.best>=10,lessons5:les>=5,alllessons:les>=LESSONS.length,story1:st>=1,allstories:st>=STORIES.length,dialog3:dg>=3,speak10:S.st.speak>=10,chat:S.st.chat>=1,placed:!!S.done.placed,review50:S.st.review>=50,games10:S.st.games>=10,cert:!!(S.certs&&Object.keys(S.certs).length)}}
 function checkAch(){const s=achState();let changed=false;ACH.forEach(a=>{if(s[a[0]]&&!S.ach[a[0]]){S.ach[a[0]]=Date.now();changed=true;setTimeout(()=>toast("🏆 إنجاز جديد: "+a[1]),900)}});if(changed)save()}
 /* ================== ROUTING ================== */
 let route="home";
-const PARENT={path:"learn",sounds:"learn",words:"learn",phrases:"learn",grammar:"learn",verbs:"learn",reading:"learn",dialogs:"learn",review:"practice",dictation:"practice",spelling:"practice",speaking:"practice",writing:"practice",games:"practice",quiz:"practice",placement:"practice",mistakes:"me",achievements:"me",subscribe:"me"};
+const PARENT={path:"learn",sounds:"learn",words:"learn",phrases:"learn",grammar:"learn",verbs:"learn",reading:"learn",dialogs:"learn",review:"practice",dictation:"practice",spelling:"practice",speaking:"practice",writing:"practice",games:"practice",quiz:"practice",placement:"practice",mistakes:"me",achievements:"me",exam:"practice",subscribe:"me",terms:"me"};
 const NAV=[["home","🏠","الرئيسية"],["learn","📘","تعلّم"],["practice","🎯","تدرّب"],["tutor","🤖","المعلم"],["me","👤","أنا"]];
 const LEARN=[["path","🧭","مسار التعلّم","خطوة بخطوة حسب مستواك"],["words","📖","الكلمات والقاموس",ALL.length+" كلمة بـ "+CATS.length+" مجموعة"],["sounds","🔤","الحروف والأصوات","الأبجدية والأصوات الصعبة على العرب"],["phrases","💬","عبارات يومية","جمل جاهزة لكل موقف"],["grammar","📐","القواعد",LESSONS.length+" درس مع تمارين"],["verbs","🔁","الأفعال الشاذة",VERBS.length+" فعل مع التصريفات"],["reading","📜","قراءة","قصص بصوت، اضغط أي كلمة لمعناها"],["dialogs","🗣️","محادثات","اسمع وتقمّص الدور"]];
-const PRACT=[["review","🔁","مراجعة ذكية","كلماتك المستحقة اليوم"],["dictation","🎧","استماع وإملاء","اسمع واكتب"],["spelling","🔡","تهجئة","رتّب الحروف"],["speaking","🎙️","نطق","احكِ والموقع بقيّمك"],["writing","✍️","كتابة","ترتيب، ترجمة، وتصحيح ذكي"],["games","🎮","ألعاب","توصيل، سرعة، خمّن الكلمة"],["quiz","🏁","اختبار سريع","10 أسئلة منوّعة"],["placement","🧭","اختبار تحديد المستوى","اعرف مستواك من A1 لـ B2"]];
+const PRACT=[["review","🔁","مراجعة ذكية","كلماتك المستحقة اليوم"],["dictation","🎧","استماع وإملاء","اسمع واكتب"],["spelling","🔡","تهجئة","رتّب الحروف"],["speaking","🎙️","نطق","احكِ والموقع بقيّمك"],["writing","✍️","كتابة","ترتيب، ترجمة، وتصحيح ذكي"],["games","🎮","ألعاب","توصيل، سرعة، خمّن الكلمة"],["quiz","🏁","اختبار سريع","10 أسئلة منوّعة"],["exam","🎓","امتحان المستوى","انجح، خذ شهادة، وانتقل للمستوى الأعلى"],["placement","🧭","اختبار تحديد المستوى","اعرف مستواك من A1 لـ B2"]];
 
 /* ================== VIEW STATE ================== */
 let W={cat:null,order:[],i:0,show:false,tab:"cats",list:false,q:""};
@@ -671,6 +691,8 @@ function vMe(){
     </div></section>
   <section class="panel"><div class="spread"><h2>الإنجازات</h2><button class="btn ghost" data-act="go" data-r="achievements">كلها (${got}/${ACH.length})</button></div>
     <div class="badges">${ACH.filter(a=>S.ach[a[0]]).slice(-6).map(a=>`<span class="badge">${a[3]} ${a[1]}</span>`).join("")||'<span class="muted">لسا ما في إنجازات، أول كلمة بتحفظها بتفتح أول واحد.</span>'}</div></section>
+  <section class="panel"><div class="spread"><h2>🎓 شهاداتي</h2><button class="btn ghost" data-act="go" data-r="exam">الامتحانات</button></div>
+    <div class="badges">${Object.keys(S.certs||{}).length?LVS.filter(l=>(S.certs||{})[l]).map(l=>`<button class="badge" data-act="certshow" data-lv="${l}">🎓 ${l} — ${S.certs[l].score}%</button>`).join(""):'<span class="muted">انجح بامتحان أي مستوى وبتطلعلك شهادة باسمك.</span>'}</div></section>
   <section class="panel"><div class="spread"><h2>دفتر أخطائي</h2><button class="btn ghost" data-act="go" data-r="mistakes">افتح (${S.mistakes.length})</button></div>
     <p class="muted">كل غلطة بتعملها بالتمارين بتنحفظ هون، والكلمات منها بترجعلك بالمراجعة الذكية.</p></section>
   <section class="panel"><h2>الإعدادات</h2>
@@ -697,6 +719,7 @@ function pathItems(lv){
   const s=STORIES.filter(x=>x.lv===lv).map(x=>({type:"story",id:x.id,name:x.t+" — "+x.ar,icon:"📜",kind:"قراءة",done:!!S.done["s:"+x.id]}));
   const out=[];const n=Math.max(c.length,l.length,d.length*2,s.length*2);
   for(let i=0;i<n;i++){if(c[i])out.push(c[i]);if(l[i])out.push(l[i]);if(i%2===1&&d[(i-1)/2])out.push(d[(i-1)/2]);if(i%2===1&&s[(i-1)/2])out.push(s[(i-1)/2])}
+  out.push({type:"exam",id:lv,name:"امتحان نهاية المستوى "+lv+" + شهادة",icon:"🎓",kind:"امتحان",done:!!(S.certs&&S.certs[lv])});
   return out}
 function vPath(){
   const lv=PATHLV||userLv();const items=pathItems(lv);const dn=items.filter(x=>x.done).length;
@@ -709,7 +732,8 @@ function openPath(type,id){
   if(type==="cat"){startCat(id);go("words")}
   else if(type==="lesson"){G.id=id;G.ans={};go("grammar")}
   else if(type==="dialog"){openDialog(id);go("dialogs")}
-  else if(type==="story"){R.id=id;R.ans={};R.tr=false;go("reading")}}
+  else if(type==="story"){R.id=id;R.ans={};R.tr=false;go("reading")}
+  else if(type==="exam"){A.exopen({lv:id})}}
 
 /* ================== WORDS ================== */
 function startCat(id){const c=CATS.find(x=>x.id===id);W.cat=id;W.order=shuffle(c.w.map((_,i)=>i));W.i=0;W.show=false;W.list=false}
@@ -1093,12 +1117,13 @@ function voiceSpeak(text){const en=enPart(text);if(!en){voiceListen();return}
 function voiceListen(){if(!TU.voice||TU.busy||recOn)return;TU.on=true;TU.err=null;render();
   listen(alts=>{TU.on=false;if(alts[0])tuSend(alts[0])},e=>{TU.err=e},()=>{TU.on=false;render()})}
 /* ================== RENDER ================== */
-const VIEWS={home:vHome,learn:vLearn,practice:vPractice,tutor:vTutor,me:vMe,achievements:vAchievements,mistakes:vMistakes,path:vPath,words:vWords,review:vReview,sounds:vSounds,phrases:vPhrases,grammar:vGrammar,verbs:vVerbs,reading:vReading,dialogs:vDialogs,dictation:vDictation,spelling:vSpelling,speaking:vSpeaking,writing:vWriting,games:vGames,quiz:vQuiz,placement:vPlacement,subscribe:vSubscribe};
+const VIEWS={home:vHome,learn:vLearn,practice:vPractice,tutor:vTutor,me:vMe,achievements:vAchievements,mistakes:vMistakes,path:vPath,words:vWords,review:vReview,sounds:vSounds,phrases:vPhrases,grammar:vGrammar,verbs:vVerbs,reading:vReading,dialogs:vDialogs,dictation:vDictation,spelling:vSpelling,speaking:vSpeaking,writing:vWriting,games:vGames,quiz:vQuiz,placement:vPlacement,exam:vExam,subscribe:vSubscribe,terms:vTerms};
 let AFTER=null;const KEEP={};
 function header(){$("#xp").textContent=S.xp;$("#streak").textContent=S.streak;const t=todayXP();$("#goal").textContent=Math.min(100,Math.round(100*t/S.goal))+"%"}
 function nav(){const hub=PARENT[route]||route;$("#bnav").innerHTML=NAV.map(([id,ic,n])=>`<button data-act="go" data-r="${id}" ${hub===id?'aria-current="page"':""}><span>${ic}</span>${n}</button>`).join("")}
 function render(){
-  if(!AUTH.ready||!AUTH.user||AUTH.recovery){document.querySelectorAll("[data-keep]").forEach(el=>{if(el.id)KEEP[el.id]=el.value});document.body.classList.add("gated");
+  document.body.classList.remove("guest");
+  if(!AUTH.ready||!AUTH.user||AUTH.recovery){document.querySelectorAll("[data-keep]").forEach(el=>{if(el.id)KEEP[el.id]=el.value});document.body.classList.add("gated","guest");
     $("#view").innerHTML=AUTH.recovery&&AUTH.user?vNewPass():vAuth();document.querySelectorAll("[data-keep]").forEach(el=>{if(KEEP[el.id]!=null)el.value=KEEP[el.id]});header();return}
   if(!S.done.placed&&route!=="placement"){route="placement"}
   document.body.classList.toggle("gated",!S.done.placed);
@@ -1112,6 +1137,7 @@ function render(){
 function go(r){stopGame();stopSpeak();if(TU.voice){TU.voice=false;TU.speaking=false}if(recOn&&rec)try{rec.abort()}catch(e){}
   R.playing=false;DG.playing=-1;route=r;
   if(r==="review")RV.q=null;
+  if(r==="exam"&&EX.qs&&EX.i>=EX.qs.length)EX={lv:null,qs:null,i:0,score:0,picked:null};
   render();window.scrollTo(0,0)}
 function applyTheme(){if(S.theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",S.theme)}
 
@@ -1236,6 +1262,80 @@ document.addEventListener("change",e=>{const k=e.target.dataset.set;if(!k)return
   if(k==="accent"||k==="rate")speak("Hello! This is how I sound now.");if(k==="level"){toast("مستواك صار "+v);render()}});
 
 
+/* ================== LEVEL EXAMS + CERTIFICATES ================== */
+const LVNAME={A1:"مبتدئ",A2:"أساسي",B1:"متوسط",B2:"فوق المتوسط"};
+const LVEN={A1:"Beginner",A2:"Elementary",B1:"Intermediate",B2:"Upper-Intermediate"};
+let EX={lv:null,qs:null,i:0,score:0,picked:null,log:[]};
+function examQs(lv){
+  const qs=[],words=shuffle(ALL.filter(w=>w.lv===lv));
+  words.slice(0,8).forEach((w,i)=>{const o=shuffle(ALL.filter(x=>x.ar!==w.ar&&x.en!==w.en)).slice(0,3);
+    qs.push(i%2?{t:"ar2en",p:w.ar,opts:shuffle([w.en,...o.map(x=>x.en)]),a:w.en}:{t:"en2ar",p:w.en,opts:shuffle([w.ar,...o.map(x=>x.ar)]),a:w.ar})});
+  shuffle(LESSONS.filter(l=>l.lv===lv).flatMap(l=>l.q)).slice(0,8).forEach(q=>qs.push({t:"gram",p:q[0],opts:shuffle(q[1]),a:q[2]}));
+  const ss=SENT.filter(s=>s.lv===lv);
+  shuffle(ss).slice(0,4).forEach(s=>{const o=shuffle(ss.filter(x=>x.en!==s.en)).slice(0,2);qs.push({t:"listen",p:s.en,opts:shuffle([s.en,...o.map(x=>x.en)]),a:s.en})});
+  return shuffle(qs)}
+function certName(){if(!S.name){const n=prompt("اكتب اسمك مثل ما بدك يطلع على الشهادة:");if(n&&n.trim()){S.name=n.trim().slice(0,60);save()}}return S.name||"Student"}
+function vExam(){
+  const head=topbar("امتحانات المستوى","انجح بـ 70% أو أكثر، خذ شهادة، وانتقل للمستوى اللي بعده");
+  if(!EX.lv){const c=S.certs||{};
+    return `<section class="panel">${head}
+      <p>كل امتحان فيه <b>20 سؤال</b>: مفردات، وقواعد، واستماع 🎧، من محتوى نفس المستوى.</p>
+      ${LVS.map(lv=>`<div class="exrow"><div><b>${lvChip(lv)} ${LVNAME[lv]}</b><br><span class="muted">${c[lv]?`✅ ناجح بـ ${c[lv].score}% — ${new Date(c[lv].date).toLocaleDateString("ar-EG")}`:"لسا ما امتحنت"}</span></div>
+        <div class="row">${c[lv]?`<button class="btn ghost" data-act="certshow" data-lv="${lv}">🎓 الشهادة</button>`:""}<button class="btn ${c[lv]?"ghost":"hl"}" data-act="exopen" data-lv="${lv}">${c[lv]?"أعِد":"ابدأ"}</button></div></div>`).join("")}
+    </section>`}
+  if(EX.i>=EX.qs.length){const pct=Math.round(100*EX.score/EX.qs.length),pass=pct>=70,nx=LVS[LVS.indexOf(EX.lv)+1];
+    return `<section class="panel center">${head}<div style="font-size:3rem">${pass?"🎓":"📚"}</div>
+      <h2>${pass?"مبروك! نجحت":"ما نجحت هالمرة"}</h2><p style="font-size:2rem;margin:6px 0"><b>${pct}%</b></p><p class="muted">${EX.score} من ${EX.qs.length} صح</p>
+      ${pass?`<p>${EX.up?`🚀 تمت ترقيتك لمستوى ${lvChip(EX.up)} ${LVNAME[EX.up]}`:""}</p><div class="row" style="justify-content:center"><button class="btn hl" data-act="certshow" data-lv="${EX.lv}">🎓 شوف شهادتك</button>${nx?`<button class="btn ghost" data-act="openlvpath2" data-lv="${nx}">مسار ${nx}</button>`:""}</div>`
+      :`<p>بدك 70% عشان تنجح. راجع دروس المستوى وارجع جرّب.</p><div class="row" style="justify-content:center"><button class="btn" data-act="openlvpath2" data-lv="${EX.lv}">راجع مسار ${EX.lv}</button><button class="btn ghost" data-act="exopen" data-lv="${EX.lv}">جرّب كمان مرة</button></div>`}
+      <div style="margin-top:12px"><button class="btn ghost" data-act="exback">كل الامتحانات</button></div></section>`}
+  const q=EX.qs[EX.i];
+  if(q.t==="listen"&&EX.picked===null)AFTER=()=>speak(q.p);
+  const label={en2ar:"شو معنى الكلمة؟",ar2en:"اختار الكلمة الإنجليزية",gram:"اختار الإجابة الصح",listen:"اسمع واختار الجملة اللي سمعتها"}[q.t];
+  const prompt=q.t==="en2ar"?`<div class="guide s"><span class="w">${esc(q.p)}</span></div>`:q.t==="ar2en"?`<div class="ar-big">${esc(q.p)}</div>`:q.t==="gram"?`<p class="en" style="text-align:left;font-size:1.25rem;margin:12px 0">${esc(q.p)}</p>`:`<div class="center" style="margin:12px 0"><button class="play-big" data-act="say" data-t="${esc(q.p)}" aria-label="تشغيل">▶</button></div>`;
+  return `<section class="panel"><div class="spread"><b>🎓 امتحان ${lvChip(EX.lv)}</b><span class="muted">${EX.i+1} / ${EX.qs.length}</span></div>
+    <div class="progress"><i style="width:${100*EX.i/EX.qs.length}%"></i></div><p class="muted" style="margin-top:10px">${label}</p>${prompt}
+    ${q.opts.map((o,k)=>{let c="";if(EX.picked!==null){if(o===q.a)c="right";else if(k===EX.picked)c="wrong"}return `<button class="opt ${c}" data-act="exans" data-k="${k}" ${EX.picked!==null?"disabled":""} ${q.t==="en2ar"?"":'style="direction:ltr;text-align:left"'}>${esc(o)}</button>`}).join("")}
+    ${EX.picked!==null?`<div class="row"><button class="btn" data-act="exnext">${EX.i===EX.qs.length-1?"النتيجة":"التالي"}</button></div>`:""}
+    <div style="margin-top:10px"><button class="say" data-act="exquit">✕ إلغاء الامتحان</button></div></section>`}
+function examFinish(){const pct=Math.round(100*EX.score/EX.qs.length);EX.up=null;
+  if(pct>=70){S.certs=S.certs||{};const prev=S.certs[EX.lv];if(!prev||pct>=prev.score)S.certs[EX.lv]={score:pct,date:Date.now(),id:Math.random().toString(36).slice(2,8).toUpperCase()};
+    const nx=LVS[LVS.indexOf(EX.lv)+1];if(nx&&LVS.indexOf(EX.lv)>=LVS.indexOf(userLv())){S.level=nx;EX.up=nx}addXP(30)}else save();checkAch()}
+async function drawCert(lv){
+  const c=(S.certs||{})[lv];if(!c)return null;const name=certName();
+  try{await document.fonts.load('700 60px "Readex Pro"');await document.fonts.load('400 30px "Readex Pro"')}catch(e){}
+  const W=1600,H=1130,cv=document.createElement("canvas");cv.width=W;cv.height=H;const g=cv.getContext("2d");
+  const F='"Readex Pro", system-ui, Tahoma, sans-serif';
+  g.fillStyle="#FBFCFF";g.fillRect(0,0,W,H);
+  g.strokeStyle="#E2EAF5";g.lineWidth=1;for(let y=60;y<H;y+=44){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  g.strokeStyle="#1A2B4C";g.lineWidth=10;g.strokeRect(40,40,W-80,H-80);g.strokeStyle="#E2463B";g.lineWidth=3;g.strokeRect(64,64,W-128,H-128);
+  g.fillStyle="#FFE35A";g.beginPath();g.arc(W/2,190,62,0,Math.PI*2);g.fill();g.fillStyle="#1A2B4C";g.font=`700 64px ${F}`;g.textAlign="center";g.textBaseline="middle";g.fillText("🎓",W/2,194);
+  g.textBaseline="alphabetic";g.fillStyle="#1A2B4C";g.font=`700 64px ${F}`;g.fillText("Certificate of Achievement",W/2,330);
+  g.font=`500 38px ${F}`;g.fillStyle="#5B6B86";g.direction="rtl";g.fillText("شهادة إتمام مستوى",W/2,390);g.direction="ltr";
+  g.font=`400 30px ${F}`;g.fillText("This certifies that",W/2,470);
+  g.fillStyle="#1A2B4C";g.font=`700 76px ${F}`;g.direction=hasAr(name)?"rtl":"ltr";g.fillText(name,W/2,570);g.direction="ltr";
+  const tw=Math.min(900,g.measureText(name).width+120);g.strokeStyle="#E2463B";g.lineWidth=3;g.beginPath();g.moveTo(W/2-tw/2,595);g.lineTo(W/2+tw/2,595);g.stroke();
+  g.fillStyle="#5B6B86";g.font=`400 32px ${F}`;g.fillText(`has successfully passed the English level exam`,W/2,665);
+  g.fillStyle="#1A2B4C";g.font=`700 54px ${F}`;g.fillText(`${lv} — ${LVEN[lv]}`,W/2,745);
+  g.fillStyle="#157F54";g.font=`600 34px ${F}`;g.fillText(`Score: ${c.score}%`,W/2,810);
+  g.fillStyle="#5B6B86";g.font=`400 26px ${F}`;g.textAlign="left";g.fillText(`Date: ${new Date(c.date).toLocaleDateString("en-GB")}`,140,H-150);g.fillText(`Certificate ID: ${c.id||"-"}`,140,H-110);
+  g.textAlign="right";g.fillStyle="#1A2B4C";g.font=`700 44px ${F}`;g.fillText(appName(),W-140,H-140);g.fillStyle="#5B6B86";g.font=`400 24px ${F}`;g.fillText("English Learning Platform",W-140,H-104);
+  return cv.toDataURL("image/png")}
+function appName(){return "SpeakUp"}
+async function certShow(lv){const url=await drawCert(lv);if(!url){toast("ما في شهادة لهالمستوى");return}
+  showSheet(`<h2>🎓 شهادة مستوى ${lv}</h2><img src="${url}" alt="شهادة ${lv}" style="width:100%;border-radius:8px;border:1px solid var(--line);margin:10px 0">
+    <div class="row" style="justify-content:center"><a class="btn hl" href="${url}" download="certificate-${lv}.png" style="text-decoration:none">⬇️ تنزيل الشهادة</a><button class="btn ghost" data-act="certname">✏️ تعديل الاسم</button></div>
+    <p class="muted" style="margin-top:8px">على الجوال: اضغط مطولاً على الصورة واختار «حفظ».</p>`)}
+Object.assign(A,{
+  exopen:d=>{EX={lv:d.lv,qs:examQs(d.lv),i:0,score:0,picked:null};route="exam";render();window.scrollTo(0,0)},
+  exans:d=>{if(EX.picked!==null)return;const k=+d.k,q=EX.qs[EX.i];EX.picked=k;if(q.opts[k]===q.a)EX.score++;else addMistake(q.t==="gram"?q.p.replace("___",q.a):q.t==="ar2en"?q.a:q.t==="listen"?q.a:q.p,q.t==="en2ar"?q.a:"امتحان "+EX.lv,"امتحان");render()},
+  exnext:()=>{EX.i++;EX.picked=null;if(EX.i>=EX.qs.length)examFinish();render();window.scrollTo(0,0)},
+  exquit:()=>{if(confirm("تلغي الامتحان؟ ما رح ينحسب."))A.exback()},
+  exback:()=>{EX={lv:null,qs:null,i:0,score:0,picked:null};render()},
+  certshow:d=>certShow(d.lv),
+  certname:()=>{const n=prompt("الاسم على الشهادة:",S.name||"");if(n&&n.trim()){S.name=n.trim().slice(0,60);save();$("#sheet").hidden=true;toast("انحفظ الاسم ✅")}},
+  openlvpath2:d=>{PATHLV=d.lv;go("path")}
+});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -1298,11 +1398,24 @@ function authErr(e){const m=(e&&e.message)||"";
 
 /* ---------- شاشة الدخول ---------- */
 const fld=(id,label,type,ac)=>`<label class="fld"><span>${label}</span><input id="${id}" data-keep type="${type}" ${type!=="text"?'dir="ltr"':""} autocomplete="${ac||"off"}"></label>`;
+let LAND={plans:null,trial:null,loading:false,faq:-1};
+async function loadLanding(){LAND.loading=true;
+  try{const [p,t]=await Promise.all([sb.from("plans").select("*").eq("active",true).order("sort"),sb.rpc("public_settings")]);LAND.plans=p.data||[];LAND.trial=(t.data&&t.data.trial_days)||0}catch(e){LAND.plans=[];LAND.trial=0}
+  LAND.loading=false;if(!AUTH.user)render()}
+const FAQ=[["كيف بدفع الاشتراك؟","بتحوّل المبلغ على بنك فلسطين أو محفظة PalPay أو Jawwal Pay، وبتبعت رقم الحوالة أو صورة الإيصال من داخل الموقع."],
+  ["إمتى بيتفعّل اشتراكي؟","بعد ما نتأكد من التحويل، عادة "+CFG.ACTIVATION_TIME+"، وبتفتحلك كل الميزات تلقائياً."],
+  ["شو بصير بعد التجربة المجانية؟","بترجع للخطة المجانية (محتوى A1)، وتقدّمك كله بيضل محفوظ. لما تشترك بتكمّل من مكانك."],
+  ["بقدر أستخدمه على الجوال؟","أكيد. الموقع مصمم للجوال، وبتقدر تثبّته كتطبيق على شاشتك الرئيسية."],
+  ["هل المعلم الذكي بيحكي بصوت؟","آه، في وضع محادثة صوتية: بتحكي وبيرد عليك بصوت وبيصحّحلك أخطاءك بالعربي."],
+  ["بقدر أشارك حسابي مع حدا؟","لا، كل اشتراك لشخص واحد. التفاصيل بصفحة الشروط."]];
 function vAuth(){
   if(!AUTH.ready)return `<section class="panel center" style="margin-top:40px"><div style="font-size:2.4rem">📘</div><p class="muted">جاري التحميل…</p></section>`;
-  const m=AUTH.mode,b=AUTH.busy?"disabled":"";let form;
+  if(AUTH.page==="terms")return `<section class="panel"><button class="btn ghost" data-act="authpage" data-p="">→ رجوع</button>${termsHTML()}</section>`;
+  if(LAND.plans===null&&!LAND.loading)loadLanding();
+  const m=AUTH.mode,b=AUTH.busy?"disabled":"",tr=LAND.trial;let form;
   if(m==="check")form=`<h2>شيّك إيميلك 📧</h2><p>بعتنالك رابط تأكيد على <b class="en">${esc(AUTH.email)}</b>. افتحه، وبعدين ارجع سجّل دخول.</p><button class="btn" data-act="authmode" data-m="login">تسجيل الدخول</button>`;
-  else if(m==="signup")form=`<h2>حساب جديد</h2>${fld("suName","الاسم الكامل","text","name")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
+  else if(m==="signup")form=`<h2>حساب جديد${tr?` <span class="chip">🎁 ${tr} أيام مجاناً</span>`:""}</h2>${fld("suName","الاسم الكامل (بيطلع على شهاداتك)","text","name")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
+    <div class="agree"><label><input type="checkbox" id="suAgree" data-act="agree" ${AUTH.agree?"checked":""}> بوافق على</label> <button class="linkbtn" data-act="authpage" data-p="terms">الشروط وسياسة الخصوصية</button></div>
     <button class="btn hl big wide" data-act="dosignup" ${b}>${AUTH.busy?"لحظة…":"إنشاء الحساب"}</button><p class="center" style="margin-top:12px">عندك حساب؟ <button class="linkbtn" data-act="authmode" data-m="login">سجّل دخول</button></p>`;
   else if(m==="forgot")form=`<h2>نسيت كلمة السر</h2><p class="muted">اكتب إيميلك وبنبعتلك رابط تغيير كلمة السر.</p>${fld("fgEmail","الإيميل","email","email")}
     <button class="btn wide" data-act="doforgot" ${b}>ابعت الرابط</button><p class="center" style="margin-top:12px"><button class="linkbtn" data-act="authmode" data-m="login">رجوع لتسجيل الدخول</button></p>`;
@@ -1310,11 +1423,50 @@ function vAuth(){
     <button class="btn hl big wide" data-act="dologin" ${b}>${AUTH.busy?"لحظة…":"دخول"}</button>
     <p class="center" style="margin-top:12px"><button class="linkbtn" data-act="authmode" data-m="forgot">نسيت كلمة السر؟</button></p>
     <p class="center">ما عندك حساب؟ <button class="linkbtn" data-act="authmode" data-m="signup">أنشئ حساب مجاني</button></p>`;
-  return `<section class="panel center"><div style="font-size:2.6rem">📘</div><h1>${esc(CFG.APP_NAME)}</h1>
-    <p class="muted">تعلّم الإنجليزي من الصفر للاحتراف: اختبار يحدد مستواك، مسار شخصي، كلمات بصوت، قواعد، محادثات، ومعلم ذكي بيصحّحلك.</p></section>
-    <section class="panel authcard">${AUTH.err?`<div class="fb bad" style="margin:0 0 12px">${esc(AUTH.err)}</div>`:""}${AUTH.msg?`<div class="fb good" style="margin:0 0 12px">${esc(AUTH.msg)}</div>`:""}${form}</section>`}
+  const feats=[["🧭","اختبار يحدد مستواك","من A1 لحد B2، وبيحطك بالمسار المناسب إلك."],["🎧","محادثة صوتية مع معلم ذكي","احكي بصوتك، بيرد عليك، وبيصحّحلك بالعربي."],["📖","أكثر من 450 كلمة بصوت","مع أمثلة ومراجعة ذكية بتضمن ما تنساها."],["📐","29 درس قواعد","شرح بالعربي، أمثلة مسموعة، وتمارين."],["🎓","امتحانات وشهادات","انجح بكل مستوى وخذ شهادة باسمك."],["📱","على جوالك","ثبّته كتطبيق واتعلّم وين ما كنت."]];
+  return `<section class="hero"><div class="hero-in">
+      <div class="guide" style="border:none;margin:0 0 6px"><span class="w">${esc(CFG.APP_NAME)}</span></div>
+      <h1>تعلّم الإنجليزي… وإنت بتحكيه</h1>
+      <p>محادثة صوتية مع معلم ذكي، ومسار على قد مستواك، وكلمات وقواعد وقصص وألعاب، كله بالعربي وبمكان واحد.</p>
+      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}
+      <div class="row" style="justify-content:center"><button class="btn hl big" data-act="landgo" data-m="signup">ابدأ مجاناً</button><button class="btn ghost big" data-act="landgo" data-m="login">عندي حساب</button></div>
+      ${installBtn()}
+    </div></section>
+    <section class="panel"><h2 class="center">شو بتلاقي بـ ${esc(CFG.APP_NAME)}؟</h2><div class="feats">${feats.map(f=>`<div><span class="ic">${f[0]}</span><b>${f[1]}</b><span>${f[2]}</span></div>`).join("")}</div></section>
+    <section class="panel"><h2 class="center">كيف بتبدأ؟</h2><ol class="how"><li><b>سجّل حساب</b><span>بإيميلك، خلال ثواني.</span></li><li><b>اعمل اختبار المستوى</b><span>7 دقايق وبنعرف من وين تبدأ.</span></li><li><b>اتعلّم كل يوم</b><span>10 دقايق باليوم بتفرق معك.</span></li></ol></section>
+    <section class="panel"><h2 class="center">الأسعار</h2>
+      <div class="plans"><div class="plan"><b>مجاني</b><span class="price">0 ${CFG.CURRENCY}</span><small>محتوى A1 كامل</small></div>
+      ${(LAND.plans||[]).map(x=>`<div class="plan pro"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${x.months>1?`≈ ${Math.round(x.price/x.months)} ${CFG.CURRENCY} بالشهر`:"كل الميزات"}</small></div>`).join("")}</div>
+      <p class="muted center" style="margin-top:10px">الدفع: بنك فلسطين، PalPay، Jawwal Pay</p></section>
+    <section class="panel authcard" id="authcard">${AUTH.err?`<div class="fb bad" style="margin:0 0 12px">${esc(AUTH.err)}</div>`:""}${AUTH.msg?`<div class="fb good" style="margin:0 0 12px">${esc(AUTH.msg)}</div>`:""}${form}</section>
+    <section class="panel"><h2 class="center">أسئلة شائعة</h2>${FAQ.map((f,i)=>`<div class="faq"><button data-act="faq" data-i="${i}" aria-expanded="${LAND.faq===i}">${f[0]}<span>${LAND.faq===i?"−":"+"}</span></button>${LAND.faq===i?`<p>${esc(f[1])}</p>`:""}</div>`).join("")}</section>
+    <footer class="foot"><button class="linkbtn" data-act="authpage" data-p="terms">الشروط والخصوصية</button> · <a class="linkbtn" href="https://wa.me/${CFG.WHATSAPP}" target="_blank" rel="noopener">تواصل واتساب</a><br><span class="muted">© ${new Date().getFullYear()} ${esc(CFG.APP_NAME)}</span></footer>`}
 function vNewPass(){return `<section class="panel authcard"><h2>كلمة سر جديدة</h2>${AUTH.err?`<div class="fb bad">${esc(AUTH.err)}</div>`:""}${fld("npPass","كلمة السر الجديدة","password","new-password")}<button class="btn hl wide" data-act="donewpass">احفظ</button></section>`}
 const val=id=>(($("#"+id)||{}).value||"").trim();
+
+/* ---------- الشروط والخصوصية ---------- */
+function termsHTML(){const n=esc(CFG.APP_NAME);return `<div class="terms"><h1>الشروط وسياسة الخصوصية</h1><p class="muted">آخر تحديث: ${new Date().getFullYear()}</p>
+<h3>1. الخدمة</h3><p>${n} منصة لتعليم اللغة الإنجليزية عبر الإنترنت. فيها محتوى مجاني ومحتوى مدفوع بالاشتراك.</p>
+<h3>2. الحساب</h3><p>الحساب شخصي، ولا يجوز مشاركته مع غيرك. إنت مسؤول عن سرية كلمة السر. يحق لنا إيقاف أي حساب بيسيء استخدام الخدمة أو بيشاركها.</p>
+<h3>3. التجربة المجانية</h3><p>كل حساب جديد ممكن ياخد تجربة مجانية محدودة المدة، مرة وحدة للشخص. إنشاء حسابات متعددة للاستفادة من التجربة ممنوع.</p>
+<h3>4. الاشتراك والدفع</h3><p>الدفع بالتحويل اليدوي على الطرق الموضحة بصفحة الاشتراك. الاشتراك بيتفعّل بعد التأكد من وصول المبلغ، عادة ${esc(CFG.ACTIVATION_TIME)}. التجديد بينضاف على المدة المتبقية.</p>
+<h3>5. الاسترجاع</h3><p>بعد تفعيل الاشتراك ما في استرجاع للمبلغ، إلا إذا صار خلل من طرفنا منعك من استخدام الخدمة. تواصل معنا وبنحل الموضوع.</p>
+<h3>6. المعلم الذكي</h3><p>المحادثة والتصحيح بيتولّدوا بالذكاء الاصطناعي، وممكن يصير فيهم أخطاء. المحادثات بتنبعت لمزوّد خدمة الذكاء الاصطناعي (Google) لمعالجتها. لا تكتب فيها معلومات شخصية حساسة.</p>
+<h3>7. الخصوصية</h3><p>بنحفظ: اسمك، وإيميلك، وتقدّمك بالتعلّم، وطلبات الدفع وصور الإيصالات. بنستخدمها بس لتشغيل الخدمة وتفعيل اشتراكك، وما بنبيعها ولا بنشاركها لأغراض إعلانية. البيانات مخزّنة عند مزوّد خدمة سحابية (Supabase).</p>
+<h3>8. حذف الحساب</h3><p>بتقدر تطلب حذف حسابك وبياناتك بأي وقت عن طريق التواصل معنا.</p>
+<h3>9. التواصل</h3><p>واتساب: <a href="https://wa.me/${CFG.WHATSAPP}" target="_blank" rel="noopener" class="en">+${CFG.WHATSAPP}</a></p></div>`}
+function vTerms(){return `<section class="panel">${topbar("الشروط والخصوصية","")}${termsHTML()}</section>`}
+
+/* ---------- تثبيت التطبيق (PWA) ---------- */
+let INSTALL=null;
+const isStandalone=()=>window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();INSTALL=e;render()});
+window.addEventListener("appinstalled",()=>{INSTALL=null;toast("تم تثبيت التطبيق ✅");render()});
+function installBtn(){if(isStandalone())return "";
+  if(INSTALL)return `<div style="margin-top:12px"><button class="btn ghost" data-act="install">📱 ثبّت التطبيق على جهازك</button></div>`;
+  if(isIOS())return `<p class="muted" style="margin-top:12px">📱 لتثبيته كتطبيق: اضغط زر المشاركة <b>⬆️</b> بعدين <b>«إضافة إلى الشاشة الرئيسية»</b>.</p>`;return ""}
+if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
 /* ---------- الاشتراك ---------- */
 async function loadSub(){if(!AUTH.user)return;SUB.loading=true;
@@ -1325,17 +1477,19 @@ const STAT={pending:["⏳","قيد المراجعة"],approved:["✅","مفعّ�
 function vSubscribe(){
   if(SUB.plans===null&&!SUB.loading)loadSub();
   const prem=isPremium(),p=AUTH.profile||{},plan=(SUB.plans||[]).find(x=>x.id===SUB.plan),meth=CFG.PAYMENT_METHODS.find(x=>x.id===SUB.method);
+  const pct=SUB.coupon?SUB.coupon.pct:0,fin=x=>Math.round(x.price*(100-pct))/100;
   const pending=(SUB.reqs||[]).find(r=>r.status==="pending");
   const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت اشتراك ${plan?plan.name:""} على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
   return `<section class="panel">${topbar("الاشتراك","افتح كل المستويات والمعلم الذكي")}
-    <div class="fb ${prem?"good":""}" style="${prem?"":"background:var(--sky)"}">${prem?(p.role==="admin"?"👑 حساب أدمن — كل الميزات مفتوحة.":`⭐ اشتراكك فعّال لحد <b>${fmtDate(p.plan_until)}</b> (باقي ${daysLeft()} يوم). بتقدر تجدّد من هون وبينضاف على المدة الحالية.`):"إنت على الخطة المجانية."}</div>
+    <div class="fb ${prem?"good":""}" style="${prem?"":"background:var(--sky)"}">${prem?(p.role==="admin"?"👑 حساب أدمن — كل الميزات مفتوحة.":p.is_trial?`🎁 إنت بالتجربة المجانية، باقي <b>${daysLeft()} يوم</b>. اشترك هلأ عشان ما توقف الميزات.`:`⭐ اشتراكك فعّال لحد <b>${fmtDate(p.plan_until)}</b> (باقي ${daysLeft()} يوم). بتقدر تجدّد من هون وبينضاف على المدة الحالية.`):"إنت على الخطة المجانية."}</div>
     <div class="cmp"><div><h3>مجاني</h3><ul><li>اختبار تحديد المستوى</li><li>كل محتوى مستوى A1</li><li>التمارين على كلمات A1</li></ul></div>
       <div class="pro"><h3>⭐ مشترك</h3><ul><li>كل المستويات <span class="en">A1 → B2</span></li><li>المعلم الذكي: محادثة وتصحيح فوري</li><li>تصحيح الكتابة الحرة</li><li>قصص ذكية بلا حدود</li><li>حفظ تقدّمك على أي جهاز</li></ul></div></div>
   </section>
   <section class="panel"><h2>1. اختار الخطة</h2>
-    ${SUB.plans===null?`<p class="muted">جاري التحميل…</p>`:`<div class="plans">${SUB.plans.map(x=>`<button class="plan" data-act="subplan" data-id="${x.id}" aria-pressed="${x.id===SUB.plan}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${x.months>1?`≈ ${Math.round(x.price/x.months)} ${CFG.CURRENCY} بالشهر`:"شهر واحد"}</small></button>`).join("")}</div>`}
+    ${SUB.plans===null?`<p class="muted">جاري التحميل…</p>`:`<div class="plans">${SUB.plans.map(x=>`<button class="plan" data-act="subplan" data-id="${x.id}" aria-pressed="${x.id===SUB.plan}"><b>${esc(x.name)}</b><span class="price">${pct?`<s class="muted" style="font-size:1rem">${+x.price}</s> `:""}${fin(x)} ${CFG.CURRENCY}</span><small>${x.months>1?`≈ ${Math.round(fin(x)/x.months)} ${CFG.CURRENCY} بالشهر`:"شهر واحد"}</small></button>`).join("")}</div>`}
+    <div class="coupon">${SUB.coupon?`<span class="chip">🏷️ ${esc(SUB.coupon.code)} — خصم ${pct}%</span><button class="say" data-act="coupondel">✕ شيل الكود</button>`:`<input id="subCoupon" data-keep dir="ltr" placeholder="كود خصم (إذا عندك)" autocomplete="off"><button class="btn ghost" data-act="couponapply">تطبيق</button>`}</div>
   </section>
-  <section class="panel"><h2>2. حوّل المبلغ${plan?` (${+plan.price} ${CFG.CURRENCY})`:""}</h2>
+  <section class="panel"><h2>2. حوّل المبلغ${plan?` (${fin(plan)} ${CFG.CURRENCY})`:""}</h2>
     <div class="row" style="margin-bottom:10px">${CFG.PAYMENT_METHODS.map(x=>`<button class="chipbtn" data-act="submeth" data-id="${x.id}" aria-pressed="${x.id===SUB.method}">${x.icon} ${esc(x.name)}</button>`).join("")}</div>
     ${meth?`<div class="paybox">${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}
   </section>
@@ -1349,7 +1503,7 @@ function vSubscribe(){
     <p class="muted" style="margin-top:8px">بعد ما نتأكد من التحويل بنفعّل حسابك ${esc(CFG.ACTIVATION_TIME)}، وبتفتحلك كل الميزات تلقائياً.</p>
   </section>
   ${SUB.reqs&&SUB.reqs.length?`<section class="panel"><div class="spread"><h2>طلباتي</h2><button class="say" data-act="subreload">🔄 تحديث</button></div>
-    ${SUB.reqs.map(r=>`<div class="lesson-ex"><div class="e"><span style="color:var(--ink)">${STAT[r.status][0]} ${STAT[r.status][1]} — ${esc(r.plans?r.plans.name:r.plan_id)} · ${+r.amount} ${CFG.CURRENCY}</span><span>${fmtDate(r.created_at)}${r.admin_note?" — "+esc(r.admin_note):""}</span></div></div>`).join("")}</section>`:""}`}
+    ${SUB.reqs.map(r=>`<div class="lesson-ex"><div class="e"><span style="color:var(--ink)">${STAT[r.status][0]} ${STAT[r.status][1]} — ${esc(r.plans?r.plans.name:r.plan_id)} · ${+r.amount} ${CFG.CURRENCY}${r.coupon?" 🏷️":""}</span><span>${fmtDate(r.created_at)}${r.admin_note?" — "+esc(r.admin_note):""}</span></div></div>`).join("")}</section>`:""}`}
 async function subSend(){
   const ref=val("subRef"),fi=$("#subFile"),f=fi&&fi.files&&fi.files[0];SUB.err=null;SUB.msg=null;
   if(!SUB.plan||!SUB.method){SUB.err="اختار الخطة وطريقة الدفع.";render();return}
@@ -1359,19 +1513,20 @@ async function subSend(){
   try{let path=null;
     if(f){const ext=((f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""))||"jpg";path=`${AUTH.user.id}/${Date.now()}.${ext}`;
       const {error}=await sb.storage.from("proofs").upload(path,f,{contentType:f.type||undefined});if(error)throw error}
-    const {error}=await sb.from("payment_requests").insert({user_id:AUTH.user.id,plan_id:SUB.plan,method:SUB.method,reference:ref,proof_path:path});
+    const {error}=await sb.from("payment_requests").insert({user_id:AUTH.user.id,plan_id:SUB.plan,method:SUB.method,reference:ref,proof_path:path,coupon:SUB.coupon?SUB.coupon.code:null});
     if(error)throw error;
     clearField("subRef");const sf=$("#subFile");if(sf)sf.value="";SUB.msg="وصلنا طلبك ✅ رح نفعّل حسابك "+CFG.ACTIVATION_TIME+".";SUB.plans=null;await loadSub()}
-  catch(e){SUB.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
+  catch(e){SUB.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":/invalid_coupon/.test(e.message||"")?"كود الخصم مش صالح أو انتهى.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
   SUB.busy=false;render()}
 
 /* ---------- لوحات إضافية ---------- */
 function vAccountPanel(){const p=AUTH.profile||{},prem=isPremium();
-  return `<section class="panel"><div class="spread"><div><h2 style="margin:0">${esc(p.full_name||"حسابي")}</h2><p class="muted en" style="text-align:right;margin:0">${esc(AUTH.user.email)}</p></div><span class="chip">${p.role==="admin"?"👑 أدمن":prem?"⭐ مشترك":"مجاني"}</span></div>
-    <p style="margin-top:10px">${prem&&p.plan_until?`اشتراكك فعّال لحد <b>${fmtDate(p.plan_until)}</b>.`:prem?"":"إنت على الخطة المجانية (محتوى A1)."}</p>
-    <div class="row"><button class="btn ${prem?"ghost":"hl"}" data-act="go" data-r="subscribe">${prem?"تفاصيل الاشتراك":"⭐ اشترك الآن"}</button>${p.role==="admin"?`<a class="btn ghost" href="admin.html">لوحة التحكم</a>`:""}<button class="btn ghost danger" data-act="logout">تسجيل خروج</button></div></section>`}
+  return `<section class="panel"><div class="spread"><div><h2 style="margin:0">${esc(p.full_name||"حسابي")}</h2><p class="muted en" style="text-align:right;margin:0">${esc(AUTH.user.email)}</p></div><span class="chip">${p.role==="admin"?"👑 أدمن":prem&&p.is_trial?"🎁 تجربة":prem?"⭐ مشترك":"مجاني"}</span></div>
+    <p style="margin-top:10px">${prem&&p.is_trial?`تجربتك المجانية بتخلص <b>${fmtDate(p.plan_until)}</b>.`:prem&&p.plan_until?`اشتراكك فعّال لحد <b>${fmtDate(p.plan_until)}</b>.`:prem?"":"إنت على الخطة المجانية (محتوى A1)."}</p>
+    <div class="row"><button class="btn ${prem?"ghost":"hl"}" data-act="go" data-r="subscribe">${prem?"تفاصيل الاشتراك":"⭐ اشترك الآن"}</button>${p.role==="admin"?`<a class="btn ghost" href="admin.html">لوحة التحكم</a>`:""}<button class="btn ghost" data-act="go" data-r="terms">الشروط</button><button class="btn ghost danger" data-act="logout">تسجيل خروج</button></div>${installBtn()}</section>`}
 function vPremiumBanner(){if(!AUTH.user)return "";const p=AUTH.profile||{};
   if(!isPremium())return `<section class="panel hlpanel"><div class="spread"><div><b>⭐ افتح كل المحتوى</b><p class="muted" style="margin:0">كل المستويات لحد B2، المعلم الذكي، وتصحيح الكتابة.</p></div><button class="btn hl" data-act="go" data-r="subscribe">اشترك</button></div></section>`;
+  if(p.role!=="admin"&&p.is_trial)return `<section class="panel hlpanel"><div class="spread"><div><b>🎁 تجربتك المجانية: باقي ${daysLeft()} يوم</b><p class="muted" style="margin:0">كل الميزات مفتوحة إلك. اشترك قبل ما تخلص عشان تكمّل.</p></div><button class="btn hl" data-act="go" data-r="subscribe">اشترك</button></div></section>`;
   if(p.role!=="admin"&&daysLeft()<=5)return `<section class="panel hlpanel"><div class="spread"><b>⏰ اشتراكك بيخلص بعد ${daysLeft()} يوم</b><button class="btn hl" data-act="go" data-r="subscribe">جدّد</button></div></section>`;return ""}
 
 /* ---------- قفل المحتوى المدفوع ---------- */
@@ -1380,7 +1535,8 @@ function itemLv(act,d){
   if(act==="gopen")return (LESSONS.find(x=>x.id===d.id)||{}).lv;
   if(act==="dopen")return (DIALOGS.find(x=>x.id===d.id)||{}).lv;
   if(act==="ropen"){const s=STORIES.find(x=>x.id===d.id);return s?s.lv:"PRO"}
-  if(act==="openpath")return itemLv({cat:"wcat",lesson:"gopen",dialog:"dopen",story:"ropen"}[d.t],d);
+  if(act==="exopen")return d.lv;
+  if(act==="openpath"){if(d.t==="exam")return d.id;return itemLv({cat:"wcat",lesson:"gopen",dialog:"dopen",story:"ropen"}[d.t],d)}
   return null}
 function gateCheck(act,d){if(!AUTH.user||isPremium())return false;const lv=itemLv(act,d);
   if(lv&&lv!=="A1"){go("subscribe");toast("🔒 هاد المحتوى للمشتركين");return true}return false}
@@ -1391,7 +1547,7 @@ Object.assign(A,{
   dologin:async()=>{const e=val("liEmail"),p=($("#liPass")||{}).value||"";if(!e||!p){AUTH.err="عبّي الإيميل وكلمة السر.";render();return}
     AUTH.busy=true;AUTH.err=null;render();const {error}=await sb.auth.signInWithPassword({email:e,password:p});if(error){AUTH.busy=false;AUTH.err=authErr(error);render()}},
   dosignup:async()=>{const n=val("suName"),ph="",e=val("suEmail"),p=($("#suPass")||{}).value||"";
-    if(!n||!e||!p){AUTH.err="عبّي الاسم والإيميل وكلمة السر.";render();return}if(p.length<6){AUTH.err="كلمة السر لازم تكون 6 أحرف على الأقل.";render();return}
+    if(!n||!e||!p){AUTH.err="عبّي الاسم والإيميل وكلمة السر.";render();return}if(!AUTH.agree){AUTH.err="لازم توافق على الشروط.";render();return}if(p.length<6){AUTH.err="كلمة السر لازم تكون 6 أحرف على الأقل.";render();return}
     AUTH.busy=true;AUTH.err=null;render();
     const {data,error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n,phone:ph},emailRedirectTo:location.href.split("#")[0]}});
     AUTH.busy=false;if(error){AUTH.err=authErr(error);render();return}
@@ -1403,11 +1559,22 @@ Object.assign(A,{
     const {error}=await sb.auth.updateUser({password:p});if(error){AUTH.err=authErr(error);render();return}AUTH.recovery=false;AUTH.err=null;toast("تم تغيير كلمة السر ✅");render()},
   logout:async()=>{if(!confirm("تسجيل خروج؟"))return;await syncNow();await sb.auth.signOut()},
   subplan:d=>{SUB.plan=d.id;render()},
+  couponapply:async()=>{const c=val("subCoupon");if(!c){toast("اكتب الكود");return}const {data,error}=await sb.rpc("check_coupon",{c});
+    if(error||!data){SUB.err="كود الخصم مش صالح أو انتهى.";SUB.coupon=null}else{SUB.coupon={code:c.toUpperCase(),pct:data};SUB.err=null;clearField("subCoupon");toast("🏷️ تم تطبيق خصم "+data+"%")}render()},
+  coupondel:()=>{SUB.coupon=null;render()},
+  install:async()=>{if(!INSTALL)return;INSTALL.prompt();try{await INSTALL.userChoice}catch(e){}INSTALL=null;render()},
+  authpage:d=>{AUTH.page=d.p||null;render();window.scrollTo(0,0)},
+  agree:()=>{AUTH.agree=!AUTH.agree},
+  faq:d=>{LAND.faq=LAND.faq===+d.i?-1:+d.i;render()},
+  landgo:d=>{AUTH.mode=d.m;AUTH.err=null;render();const c=$("#authcard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"})},
   submeth:d=>{SUB.method=d.id;render()},
   subsend:subSend,
   subreload:()=>{SUB.plans=null;render()},
   copy:d=>{try{navigator.clipboard.writeText(d.t);toast("انتسخ ✅")}catch(e){toast(d.t)}}
 });
+
+function certName(){return (AUTH.profile&&AUTH.profile.full_name)||S.name||"Student"}
+function appName(){return CFG.APP_NAME}
 
 /* ---------- التشغيل ---------- */
 applyTheme();render();
