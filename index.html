@@ -536,6 +536,14 @@ h1{font-weight:700;letter-spacing:-.01em}h2,h3{font-weight:600}
 .flip:focus-visible .f-front{outline:3px solid var(--primary)}
 .match .tile.pc{padding:6px}
 @media (prefers-reduced-motion:reduce){.flip .face{transition:none}}
+
+/* ===== mic v2 ===== */
+#livecap{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:46;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 28px);min-width:220px;
+  padding:10px 18px;border-radius:20px;background:var(--ink);color:var(--paper);box-shadow:var(--elev2);animation:fbUp .25s ease-out}
+#livecap small{display:block;opacity:.75;font-size:.78rem}#livecap b{display:block;font-weight:600;font-size:1.05rem;text-align:left;word-break:break-word}
+.lc-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--margin);animation:pulse 1s infinite}
+body.chatmode #livecap{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.mic-tips{display:grid;gap:4px;margin:16px 0 4px;padding:12px 14px;border-radius:16px;background:var(--sky);font-size:.9rem}.mic-tips b{font-weight:600}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -2351,6 +2359,58 @@ document.addEventListener("change",e=>{if(e.target.dataset&&e.target.dataset.voi
 if("speechSynthesis" in window){const upd=()=>{loadVoices();if(route==="me")render()};speechSynthesis.onvoiceschanged=upd}
 
 VIEWS.words=vWords;VIEWS.games=vGames;VIEWS.spelling=vSpelling;VIEWS.me=vMe;
+/* ================== MICROPHONE v2: patient listening, live captions, lenient matching ================== */
+let liveEl=null;
+function setLive(t){if(t===null){if(liveEl){liveEl.remove();liveEl=null}return}
+  if(!liveEl){liveEl=document.createElement("div");liveEl.id="livecap";liveEl.setAttribute("aria-live","polite");document.body.appendChild(liveEl)}
+  liveEl.innerHTML=`<span class="lc-dot"></span><div><small>بسمعك… احكي بوضوح</small><b dir="ltr">${esc(t||"…")}</b></div>`}
+function listen(onAlts,onErr,onEnd){
+  if(!SR){onErr("المتصفح هاد ما بدعم التعرّف على الصوت. استخدم Chrome على أندرويد أو الكمبيوتر، أو Safari حديث على الآيفون.");onEnd&&onEnd();return}
+  if(recOn&&rec){try{rec.stop()}catch(e){}return}
+  stopSpeak();if(typeof curAudio!=="undefined"&&curAudio){try{curAudio.pause()}catch(e){}}
+  const silenceMs=route==="tutor"?2300:1600;
+  let finalAlts=null,interim="",restarted=false,silT=null,errMsg=null,noSpeech=false;
+  rec=new SR();rec.lang=S.accent;rec.interimResults=true;rec.maxAlternatives=5;rec.continuous=false;recOn=true;setLive("");
+  const armSilence=()=>{clearTimeout(silT);silT=setTimeout(()=>{try{rec.stop()}catch(e){}},silenceMs)};
+  rec.onresult=e=>{let it="";for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal){finalAlts=(finalAlts||[]).concat([...r].map(a=>a.transcript.trim()))}else it+=r[0].transcript}
+    if(it)interim=it;setLive(finalAlts?finalAlts[0]:interim);armSilence()};
+  rec.onspeechstart=()=>armSilence();
+  rec.onerror=e=>{if(e.error==="no-speech"){noSpeech=true;return}if(e.error==="aborted")return;errMsg=SRERR[e.error]||"صار خطأ بالتسجيل، جرّب مرة ثانية."};
+  rec.onend=()=>{clearTimeout(silT);
+    if(!finalAlts&&!interim&&!errMsg&&!restarted){restarted=true;noSpeech=false;try{rec.start();setLive("");return}catch(e){}}
+    recOn=false;setLive(null);
+    if(!finalAlts&&interim)finalAlts=[interim.trim()];
+    if(finalAlts&&finalAlts.length)onAlts(finalAlts);else if(errMsg)onErr(errMsg);else onErr("ما سمعت شي 🙉 قرّب الجهاز من تمك، واحكي بصوت أوضح شوي.");
+    onEnd&&onEnd()};
+  try{rec.start();armSilence();clearTimeout(silT);silT=setTimeout(()=>{try{rec.stop()}catch(e){}},9000)}catch(e){recOn=false;setLive(null);onErr("ما قدرت أشغّل الميكروفون.");onEnd&&onEnd()}}
+
+/* lenient comparison: near-miss words count as correct */
+function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+const skey=w=>w.replace(/ph/g,"f").replace(/wh/g,"w").replace(/ea/g,"e").replace(/ck/g,"k").replace(/(.)\1+/g,"$1").replace(/e$/,"");
+function wordEq(a,b){if(a===b)return true;if(!a||!b)return false;if(skey(a)===skey(b))return true;const L=Math.max(a.length,b.length);return 1-lev(a,b)/L>=(L<=3?.67:.75)}
+const CONTR={"do not":"don't","does not":"doesn't","did not":"didn't","can not":"can't","cannot":"can't","is not":"isn't","are not":"aren't","was not":"wasn't","will not":"won't","i am":"i'm","it is":"it's","i will":"i'll","you are":"you're","we are":"we're","they are":"they're","let us":"let's","i have":"i've","he is":"he's","she is":"she's","that is":"that's","what is":"what's","i would":"i'd","you will":"you'll"};
+const EXPN=Object.fromEntries(Object.entries(CONTR).filter(([k])=>k!=="cannot").map(([k,v])=>[v,k]));
+function fuzzyMatch(target,heard){const orig=target.split(/\s+/),tn=orig.map(w=>norm(w)),raw=norm(heard).split(" ").filter(Boolean),tset=new Set(tn),bn=[];
+  const tjoined=" "+tn.join(" ")+" ";
+  for(let k=0;k<raw.length;k++){const pair=k+1<raw.length?raw[k]+" "+raw[k+1]:"";
+    if(pair&&CONTR[pair]&&tset.has(CONTR[pair])){bn.push(CONTR[pair]);k++;continue}
+    if(EXPN[raw[k]]&&tjoined.includes(" "+EXPN[raw[k]]+" ")){bn.push(...EXPN[raw[k]].split(" "));continue}
+    if(k+1<raw.length&&tset.has(raw[k]+raw[k+1])&&!tset.has(raw[k])){bn.push(raw[k]+raw[k+1]);k++}else bn.push(raw[k])}
+  const n=tn.length,m=bn.length,dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=wordEq(tn[i],bn[j])?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  const r=new Array(n).fill(false);let i=0,j=0;while(i<n&&j<m){if(wordEq(tn[i],bn[j])){r[i]=true;i++;j++}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++}
+  const valid=tn.filter(Boolean).length||1,pct=Math.round(100*r.filter((x,k)=>x&&tn[k]).length/valid);
+  return{pct,html:orig.map((w,k)=>`<span class="${r[k]?"ok":"miss"}">${esc(w)}</span>`).join(" ")}}
+function bestMatch(target,alts){let best=null;for(const h of alts){const r=fuzzyMatch(target,h);if(!best||r.pct>best.pct)best={...r,heard:h}}return best}
+
+/* speaking page: helpful tips after repeated misses */
+{const _sk=A.skmic;A.skmic=()=>{SK.err=null;SK.res=null;SK.on=true;render();
+  listen(alts=>{SK.res=bestMatch(SK.item.en,alts);if(SK.res.pct>=80){S.st.speak++;SK.fails=0;addXP(10)}else{SK.fails=(SK.fails||0)+1;addMistake(SK.item.en,SK.item.ar,"نطق")}},
+    e=>{SK.err=e;SK.fails=(SK.fails||0)+1},()=>{SK.on=false;render()})}}
+{const _vs=vSpeaking;vSpeaking=function(){let h=_vs();
+  const tip=`<div class="mic-tips"><b>نصايح لنتيجة أحسن</b><span>🎧 اسمع الجملة أول، بعدين اضغط الميكروفون.</span><span>📱 خلي الجهاز قريب من تمك، بمكان هادي.</span><span>🗣️ احكي بصوت واضح، ولا تستعجل. بيستنى لحد ما تخلص.</span>${(SK.fails||0)>=2?`<span>🔁 إذا ضل يغلط، جرّب تغيير اللهجة أو الصوت من <button class="linkbtn" data-act="go" data-r="me">الإعدادات</button>.</span>`:""}</div>`;
+  return h.replace('<div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="sknext">',tip+'<div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="sknext">')};VIEWS.speaking=vSpeaking}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
