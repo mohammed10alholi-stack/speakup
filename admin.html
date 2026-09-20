@@ -5,32 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>لوحة التحكم — SpeakUp</title>
 <meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500..700&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#F5F8FC;--card:#fff;--ink:#1A2B4C;--soft:#5B6B86;--line:#D3DDEA;--hl:#FFE35A;--good:#157F54;--good-bg:#E1F4EA;--bad:#E2463B;--bad-bg:#FCE6E3;--sky:#E8F0FB}
-@media (prefers-color-scheme:dark){:root{--paper:#10182A;--card:#18233A;--ink:#E7EDF8;--soft:#9AA8C2;--line:#2A3957;--hl:#E9CB3B;--good:#46CB91;--good-bg:#143A2B;--bad:#FF6B5E;--bad-bg:#3D1F1F;--sky:#1D2C48}}
-*{box-sizing:border-box}body{margin:0;font-family:'Readex Pro',system-ui,Tahoma,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+:root{--paper:#FAF7FC;--card:#fff;--ink:#2A1438;--soft:#6F5E7C;--line:#EAE2F0;--hl:#C9A24B;--gold-soft:#F7EDD5;--good:#1E8A63;--good-bg:#E6F5EE;--bad:#C8435B;--bad-bg:#FBE9EC;--sky:#F4EEF8;--primary:#2A1438;--on-primary:#fff}
+@media (prefers-color-scheme:dark){:root{--paper:#120A19;--card:#1C1226;--ink:#F4EDF8;--soft:#B6A6C2;--line:#33243F;--hl:#DDB966;--gold-soft:#3A2C18;--good:#4CC99A;--good-bg:#153327;--bad:#F06C86;--bad-bg:#3A1A24;--sky:#261932;--primary:#DDB966;--on-primary:#1A0F22}}
+*{box-sizing:border-box}body{margin:0;font-family:'Alexandria',system-ui,Tahoma,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-.bar{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar b{flex:1;font-size:1.15rem}
+.bar{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar b{flex:1;font-size:1.3rem;font-family:"Fraunces",Georgia,serif;font-weight:600}
 main{max-width:1100px;margin:0 auto;padding:18px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
-.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:9px;padding:8px 14px;font-weight:500}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}.btn.good{background:var(--good);border-color:var(--good);color:#fff}.btn.bad{background:transparent;color:var(--bad);border-color:var(--bad)}.btn.sm{padding:4px 10px;font-size:.88rem}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 14px 34px -22px rgba(42,20,56,.25)}
+.btn{border:none;background:var(--primary);color:var(--on-primary);border-radius:999px;padding:9px 16px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}.btn.good{background:var(--good);border-color:var(--good);color:#fff}.btn.bad{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad)}.btn.sm{padding:4px 10px;font-size:.88rem}
 .btn:disabled{opacity:.5}
-.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px}.tabs button[aria-pressed="true"]{background:var(--hl);border-color:var(--hl);color:#1A2B4C;font-weight:600}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.stats div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.stats b{display:block;font-size:1.6rem}.stats span{color:var(--soft);font-size:.88rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:none;background:var(--sky);border-radius:999px;padding:7px 15px;color:var(--ink)}.tabs button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.stats b{display:block;font-size:1.7rem;font-family:"Fraunces",Georgia,serif;font-weight:600}.stats span{color:var(--soft);font-size:.88rem}
 table{width:100%;border-collapse:collapse;font-size:.93rem}th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}th{background:var(--sky);font-weight:600}
 .scroll{overflow-x:auto}.muted{color:var(--soft)}.en{direction:ltr;unicode-bidi:isolate}
 .chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.8rem;border:1px solid var(--line)}.chip.ok{background:var(--good-bg);border-color:var(--good)}.chip.no{background:var(--bad-bg);border-color:var(--bad)}.chip.wait{background:var(--sky)}
-input.in,select.in{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--paper)}
+input.in,select.in{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--paper)}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .fb{border-radius:10px;padding:10px 14px;margin-bottom:12px}.fb.bad{background:var(--bad-bg)}.fb.good{background:var(--good-bg)}
 .chart{display:flex;align-items:flex-end;gap:2px;height:160px;border-bottom:1px solid var(--line);margin-top:8px}.chart .day{flex:1;height:100%;display:flex;align-items:flex-end}
 .chart .stack{display:flex;align-items:flex-end;gap:1px;width:100%;height:100%}.chart .stack i{flex:1;min-height:1px;border-radius:2px 2px 0 0}
 .legend{display:flex;gap:14px;font-size:.85rem;color:var(--soft)}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px}
-.lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:var(--ink)}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:linear-gradient(90deg,var(--hl),#E7CB84)}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .login{max-width:400px;margin:60px auto}.login label{display:block;margin:10px 0}.login input{width:100%}
 </style>
 </head>
@@ -100,8 +101,8 @@ function vAn(){const a=ST.an;if(!a)return `<div class="panel">جاري التح�
   return `<div class="panel"><div class="row" style="margin-bottom:12px"><b>الفترة:</b>${[[7,"أسبوع"],[30,"شهر"],[90,"3 شهور"]].map(([n,l])=>`<button class="btn ${ST.anDays===n?"":"ghost"} sm" data-a="andays" data-v="${n}">${l}</button>`).join("")}</div>
     <div class="stats"><div><b>${a.visits}</b><span>زيارة</span></div><div><b>${a.signups}</b><span>تسجيل جديد</span></div><div><b>${conv}%</b><span>من الزوار سجّلوا</span></div>
       <div><b>${a.requests}</b><span>طلب اشتراك</span></div><div><b>${a.paid}</b><span>اشتراك مفعّل</span></div><div><b>${+a.revenue} ${cur}</b><span>دخل الفترة</span></div></div></div>
-  <div class="panel"><h3>يومياً</h3><div class="legend"><span><i style="background:#9DB7E0"></i>زيارات</span><span><i style="background:#1A2B4C"></i>تسجيلات</span><span><i style="background:#157F54"></i>اشتراكات</span></div>
-    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}"><div class="stack">${["visits","signups","paid"].map((k,i)=>{const mx=Math.max(1,...d.map(x=>+x[k]||0));return `<i style="height:${Math.round(100*(+r[k]||0)/mx)}%;background:${["#9DB7E0","#1A2B4C","#157F54"][i]}"></i>`}).join("")}</div></div>`).join("")}</div>
+  <div class="panel"><h3>يومياً</h3><div class="legend"><span><i style="background:#D9C6E6"></i>زيارات</span><span><i style="background:#2A1438"></i>تسجيلات</span><span><i style="background:#C9A24B"></i>اشتراكات</span></div>
+    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}"><div class="stack">${["visits","signups","paid"].map((k,i)=>{const mx=Math.max(1,...d.map(x=>+x[k]||0));return `<i style="height:${Math.round(100*(+r[k]||0)/mx)}%;background:${["#D9C6E6","#2A1438","#C9A24B"][i]}"></i>`}).join("")}</div></div>`).join("")}</div>
     <div class="spread muted" style="font-size:.8rem"><span>${d[0]?d[0].d:""}</span><span>${d.length?d[d.length-1].d:""}</span></div></div>
   <div class="panel"><h3>من وين إجو الزوار؟</h3>${listBars(a.sources||[])}
     <p class="muted" style="margin-top:10px">💡 لما تنشر الرابط بمكان، ضيف لآخره <b class="en">?src=</b> واسم المكان، عشان تعرف مين جاب زوار أكثر:</p>
