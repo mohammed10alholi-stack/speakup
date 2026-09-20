@@ -7,21 +7,21 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400..800&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#FAF7FC;--card:#fff;--ink:#2A1438;--soft:#6F5E7C;--line:#EAE2F0;--hl:#C9A24B;--gold-soft:#F7EDD5;--good:#1E8A63;--good-bg:#E6F5EE;--bad:#C8435B;--bad-bg:#FBE9EC;--sky:#F4EEF8;--primary:#2A1438;--on-primary:#fff}
-@media (prefers-color-scheme:dark){:root{--paper:#120A19;--card:#1C1226;--ink:#F4EDF8;--soft:#B6A6C2;--line:#33243F;--hl:#DDB966;--gold-soft:#3A2C18;--good:#4CC99A;--good-bg:#153327;--bad:#F06C86;--bad-bg:#3A1A24;--sky:#261932;--primary:#DDB966;--on-primary:#1A0F22}}
-*{box-sizing:border-box}body{margin:0;font-family:'Alexandria',system-ui,Tahoma,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+:root{--paper:#F7F9FC;--card:#fff;--ink:#1F2433;--soft:#6B7389;--line:#E7EBF2;--hl:#FFC940;--gold-soft:#FFF5D6;--good:#1DB36B;--good-bg:#E6F8EE;--bad:#FF5A5F;--bad-bg:#FFEDEE;--sky:#F3F6FB;--primary:#2F6BFF;--primary-d:#1D4FD6;--on-primary:#fff}
+@media (prefers-color-scheme:dark){:root{--paper:#0F1420;--card:#161D2C;--ink:#EEF2FF;--soft:#9AA6C4;--line:#253049;--hl:#FFC940;--gold-soft:#3A3014;--good:#1DB36B;--good-bg:#133426;--bad:#FF5A5F;--bad-bg:#3A1C22;--sky:#1B2437;--primary:#4C82FF;--primary-d:#2F5FD6;--on-primary:#fff}}
+*{box-sizing:border-box}body{margin:0;font-family:'Baloo Bhaijaan 2',system-ui,Tahoma,sans-serif;font-weight:500;background:var(--paper);color:var(--ink);line-height:1.6}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-.bar{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar b{flex:1;font-size:1.3rem;font-family:"Fraunces",Georgia,serif;font-weight:600}
+.bar{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar b{flex:1;font-size:1.35rem;font-weight:800;color:var(--primary)}
 main{max-width:1100px;margin:0 auto;padding:18px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 14px 34px -22px rgba(42,20,56,.25)}
-.btn{border:none;background:var(--primary);color:var(--on-primary);border-radius:999px;padding:9px 16px;font-weight:600}
-.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}.btn.good{background:var(--good);border-color:var(--good);color:#fff}.btn.bad{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad)}.btn.sm{padding:4px 10px;font-size:.88rem}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px;margin-bottom:14px}
+.btn{border:none;background:var(--primary);color:var(--on-primary);border-radius:14px;padding:9px 16px;font-weight:800;box-shadow:0 3px 0 var(--primary-d)}.btn:active{transform:translateY(3px);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}.btn.good{background:var(--good);color:#fff;box-shadow:0 3px 0 #13904F}.btn.bad{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad)}.btn.sm{padding:4px 10px;font-size:.88rem}
 .btn:disabled{opacity:.5}
-.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:none;background:var(--sky);border-radius:999px;padding:7px 15px;color:var(--ink)}.tabs button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);font-weight:600}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.stats b{display:block;font-size:1.7rem;font-family:"Fraunces",Georgia,serif;font-weight:600}.stats span{color:var(--soft);font-size:.88rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 14px;color:var(--ink);font-weight:800;box-shadow:0 3px 0 var(--line)}.tabs button[aria-pressed="true"]{background:#E8F0FF;border-color:var(--primary);color:var(--primary);box-shadow:0 3px 0 var(--primary)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.stats div{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px}.stats b{display:block;font-size:1.7rem;font-weight:800;color:var(--primary)}.stats span{color:var(--soft);font-size:.88rem}
 table{width:100%;border-collapse:collapse;font-size:.93rem}th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}th{background:var(--sky);font-weight:600}
 .scroll{overflow-x:auto}.muted{color:var(--soft)}.en{direction:ltr;unicode-bidi:isolate}
 .chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.8rem;border:1px solid var(--line)}.chip.ok{background:var(--good-bg);border-color:var(--good)}.chip.no{background:var(--bad-bg);border-color:var(--bad)}.chip.wait{background:var(--sky)}
@@ -31,7 +31,7 @@ input.in,select.in{border:1.5px solid var(--line);border-radius:12px;padding:8px
 .chart{display:flex;align-items:flex-end;gap:2px;height:160px;border-bottom:1px solid var(--line);margin-top:8px}.chart .day{flex:1;height:100%;display:flex;align-items:flex-end}
 .chart .stack{display:flex;align-items:flex-end;gap:1px;width:100%;height:100%}.chart .stack i{flex:1;min-height:1px;border-radius:2px 2px 0 0}
 .legend{display:flex;gap:14px;font-size:.85rem;color:var(--soft)}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px}
-.lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:linear-gradient(90deg,var(--hl),#E7CB84)}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:var(--primary);border-radius:99px}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .login{max-width:400px;margin:60px auto}.login label{display:block;margin:10px 0}.login input{width:100%}
 </style>
 </head>
@@ -101,8 +101,8 @@ function vAn(){const a=ST.an;if(!a)return `<div class="panel">جاري التح�
   return `<div class="panel"><div class="row" style="margin-bottom:12px"><b>الفترة:</b>${[[7,"أسبوع"],[30,"شهر"],[90,"3 شهور"]].map(([n,l])=>`<button class="btn ${ST.anDays===n?"":"ghost"} sm" data-a="andays" data-v="${n}">${l}</button>`).join("")}</div>
     <div class="stats"><div><b>${a.visits}</b><span>زيارة</span></div><div><b>${a.signups}</b><span>تسجيل جديد</span></div><div><b>${conv}%</b><span>من الزوار سجّلوا</span></div>
       <div><b>${a.requests}</b><span>طلب اشتراك</span></div><div><b>${a.paid}</b><span>اشتراك مفعّل</span></div><div><b>${+a.revenue} ${cur}</b><span>دخل الفترة</span></div></div></div>
-  <div class="panel"><h3>يومياً</h3><div class="legend"><span><i style="background:#D9C6E6"></i>زيارات</span><span><i style="background:#2A1438"></i>تسجيلات</span><span><i style="background:#C9A24B"></i>اشتراكات</span></div>
-    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}"><div class="stack">${["visits","signups","paid"].map((k,i)=>{const mx=Math.max(1,...d.map(x=>+x[k]||0));return `<i style="height:${Math.round(100*(+r[k]||0)/mx)}%;background:${["#D9C6E6","#2A1438","#C9A24B"][i]}"></i>`}).join("")}</div></div>`).join("")}</div>
+  <div class="panel"><h3>يومياً</h3><div class="legend"><span><i style="background:#C7D8FF"></i>زيارات</span><span><i style="background:#2F6BFF"></i>تسجيلات</span><span><i style="background:#1DB36B"></i>اشتراكات</span></div>
+    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}"><div class="stack">${["visits","signups","paid"].map((k,i)=>{const mx=Math.max(1,...d.map(x=>+x[k]||0));return `<i style="height:${Math.round(100*(+r[k]||0)/mx)}%;background:${["#C7D8FF","#2F6BFF","#1DB36B"][i]}"></i>`}).join("")}</div></div>`).join("")}</div>
     <div class="spread muted" style="font-size:.8rem"><span>${d[0]?d[0].d:""}</span><span>${d.length?d[d.length-1].d:""}</span></div></div>
   <div class="panel"><h3>من وين إجو الزوار؟</h3>${listBars(a.sources||[])}
     <p class="muted" style="margin-top:10px">💡 لما تنشر الرابط بمكان، ضيف لآخره <b class="en">?src=</b> واسم المكان، عشان تعرف مين جاب زوار أكثر:</p>
