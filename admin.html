@@ -27,6 +27,10 @@ table{width:100%;border-collapse:collapse;font-size:.93rem}th,td{padding:9px 8px
 input.in,select.in{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--paper)}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .fb{border-radius:10px;padding:10px 14px;margin-bottom:12px}.fb.bad{background:var(--bad-bg)}.fb.good{background:var(--good-bg)}
+.chart{display:flex;align-items:flex-end;gap:2px;height:160px;border-bottom:1px solid var(--line);margin-top:8px}.chart .day{flex:1;height:100%;display:flex;align-items:flex-end}
+.chart .stack{display:flex;align-items:flex-end;gap:1px;width:100%;height:100%}.chart .stack i{flex:1;min-height:1px;border-radius:2px 2px 0 0}
+.legend{display:flex;gap:14px;font-size:.85rem;color:var(--soft)}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px}
+.lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:var(--ink)}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .login{max-width:400px;margin:60px auto}.login label{display:block;margin:10px 0}.login input{width:100%}
 </style>
 </head>
@@ -41,7 +45,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fmt=d=>d?new Date(d).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"—";
 const cur=CFG.CURRENCY||"";
-let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],coupons:[],settings:{},stats:null,q:"",err:null,msg:null,busy:false};
+let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],coupons:[],settings:{},stats:null,an:null,anDays:30,q:"",err:null,msg:null,busy:false};
 const METHOD=id=>(CFG.PAYMENT_METHODS.find(m=>m.id===id)||{name:id}).name;
 const active=u=>u.plan_until&&new Date(u.plan_until)>new Date();
 
@@ -52,7 +56,8 @@ async function load(){
     (()=>{let q=sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(300);
       const t=ST.q.trim().replace(/[,()%]/g,"");if(t)q=q.or(`email.ilike.%${t}%,full_name.ilike.%${t}%,phone.ilike.%${t}%`);return q})(),
     sb.from("plans").select("*").order("sort")]);
-  const [c,g]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings")]);
+  const [c,g,an]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings"),sb.rpc("admin_analytics",{days:ST.anDays})]);
+  ST.an=an.error?{error:an.error.message}:an.data;
   const er=s.error||r.error||u.error||p.error||c.error||g.error;
   ST.err=er?"تعذّر تحميل بعض البيانات: "+er.message+(/coupons|app_settings|admin_get_settings/.test(er.message||"")?" — شغّل ملف upgrade-v2.sql":""):null;
   ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];ST.coupons=c.data||[];ST.settings=g.data||{};render()}
@@ -66,9 +71,9 @@ function vMain(){const s=ST.stats||{};
     <div><b>${s.pending??"—"}</b><span>طلبات بانتظارك</span></div><div><b>${s.active??"—"}</b><span>مشترك فعّال</span></div>
     <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
     <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
-  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
+  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
     <button data-a="reload">🔄 تحديث</button></div>
-  ${ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
+  ${ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
 function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
   ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.reqs.map(r=>`<tr><td>${fmt(r.created_at)}</td><td>${esc(r.profiles?.full_name||"")}<br><span class="muted en">${esc(r.profiles?.email||"")}</span><br><span class="muted en">${esc(r.profiles?.phone||"")}</span></td>
@@ -86,6 +91,23 @@ function vPlans(){return `<div class="panel"><p class="muted">عدّل الأس�
     <td><input type="checkbox" id="pa_${p.id}" ${p.active?"checked":""}></td><td><button class="btn sm" data-a="saveplan" data-v="${esc(p.id)}">حفظ</button></td></tr>`).join("")}
   <tr><td><input class="in en" id="np_id" placeholder="id" style="width:110px"></td><td><input class="in" id="np_name" placeholder="اسم الخطة"></td><td><input class="in" id="np_months" type="number" min="1" value="6" style="width:80px"></td><td><input class="in" id="np_price" type="number" min="0" value="100" style="width:100px"></td><td></td><td><button class="btn good sm" data-a="addplan">إضافة</button></td></tr>
   </tbody></table></div></div>`}
+function bars(rows,key,color){const mx=Math.max(1,...rows.map(r=>+r[key]||0));return rows.map(r=>`<div class="bar" title="${r.d}: ${r[key]}"><i style="height:${Math.round(100*(+r[key]||0)/mx)}%;background:${color}"></i></div>`).join("")}
+function listBars(rows,tr){const mx=Math.max(1,...rows.map(r=>r.c));return rows.length?rows.map(r=>`<div class="lb"><span>${esc(tr?tr(r.s):r.s)}</span><div><i style="width:${Math.round(100*r.c/mx)}%"></i></div><b>${r.c}</b></div>`).join(""):`<p class="muted">ما في بيانات لسا.</p>`}
+function vAn(){const a=ST.an;if(!a)return `<div class="panel">جاري التحميل…</div>`;
+  if(a.error)return `<div class="panel"><div class="fb bad">الإحصائيات مش جاهزة: شغّل ملف <b>upgrade-v3.sql</b> في Supabase.</div></div>`;
+  const conv=a.visits?Math.round(1000*a.signups/a.visits)/10:0,pay=a.signups?Math.round(1000*a.paid/a.signups)/10:0,d=a.daily||[];
+  const base=location.href.replace(/admin\.html.*$/,"");
+  return `<div class="panel"><div class="row" style="margin-bottom:12px"><b>الفترة:</b>${[[7,"أسبوع"],[30,"شهر"],[90,"3 شهور"]].map(([n,l])=>`<button class="btn ${ST.anDays===n?"":"ghost"} sm" data-a="andays" data-v="${n}">${l}</button>`).join("")}</div>
+    <div class="stats"><div><b>${a.visits}</b><span>زيارة</span></div><div><b>${a.signups}</b><span>تسجيل جديد</span></div><div><b>${conv}%</b><span>من الزوار سجّلوا</span></div>
+      <div><b>${a.requests}</b><span>طلب اشتراك</span></div><div><b>${a.paid}</b><span>اشتراك مفعّل</span></div><div><b>${+a.revenue} ${cur}</b><span>دخل الفترة</span></div></div></div>
+  <div class="panel"><h3>يومياً</h3><div class="legend"><span><i style="background:#9DB7E0"></i>زيارات</span><span><i style="background:#1A2B4C"></i>تسجيلات</span><span><i style="background:#157F54"></i>اشتراكات</span></div>
+    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}"><div class="stack">${["visits","signups","paid"].map((k,i)=>{const mx=Math.max(1,...d.map(x=>+x[k]||0));return `<i style="height:${Math.round(100*(+r[k]||0)/mx)}%;background:${["#9DB7E0","#1A2B4C","#157F54"][i]}"></i>`}).join("")}</div></div>`).join("")}</div>
+    <div class="spread muted" style="font-size:.8rem"><span>${d[0]?d[0].d:""}</span><span>${d.length?d[d.length-1].d:""}</span></div></div>
+  <div class="panel"><h3>من وين إجو الزوار؟</h3>${listBars(a.sources||[])}
+    <p class="muted" style="margin-top:10px">💡 لما تنشر الرابط بمكان، ضيف لآخره <b class="en">?src=</b> واسم المكان، عشان تعرف مين جاب زوار أكثر:</p>
+    <div class="en" style="background:var(--sky);padding:8px 10px;border-radius:8px;font-size:.88rem;line-height:1.9">${esc(base)}?src=facebook<br>${esc(base)}?src=instagram<br>${esc(base)}?src=whatsapp</div></div>
+  <div class="panel"><h3>الأجهزة</h3>${listBars(a.devices||[],x=>({mobile:"📱 جوال",desktop:"💻 كمبيوتر",app:"📲 التطبيق المثبّت"})[x]||x)}
+    <h3>مستويات المستخدمين</h3>${listBars(a.levels||[])}</div>`}
 function vCoupons(){return `<div class="panel"><p class="muted">الكود بيعطي خصم على سعر أي خطة. المشترك بيكتبه بصفحة الاشتراك، والخصم بينحسب على السيرفر.</p>
   <div class="row" style="margin-bottom:12px"><input class="in en" id="c_code" placeholder="CODE مثلاً SPEAK20" style="width:160px"><input class="in" id="c_pct" type="number" min="1" max="100" placeholder="نسبة %" style="width:100px">
   <input class="in" id="c_max" type="number" min="1" placeholder="أقصى استخدام (اختياري)" style="width:190px"><input class="in" id="c_exp" type="date" title="تاريخ الانتهاء (اختياري)"><button class="btn good" data-a="addcoupon">إضافة كود</button></div>
@@ -118,6 +140,7 @@ const act={
   extend:async v=>{const m=+$("#m_"+v).value;const {error}=await sb.rpc("admin_extend",{uid:v,months:m});ST.msg=error?null:"تم التمديد ✅";ST.err=error?error.message:null;load()},
   revoke:async v=>{if(!confirm("إلغاء اشتراك هاد المستخدم؟"))return;const {error}=await sb.rpc("admin_revoke",{uid:v});ST.msg=error?null:"انلغى الاشتراك";ST.err=error?error.message:null;load()},
   saveplan:async v=>{const {error}=await sb.from("plans").update({name:$("#pn_"+v).value.trim(),months:+$("#pm_"+v).value,price:+$("#pp_"+v).value,active:$("#pa_"+v).checked}).eq("id",v);ST.msg=error?null:"انحفظت الخطة ✅";ST.err=error?error.message:null;load()},
+  andays:async v=>{ST.anDays=+v;const {data,error}=await sb.rpc("admin_analytics",{days:ST.anDays});ST.an=error?{error:error.message}:data;render()},
   addcoupon:async()=>{const code=$("#c_code").value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,""),pct=+$("#c_pct").value,mx=$("#c_max").value,ex=$("#c_exp").value;
     if(!code||!(pct>=1&&pct<=100)){alert("اكتب الكود ونسبة من 1 لـ 100");return}
     const {error}=await sb.from("coupons").insert({code,percent:pct,max_uses:mx?+mx:null,expires_at:ex?new Date(ex+"T23:59:59").toISOString():null});ST.msg=error?null:"انضاف الكود ✅";ST.err=error?(/duplicate/.test(error.message)?"الكود موجود من قبل":error.message):null;load()},
