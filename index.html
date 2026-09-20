@@ -336,6 +336,102 @@ body.gated nav.bnav{display:none}body.gated main{padding-bottom:40px}
 .league .nm{flex:1;font-weight:700}.league b{font-weight:800;color:#C98A00}
 .league li.me{background:var(--primary-soft);border-radius:14px;border-color:transparent}
 @media (prefers-reduced-motion:reduce){.toki .eyes,.toki.t-jump,.toki.t-shake,.chest.ready .cb{animation:none}#react{transition:none}}
+
+/* ===== lists as cards ===== */
+.panel:has(> .cat),.panel.list{background:transparent;border:none;padding:4px 0}
+.cat{border:2px solid var(--line);border-radius:20px;background:var(--card);padding:12px 14px;margin-bottom:10px;box-shadow:0 4px 0 var(--line);transition:transform .08s,box-shadow .08s}
+.cat:active{transform:translateY(4px);box-shadow:none}
+.cat::after{content:"‹";font-size:1.6rem;line-height:1;color:var(--rule);font-weight:800;margin-inline-start:4px}
+.cat .ic{width:48px;height:48px;border-radius:16px;font-size:1.4rem}
+.panel:has(> .cat) h3,.panel.list h3{margin:22px 4px 10px}
+.ok-chip{background:var(--good-bg);color:var(--good-d)}
+/* ===== lesson learn screen ===== */
+.lesson-hero{display:flex;align-items:center;gap:14px;margin:14px 0 16px}.lesson-hero h1{margin:0;font-size:1.45rem}.lesson-hero p{margin:4px 0 0}
+.lh-ic{flex:none;width:64px;height:64px;border-radius:20px;background:#EFE8FF;display:grid;place-items:center;font-size:2rem}
+.explain{display:flex;gap:10px;align-items:flex-start;background:var(--primary-soft);border-radius:22px;padding:14px}.explain p{margin:0;line-height:1.9}
+.exlist{display:grid;gap:10px}
+.exitem{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:start;gap:2px 10px;border:2px solid var(--line);border-radius:18px;background:var(--card);padding:12px 14px;box-shadow:0 4px 0 var(--line);color:var(--ink)}
+.exitem:active{transform:translateY(4px);box-shadow:none}
+.exitem .en{grid-column:1;font-weight:800;font-size:1.08rem;text-align:left}.exitem small{grid-column:1;color:var(--soft);font-weight:600}.exitem .spk{grid-column:2;grid-row:1/3;width:40px;height:40px;border-radius:12px;background:var(--primary-soft);display:grid;place-items:center}
+.cta-bar{display:grid;gap:12px;margin-top:22px}
+/* ===== player ===== */
+body.playing header.top,body.playing nav.bnav{display:none}
+body.playing main{padding-top:10px;padding-bottom:180px}
+.ply-top{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:12px;padding:8px 0 12px;background:var(--paper)}
+.ply-x{flex:none;width:40px;height:40px;border:none;background:none;font-size:1.4rem;color:var(--soft);font-weight:800}
+.ply-bar{flex:1;height:16px;margin:0}.ply-n{flex:none;font-weight:800;color:var(--soft);font-size:.9rem}
+.ply-card{padding:8px 2px}
+.ply-card.enter{animation:slideIn .38s cubic-bezier(.2,.9,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:none}}
+.ply-lbl{font-weight:800;font-size:1.25rem;margin:6px 0 14px}
+.ply-prompt{margin-bottom:18px}
+.ply-sent{font-size:1.5rem;font-weight:800;line-height:1.6;text-align:left;margin:10px 0 6px;padding:18px;border:2px solid var(--line);border-radius:22px;background:var(--card)}
+.blank{display:inline-block;min-width:70px;border-bottom:4px solid var(--primary);color:transparent;margin:0 4px;line-height:1}
+.ply-opts{display:grid;gap:12px}
+.ply-opt{display:flex;align-items:center;gap:12px;margin:0;padding:14px 16px;font-size:1.12rem}
+.ply-opt .ok-n{flex:none;width:30px;height:30px;border-radius:10px;border:2px solid var(--line);display:grid;place-items:center;font-size:.85rem;color:var(--soft);font-weight:800}
+.ply-opt[dir=ltr] .ot{flex:1;text-align:left}
+.ply-opt.right .ok-n{border-color:var(--good);color:var(--good)}.ply-opt.wrong .ok-n{border-color:var(--margin);color:var(--margin)}
+.ply-opt.chosen{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 4px 0 var(--primary)}
+.ply-fb{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:fbUp .28s cubic-bezier(.2,.9,.3,1)}
+.ply-fb.ok{background:#D7FFB8;border-top:2px solid #A5ED6E}.ply-fb.bad{background:#FFDFE0;border-top:2px solid #FFB2B5}
+.fb-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fb-t{flex:1;min-width:160px}.fb-t>b{display:block;font-size:1.3rem;font-weight:800}.fb-t span b{font-size:1.1rem;unicode-bidi:isolate}.fb-t span{display:block;font-weight:700}
+.ply-fb.ok .fb-t{color:#3E8A08}.ply-fb.bad .fb-t{color:#C0303A}
+.ply-fb .btn{min-width:150px}
+.btn.bad-btn{background:var(--margin);color:#fff;box-shadow:0 4px 0 var(--margin-d)}
+@keyframes fbUp{from{transform:translateY(100%)}to{transform:none}}
+:root[data-theme="dark"] .ply-fb.ok{background:#1D3A12}:root[data-theme="dark"] .ply-fb.bad{background:#3F1A1D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ply-fb.ok{background:#1D3A12;border-color:#2F5E1C}:root:not([data-theme="light"]) .ply-fb.bad{background:#3F1A1D;border-color:#6A2A2F}:root:not([data-theme="light"]) .ply-fb.ok .fb-t{color:#9BE36A}:root:not([data-theme="light"]) .ply-fb.bad .fb-t{color:#FF9DA1}}
+/* ===== result ===== */
+.result{text-align:center;padding:26px 6px}.result h1{font-size:2rem;margin:10px 0 2px}
+.result .toki{animation:tjump .8s cubic-bezier(.3,1.6,.5,1) 2}
+.res-stats{display:flex;justify-content:center;gap:10px;margin:20px 0;flex-wrap:wrap}
+.res-stats div{min-width:100px;border:2px solid var(--line);border-radius:18px;padding:10px 14px;box-shadow:0 4px 0 var(--line)}
+.res-stats b{display:block;font-size:1.6rem;font-weight:800;color:var(--primary)}.res-stats span{font-size:.82rem;color:var(--soft);font-weight:700}
+.res-actions{display:grid;gap:12px;max-width:420px;margin:0 auto}
+/* ===== chat app ===== */
+body.chatmode header.top,body.chatmode nav.bnav{display:none}
+body.chatmode main{padding:0;max-width:760px}
+.chat-app{display:flex;flex-direction:column;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));background:var(--paper)}
+.chat-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid var(--line);background:var(--card)}
+.chat-head .back{box-shadow:none;border:none;background:var(--sky)}
+.ch-av{position:relative;display:flex}.ch-av .dot{position:absolute;bottom:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2px solid var(--card)}
+.ch-t{flex:1;min-width:0}.ch-t b{display:block;font-size:1.15rem;font-weight:800;line-height:1.2}.ch-t small{display:block;color:var(--good-d);font-weight:700;font-size:.8rem}
+.ch-btn{flex:none;width:42px;height:42px;border-radius:14px;border:none;background:var(--sky);font-size:1.2rem}
+.ch-btn.on{background:var(--hl)}
+.sc-chips{padding:8px 12px;background:var(--card);border-bottom:2px solid var(--line)}
+.chat-body{flex:1;overflow-y:auto;padding:14px 12px 20px;display:flex;flex-direction:column;gap:8px;
+  background-color:var(--sky);background-image:radial-gradient(rgba(47,107,255,.08) 1.2px,transparent 1.2px);background-size:18px 18px}
+.day-sep{text-align:center;margin:4px 0 8px}.day-sep span{display:inline-block;background:var(--card);border-radius:10px;padding:2px 12px;font-size:.78rem;font-weight:800;color:var(--soft);box-shadow:0 1px 0 var(--line)}
+.msg{display:flex;align-items:flex-end;gap:6px;max-width:100%;animation:msgIn .22s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg.me{justify-content:flex-start}.msg.bot{justify-content:flex-end}
+.msg .av{flex:none;margin-bottom:2px}
+.msg .bub{max-width:80%;border-radius:20px;padding:9px 14px;border:none;box-shadow:0 1px 1px rgba(31,36,51,.08)}
+.msg.bot .bub{background:var(--card);border-bottom-left-radius:6px}
+.msg.me .bub{background:var(--primary);color:#fff;border-bottom-right-radius:6px}
+.msg .bub>div{line-height:1.6}
+.msg.bot .bub .say{margin-top:6px}
+.fix{margin-top:8px;padding:8px 10px;border-radius:12px;background:var(--gold-soft);border-inline-start:4px solid var(--hl);font-size:.92rem}
+.chat-err{align-self:center;background:var(--bad-bg);color:var(--margin-d);border-radius:12px;padding:8px 12px;font-weight:700;font-size:.9rem}
+.chat-warn .fb{margin:0 0 8px}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;justify-content:flex-end}
+.composer2{display:flex;align-items:flex-end;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:2px solid var(--line)}
+.composer2 textarea{flex:1;resize:none;border:2px solid var(--line);border-radius:22px;padding:10px 16px;background:var(--sky);font-size:1rem;font-weight:600;line-height:1.5;max-height:120px}
+.composer2 textarea:focus{outline:none;border-color:var(--primary);background:var(--card)}
+.c-send,.c-mic{flex:none;width:48px;height:48px;border-radius:50%;border:none;display:grid;place-items:center;font-size:1.2rem}
+.c-send{background:var(--primary);color:#fff;box-shadow:0 3px 0 var(--primary-d)}
+.c-mic{background:var(--sky);color:var(--ink)}.c-mic.on{background:var(--margin);color:#fff;animation:pulse 1.2s infinite}
+.c-send:disabled,.c-mic:disabled{opacity:.45}
+.c-mic.big{width:76px;height:76px;font-size:1.9rem;background:var(--margin);color:#fff;box-shadow:0 5px 0 var(--margin-d)}
+.voice-panel{text-align:center;padding:18px 12px calc(18px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:2px solid var(--line)}
+.voice-panel b{display:block;font-size:1.1rem;margin:8px 0 12px}
+.vp-orb{display:inline-grid;place-items:center;width:120px;height:120px;border-radius:50%;background:var(--primary-soft);transition:transform .2s}
+.vp-orb.speak{animation:vpSpeak 1s ease-in-out infinite}.vp-orb.listen{box-shadow:0 0 0 0 rgba(255,90,95,.4);animation:vpListen 1.4s infinite}
+@keyframes vpSpeak{50%{transform:scale(1.07)}}@keyframes vpListen{0%{box-shadow:0 0 0 0 rgba(255,90,95,.35)}100%{box-shadow:0 0 0 26px rgba(255,90,95,0)}}
+body.playing #toast,body.chatmode #toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px))}
+@media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -1074,9 +1170,7 @@ function vReading(){
       ${R.hide?"":`<button class="btn ghost" data-act="rtr">${R.tr?"اخفِ الترجمة":"اظهر الترجمة"}</button>`}</div>
     ${R.hide?`<div class="fb" style="background:var(--sky)"><b>🎧 تحدي الاستماع</b><p style="margin:4px 0 0">اسمع القصة بدون ما تقرأ، وجاوب الأسئلة. بعدين اظهر النص وشيّك.</p></div>`:
     `<div class="story">${s.en.map((p,i)=>`<p class="en">${p.split(/(\s+)/).map(t=>/^\s+$/.test(t)?t:`<span class="tw" data-act="tw" data-w="${esc(t)}">${esc(t)}</span>`).join("")}</p>${R.tr?`<p class="trn">${esc(s.tr[i]||"")}</p>`:""}`).join("")}</div>`}
-    <h3>أسئلة الفهم</h3>
-    ${s.q.map((q,qi)=>{const a=R.ans[qi];return `<div class="q"><p class="en" style="text-align:left">${qi+1}. ${esc(q[0])}</p><div class="opts">${q[1].map(o=>{let c="";if(a){if(o===q[2])c="right";else if(o===a)c="wrong"}return `<button class="opt ${c}" data-act="rans" data-q="${qi}" data-o="${esc(o)}" ${a?"disabled":""}>${esc(o)}</button>`}).join("")}</div></div>`}).join("")}
-    ${ans===s.q.length?`<div class="fb good" style="margin-top:14px"><b>${s.q.filter((q,i)=>R.ans[i]===q[2]).length} من ${s.q.length} صح</b></div>`:""}
+    ${storyQBlock(s)}
   </section>`}
 async function rGen(){
   const topic=(($("#aiTopic")||{}).value||"").trim()||"daily life";if(!AI)return;
@@ -1343,7 +1437,7 @@ function render(){
   document.body.classList.remove("guest");
   if(!AUTH.ready||!AUTH.user||AUTH.recovery){document.querySelectorAll("[data-keep]").forEach(el=>{if(el.id)KEEP[el.id]=el.value});document.body.classList.add("gated","guest");
     $("#view").innerHTML=AUTH.recovery&&AUTH.user?vNewPass():vAuth();document.querySelectorAll("[data-keep]").forEach(el=>{if(KEEP[el.id]!=null)el.value=KEEP[el.id]});header();return}
-  if(!S.done.placed&&route!=="placement"){route="placement"}
+  if(!S.done.placed&&route!=="placement"&&route!=="player"){route="placement"}
   document.body.classList.toggle("gated",!S.done.placed);
   document.querySelectorAll("[data-keep]").forEach(el=>{if(el.id&&!el.disabled)KEEP[el.id]=el.value});
 
@@ -1630,6 +1724,7 @@ function sfx(k){
   else if(k==="bad"){tone(233,0,.16,"sawtooth",.05);tone(175,.11,.22,"sawtooth",.045)}
   else if(k==="win"){[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.26,"triangle",.15));tone(1568,.46,.45,"sine",.1)}
   else if(k==="combo"){tone(988,0,.07,"square",.05);tone(1319,.06,.12,"square",.05)}
+  else if(k==="tap"){tone(660,0,.05,"sine",.06)}
   else if(k==="chest"){[392,523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,i*.07,.22,"triangle",.13))}}
 
 /* ---------- confetti ---------- */
@@ -1670,12 +1765,12 @@ function addXP(n){touchDay();
   S.xp+=n;S.today.xp+=n;const wk=isoWeek();if(!S.week||S.week.id!==wk)S.week={id:wk,xp:0};S.week.xp+=n;
   save();header();
   const after=rankOf(S.xp),goalNow=!wasGoal&&todayXP()>=S.goal;
-  if(answer){sfx("ok");react(true,extra||`+${n} ⭐`)}else{sfx("win");toast("+"+n+" ⭐")}
+  if(answer){sfx("ok");if(route!=="player"&&route!=="tutor")react(true,extra||`+${n} ⭐`);else if(extra&&route==="player")toast(extra)}else{sfx("win");toast("+"+n+" ⭐")}
   if(after!==before){setTimeout(()=>{confetti();sfx("win");toast(`${after[2]} لقب جديد: ${after[1]}`)},700)}
   else if(goalNow){setTimeout(()=>{confetti();sfx("win");toast("🎯 حققت هدف اليوم!")},700)}
   checkAch()}
 function addMistake(en,ar,src){COMBO=0;S.mistakes=S.mistakes.filter(m=>m.en!==en);S.mistakes.unshift({en,ar,src,d:Date.now()});S.mistakes=S.mistakes.slice(0,200);
-  const k=WKEY[en.toLowerCase()];if(k)srsAdd(k,0);save();sfx("bad");react(false)}
+  const k=WKEY[en.toLowerCase()];if(k)srsAdd(k,0);save();sfx("bad");if(route!=="player")react(false)}
 function checkAch(){const s=achState();let got=null;ACH.forEach(a=>{if(s[a[0]]&&!S.ach[a[0]]){S.ach[a[0]]=Date.now();got=a}});
   if(got){save();setTimeout(()=>{confetti();sfx("win");toast("🏆 إنجاز جديد: "+got[1])},1100)}}
 
@@ -1792,6 +1887,135 @@ Object.assign(A,{
 });
 {const _cs=certShow;certShow=async function(lv){await _cs(lv);const row=document.querySelector("#sheet .row");if(row)row.insertAdjacentHTML("beforeend",`<button class="btn good" data-act="sharecert" data-lv="${lv}">📤 شارك</button>`)}}
 A.certshow=d=>certShow(d.lv);
+/* ================== LESSON PLAYER — one question per screen with feedback & transitions ================== */
+let PLY=null;
+function startPlayer(o){PLY=Object.assign({i:0,picked:null,score:0,log:[]},o);route="player";render();window.scrollTo(0,0)}
+function vPlayer(){
+  if(!PLY)return vHome();
+  const P=PLY,n=P.qs.length,q=P.qs[P.i];
+  if(q&&q.say&&P.picked===null)AFTER=()=>speak(q.say);
+  const top=`<div class="ply-top"><button class="ply-x" data-act="plyquit" aria-label="خروج">✕</button><div class="progress ply-bar"><i style="width:${100*(P.i+(P.picked!==null?1:0))/n}%"></i></div><span class="ply-n">${P.i+1}/${n}</span></div>`;
+  const opts=q.opts.map((o,k)=>{let c="";if(P.picked!==null&&!P.noReveal){if(o===q.a)c="right";else if(k===P.picked)c="wrong"}else if(P.picked===k)c="chosen";
+    return `<button class="opt ply-opt ${c}" data-act="plypick" data-k="${k}" ${P.picked!==null?"disabled":""} ${q.ltr?'dir="ltr"':""}><span class="ok-n">${k+1}</span><span class="ot">${esc(o)}</span></button>`}).join("");
+  const ok=P.picked!==null&&q.opts[P.picked]===q.a;
+  const fb=P.picked===null||P.noReveal?"":`<div class="ply-fb ${ok?"ok":"bad"}"><div class="fb-in">${mascot(ok?"happy":"sad",52)}<div class="fb-t"><b>${ok?pick(["ممتاز! 🎉","صح! 👏","برافو!","شاطر!"]):"مش هيك 😅"}</b>${ok?(q.why?`<span>${q.why}</span>`:""):`<span>الإجابة الصح: <b dir="${q.ltr?"ltr":"auto"}">${esc(q.a)}</b></span>`}</div>
+    <button class="btn ${ok?"good":"bad-btn"} big" data-act="plynext" autofocus>${P.i===n-1?"النتيجة":"كمّل"}</button></div></div>`;
+  return `<div class="ply">${top}<div class="ply-card" data-i="${P.i}"><p class="ply-lbl">${q.label||"اختار الإجابة الصح"}</p><div class="ply-prompt">${q.prompt}</div><div class="ply-opts">${opts}</div></div>${fb}</div>`}
+function plyPick(k){const P=PLY;if(!P||P.picked!==null)return;P.picked=k;const q=P.qs[P.i],ok=q.opts[k]===q.a;if(ok)P.score++;P.log.push({q,ok,k});
+  if(P.onAnswer)P.onAnswer(q,ok,k);else sfx(ok?"ok":"bad");
+  render();if(P.noReveal)setTimeout(plyNext,380)}
+function plyNext(){const P=PLY;if(!P||P.picked===null)return;P.i++;P.picked=null;
+  if(P.i>=P.qs.length){const f=P.onFinish;PLY=null;f&&f(P);return}render();window.scrollTo(0,0)}
+Object.assign(A,{plypick:d=>plyPick(+d.k),plynext:plyNext,
+  plyquit:()=>{if(PLY&&PLY.i>0&&!confirm("تطلع من التمرين؟ التقدّم بهالتمرين ما رح ينحفظ."))return;const back=PLY&&PLY.back||"home";PLY=null;go(back)}});
+document.addEventListener("keydown",e=>{if(route!=="player"||!PLY||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  if(/^[1-4]$/.test(e.key)&&PLY.picked===null){const k=+e.key-1;if(PLY.qs[PLY.i].opts[k]!=null)plyPick(k)}
+  else if(e.key==="Enter"&&PLY.picked!==null){e.preventDefault();plyNext()}});
+VIEWS.player=vPlayer;
+const wordPrompt=w=>`<div class="guide s"><span class="w">${esc(w)}</span></div>`;
+const listenPrompt=t=>`<div class="center"><button class="play-big" data-act="say" data-t="${esc(t)}" aria-label="تشغيل">▶</button><div style="margin-top:10px">${slowBtn(t)}</div></div>`;
+const sentPrompt=t=>`<p class="ply-sent" dir="ltr">${esc(t).replace("___",'<span class="blank">____</span>')}</p>`;
+
+/* ---------- grammar: learn screen, then player ---------- */
+function vGrammar(){
+  if(!G.id)return `<section class="panel list">${topbar("القواعد",LESSONS.length+" درس: شرح بالعربي، أمثلة بصوت، وتمرين")}
+    ${LVS.map(lv=>`<h3>${lvChip(lv)} ${LVNAME[lv]}</h3>`+LESSONS.filter(l=>l.lv===lv).map(l=>`<button class="cat" data-act="gopen" data-id="${l.id}"><span class="ic">📐</span><span class="nm">${l.t}</span>${S.done["g:"+l.id]?'<span class="chip ok-chip">✓</span>':""}</button>`).join("")).join("")}</section>`;
+  const l=LESSONS.find(x=>x.id===G.id),last=S.gscore&&S.gscore[l.id];
+  return `<section class="panel"><button class="back" data-act="gback" aria-label="رجوع">→</button>
+    <div class="lesson-hero"><span class="lh-ic">📐</span><div><h1>${l.t}</h1><p class="muted">${lvChip(l.lv)} درس قواعد · ${l.q.length} أسئلة</p></div></div>
+    <div class="explain">${mascot("smile",46)}<p>${l.x}</p></div>
+    <h3>أمثلة</h3><div class="exlist">${l.ex.map(([en,ar])=>`<button class="exitem" data-act="say" data-t="${esc(en)}"><span class="en">${esc(en)}</span><small>${esc(ar)}</small><span class="spk">🔊</span></button>`).join("")}</div>
+    <div class="cta-bar"><button class="btn big wide" data-act="lstart">${last!=null?`أعِد التمرين (آخر نتيجة ${last}/${l.q.length})`:`ابدأ التمرين ✍️`}</button>
+    <button class="btn ghost wide" data-act="askai" data-q="${esc("اشرحلي قاعدة: "+l.t.replace(/<[^>]+>/g,"")+" بأمثلة أكثر")}">🤖 اسأل توكي عن الدرس</button></div></section>`}
+A.lstart=()=>{const l=LESSONS.find(x=>x.id===G.id);
+  startPlayer({back:"grammar",qs:shuffle(l.q).map(q=>({label:"املا الفراغ",prompt:sentPrompt(q[0]),opts:shuffle(q[1]),a:q[2],ltr:true})),
+    onAnswer:(q,ok)=>{if(ok)addXP(3);else addMistake(q.prompt.replace(/<[^>]+>/g,"").replace("____",q.a),l.t.replace(/<[^>]+>/g,""),"قواعد")},
+    onFinish:P=>{S.gscore=S.gscore||{};S.gscore[l.id]=P.score;const first=!S.done["g:"+l.id];S.done["g:"+l.id]=1;save();
+      showResult({title:l.t.replace(/<[^>]+>/g,""),score:P.score,total:P.qs.length,bonus:first?10:0,back:"grammar",
+        actions:(()=>{const i=LESSONS.indexOf(l),nx=LESSONS[i+1];return (nx?`<button class="btn big wide" data-act="gopen" data-id="${nx.id}">الدرس التالي ←</button>`:"")+`<button class="btn ghost wide" data-act="lstart">أعِد التمرين</button>`})()})}})};
+A.gopen=d=>{G.id=d.id;G.ans={};route="grammar";render();window.scrollTo(0,0)};
+
+/* ---------- result screen shared by players ---------- */
+let RES=null;
+function showResult(o){RES=o;if(o.bonus)addXP(o.bonus);route="result";render();window.scrollTo(0,0);const p=o.score/o.total;if(p>=.75){setTimeout(()=>{confetti();sfx("win")},250)}}
+function vResult(){if(!RES)return vHome();const r=RES,p=Math.round(100*r.score/r.total),mood=p>=75?"wow":p>=50?"happy":"sad";
+  return `<section class="result">${mascot(mood,130)}<h1>${p>=75?"رائع!":p>=50?"منيح!":"كمّل تدريب"}</h1><p class="muted">${esc(r.title||"")}</p>
+    <div class="res-stats"><div><b>${r.score}/${r.total}</b><span>إجابات صح</span></div><div><b>${p}%</b><span>الدقة</span></div>${r.bonus?`<div><b>+${r.bonus}</b><span>نقاط إضافية</span></div>`:""}</div>
+    ${r.extra||""}<div class="res-actions">${r.actions||""}<button class="btn ghost wide" data-act="go" data-r="${r.back||"home"}">رجوع</button></div></section>`}
+VIEWS.result=vResult;
+
+/* ---------- reading comprehension via player ---------- */
+function storyQBlock(s){const done=S.done["s:"+s.id];
+  return `<div class="cta-bar"><button class="btn big wide" data-act="rquiz">${done?"أعِد أسئلة الفهم":"أسئلة الفهم ✍️"} (${s.q.length})</button></div>`}
+A.rquiz=()=>{const s=getStory(R.id);stopSpeak();R.playing=false;
+  startPlayer({back:"reading",qs:s.q.map(q=>({label:"أسئلة الفهم",prompt:`<p class="ply-sent" dir="ltr">${esc(q[0])}</p>`,opts:shuffle(q[1]),a:q[2],ltr:true})),
+    onAnswer:(q,ok)=>{if(ok)addXP(3);else addMistake(q.prompt.replace(/<[^>]+>/g,"")+" → "+q.a,s.ar,"قراءة")},
+    onFinish:P=>{const first=!S.done["s:"+s.id];S.done["s:"+s.id]=1;save();
+      showResult({title:s.t,score:P.score,total:P.qs.length,bonus:first?15:0,back:"reading",actions:`<button class="btn big wide" data-act="rback">قصة ثانية</button>`})}})};
+
+/* ---------- quiz via player ---------- */
+function vQuiz(){const head=topbar("اختبار سريع","10 أسئلة من كلمات مستواك");
+  return `<section class="panel">${head}<div class="center">${mascot("happy",110)}<p>أعلى نتيجة إلك: <b>${S.best}/10</b></p><button class="btn hl big" data-act="qstart">ابدأ الاختبار</button></div></section>`}
+A.qstart=()=>{const Qz=makeQuiz();
+  startPlayer({back:"quiz",qs:Qz.qs.map(q=>q.type==="en2ar"?{label:"شو معنى الكلمة؟",prompt:wordPrompt(q.w.en),opts:q.opts.map(o=>o.ar),a:q.w.ar,en:q.w.en}
+      :q.type==="ar2en"?{label:"اختار الكلمة الإنجليزية",prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+      :{label:"اسمع واختار الكلمة",prompt:listenPrompt(q.w.en),opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,say:q.w.en,en:q.w.en}),
+    onAnswer:(q,ok)=>{if(ok)addXP(2);else{const w=ALL.find(x=>x.en===q.en);addMistake(q.en,w?w.ar:"","اختبار")}},
+    onFinish:P=>{if(P.score>S.best)S.best=P.score;S.st.quiz=(S.st.quiz||0)+1;save();checkAch();
+      showResult({title:"اختبار سريع",score:P.score,total:P.qs.length,back:"quiz",actions:`<button class="btn big wide" data-act="qstart">اختبار جديد</button>`})}})};
+
+/* ---------- level exam via player ---------- */
+A.exopen=d=>{EX={lv:d.lv,qs:examQs(d.lv),i:0,score:0,picked:null};
+  startPlayer({back:"exam",qs:EX.qs.map(q=>({label:{en2ar:"شو معنى الكلمة؟",ar2en:"اختار الكلمة الإنجليزية",gram:"املا الفراغ",listen:"اسمع واختار الجملة"}[q.t]+" · امتحان "+EX.lv,
+      prompt:q.t==="en2ar"?wordPrompt(q.p):q.t==="ar2en"?`<div class="ar-big">${esc(q.p)}</div>`:q.t==="gram"?sentPrompt(q.p):listenPrompt(q.p),opts:q.opts,a:q.a,ltr:q.t!=="en2ar",say:q.t==="listen"?q.p:null,raw:q})),
+    onAnswer:(q,ok)=>{const r=q.raw;if(ok){sfx("ok")}else addMistake(r.t==="gram"?r.p.replace("___",r.a):r.t==="en2ar"?r.p:r.a,r.t==="en2ar"?r.a:"امتحان "+EX.lv,"امتحان")},
+    onFinish:P=>{EX.score=P.score;EX.i=EX.qs.length;examFinish();route="exam";render();window.scrollTo(0,0)}})};
+
+/* ---------- placement via player (no answer reveal) ---------- */
+A.plstart=()=>{PL={i:0,log:[]};
+  startPlayer({back:"placement",noReveal:true,qs:PLACE.map(q=>{const t=q[4]||"grammar";return{label:{grammar:"اختار الكلمة المناسبة للفراغ",vocab:"شو معنى الكلمة؟",listen:"اسمع واختار الجملة اللي سمعتها 🎧"}[t]+" · اختبار المستوى",
+      prompt:t==="listen"?listenPrompt(q[0]):t==="vocab"?wordPrompt(q[0]):sentPrompt(q[0]),opts:q[1].concat(["مش عارف"]),a:q[2],ltr:t!=="vocab",say:t==="listen"?q[0]:null,lv:q[3]}}),
+    onAnswer:(q,ok)=>{PL.log.push({lv:q.lv,ok});sfx("tap")},
+    onFinish:()=>{PL.i=PLACE.length;S.level=plResult().lv;S.done.placed=1;save();addXP(20);route="placement";render();window.scrollTo(0,0)}})};
+
+/* ================== TOKI — modern chat app ================== */
+const SEND_ICON='<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l.1 6.5L15 12 3.5 13.9z" transform="scale(-1,1) translate(-24,0)"/></svg>';
+function fmtBot(c){return c.split("\n").map(l=>l.trim().startsWith("✏")?`<div class="fix">${md(l)}</div>`:md(l)).join("<br>").replace(/<br><div class="fix">/g,'<div class="fix">')}
+function vTutor(){
+  const sc=TUTOR.find(x=>x.id===TU.sc),msgs=tuMsgs(),dis=AIstate!=="ok"?"disabled":"";
+  AFTER=()=>{const c=$("#chatBox");if(c)c.scrollTop=c.scrollHeight;tuGrow()};
+  const status=TU.busy?"عم يكتب…":TU.speaking?"عم يحكي…":TU.on?"عم يسمعك…":"متصل الآن";
+  return `<div class="chat-app">
+  <div class="chat-head"><button class="back" data-act="go" data-r="home" aria-label="رجوع">→</button>
+    <span class="ch-av">${mascot(TU.busy?"think":TU.speaking?"wow":"happy",44)}<i class="dot"></i></span>
+    <div class="ch-t"><b>توكي</b><small>${status}</small></div>
+    ${SR&&TU.sc!=="ask"?`<button class="ch-btn ${TU.voice?"on":""}" data-act="tuvoice" aria-label="محادثة صوتية" title="محادثة صوتية" ${dis}>🎧</button>`:""}
+    <button class="ch-btn" data-act="tureset" aria-label="محادثة جديدة" title="محادثة جديدة">🧹</button></div>
+  <div class="chips sc-chips">${TUTOR.map(t=>`<button class="chipbtn" data-act="tusc" data-id="${t.id}" aria-pressed="${t.id===TU.sc}">${t.icon} ${t.name}</button>`).join("")}</div>
+  <div class="chat-body" id="chatBox">
+    ${AIstate!=="ok"?`<div class="chat-warn">${aiMissing()}</div>`:""}
+    <div class="day-sep"><span>${sc.icon} ${sc.name}</span></div>
+    ${msgs.map((m,i)=>m.role==="assistant"
+      ?`<div class="msg bot"><div class="bub a"><div dir="auto">${fmtBot(m.content)||"…"}</div>${m.content&&TU.sc!=="ask"?`<button class="say mini" data-act="tusay" data-i="${i}" aria-label="استمع">🔊</button>`:""}</div><span class="av">${mascot("smile",30)}</span></div>`
+      :`<div class="msg me"><div class="bub u"><div dir="auto">${esc(m.content)}</div></div></div>`).join("")}
+    ${TU.busy&&msgs[msgs.length-1].role==="user"?`<div class="msg bot"><div class="bub a"><div class="typing"><i></i><i></i><i></i></div></div><span class="av">${mascot("think",30)}</span></div>`:""}
+    ${TU.err?`<div class="chat-err">${TU.err}</div>`:""}
+    ${msgs.length===1&&TU.sc!=="ask"?`<div class="sugg">${["Hi Toki! How are you?","Can you help me practice?","I want to talk about my day"].map(t=>`<button class="chipbtn" data-act="tuquick" data-t="${esc(t)}" dir="ltr" ${dis}>${t}</button>`).join("")}</div>`:""}
+  </div>
+  ${TU.voice?`<div class="voice-panel"><div class="vp-orb ${TU.speaking?"speak":TU.on?"listen":TU.busy?"think":""}">${mascot(TU.speaking?"wow":TU.busy?"think":"happy",84)}</div>
+      <b>${TU.speaking?"توكي عم يحكي…":TU.on?"دورك، احكي هلأ 🎙️":TU.busy?"عم يفكر…":"اضغط الميكروفون واحكي"}</b>
+      <div class="row" style="justify-content:center"><button class="c-mic big ${TU.on?"on":""}" data-act="tumic" aria-label="احكي">🎙️</button><button class="btn ghost" data-act="tuvoice">إنهاء المكالمة</button></div></div>`
+    :`<div class="composer2">${SR&&TU.sc!=="ask"?`<button class="c-mic ${TU.on?"on":""}" data-act="tumic" aria-label="احكي" ${dis}>🎙️</button>`:""}
+      <textarea id="tuIn" data-keep rows="1" dir="auto" placeholder="${TU.sc==="ask"?"اكتب سؤالك…":"اكتب بالإنجليزي…"}" ${dis}></textarea>
+      <button class="c-send" data-act="${TU.busy?"aistop":"tusend"}" aria-label="${TU.busy?"إيقاف":"إرسال"}" ${dis}>${TU.busy?"■":SEND_ICON}</button></div>`}
+  </div>`}
+function tuGrow(){const t=$("#tuIn");if(!t)return;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px"}
+document.addEventListener("input",e=>{if(e.target.id==="tuIn")tuGrow()});
+A.tuquick=d=>tuSend(d.t);
+{const _r=render;render=function(){_r();document.body.classList.toggle("playing",route==="player");document.body.classList.toggle("chatmode",route==="tutor"&&!document.body.classList.contains("gated"))}}
+{const _vp=vPlayer;vPlayer=function(){const h=_vp();if(PLY&&PLY.enter!==false){PLY.enter=false;return h.replace('class="ply-card"','class="ply-card enter"')}return h}}
+{const _nx=plyNext;plyNext=function(){if(PLY)PLY.enter=true;_nx()}}
+A.plynext=()=>plyNext();
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
