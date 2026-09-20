@@ -518,6 +518,24 @@ h1{font-weight:700;letter-spacing:-.01em}h2,h3{font-weight:600}
 .ply-opt.chosen{box-shadow:0 0 0 3px rgba(47,107,255,.18)}
 .chipbtn[aria-pressed="true"]{box-shadow:0 0 0 3px rgba(47,107,255,.14)}
 .lv{font-weight:600;letter-spacing:.02em}
+
+/* ===== pictures, IPA, flip cards ===== */
+.pic{display:inline-grid;place-items:center;width:var(--s);height:var(--s);flex:none}.pic img{width:100%;height:100%;display:block;user-select:none}
+.pic .emo{font-size:calc(var(--s)*.8);line-height:1}
+.picframe{width:fit-content;margin:6px auto 0;padding:14px;border-radius:30px;background:radial-gradient(circle at 50% 35%,var(--card),var(--sky));box-shadow:inset 0 0 0 1.5px var(--line)}
+.ipa{text-align:center;color:var(--soft);font-size:1.05rem;font-family:"Segoe UI","Noto Sans","Lucida Sans Unicode",system-ui,sans-serif;min-height:1.4em;opacity:0;transition:opacity .3s}.ipa.show{opacity:1}
+.flip{position:relative;height:340px;margin-top:16px;perspective:1200px;cursor:pointer;outline:none}
+.flip .face{position:absolute;inset:0;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .55s cubic-bezier(.3,1.2,.4,1)}
+.flip .f-front{background:var(--card);border:1.5px solid var(--line);box-shadow:var(--elev2)}
+.flip .f-back{background:linear-gradient(150deg,#3B6FF5,#1E40AF);color:#fff;transform:rotateY(180deg);box-shadow:0 18px 30px -18px rgba(30,64,175,.7)}
+.flip.on .f-front{transform:rotateY(-180deg)}.flip.on .f-back{transform:rotateY(0)}
+.flip .fw{font-size:clamp(40px,11vw,64px);font-weight:700;line-height:1.1;letter-spacing:-.02em}.flip .fw.sm{font-size:1.3rem;opacity:.85;font-weight:600}
+.flip .fa{font-size:clamp(32px,9vw,46px);font-weight:700}.flip .fex{margin:10px 0 0;text-align:center;opacity:.92;font-size:1.05rem}
+.flip .tap{position:absolute;bottom:14px;color:var(--soft);font-size:.8rem}.flip .f-back .tap{color:rgba(255,255,255,.75)}
+.flip .known-tag{position:absolute;top:14px;right:16px;background:var(--good-bg);color:var(--good-d);border-radius:10px;padding:2px 10px;font-size:.8rem;font-weight:600}
+.flip:focus-visible .f-front{outline:3px solid var(--primary)}
+.match .tile.pc{padding:6px}
+@media (prefers-reduced-motion:reduce){.flip .face{transition:none}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -2099,7 +2117,7 @@ function tuGrow(){const t=$("#tuIn");if(!t)return;t.style.height="auto";t.style.
 document.addEventListener("input",e=>{if(e.target.id==="tuIn")tuGrow()});
 A.tuquick=d=>tuSend(d.t);
 {const _r=render;render=function(){_r();document.body.classList.toggle("playing",route==="player");document.body.classList.toggle("chatmode",route==="tutor"&&!document.body.classList.contains("gated"))}}
-{const _vp=vPlayer;vPlayer=function(){const h=_vp();if(PLY&&PLY.enter!==false){PLY.enter=false;return h.replace('class="ply-card"','class="ply-card enter"')}return h}}
+{const _vp=vPlayer;vPlayer=function(){const h=_vp();if(PLY&&PLY.enter!==false){PLY.enter=false;return h.replace('class="ply-card"','class="ply-card enter"')}return h};VIEWS.player=vPlayer}
 {const _nx=plyNext;plyNext=function(){if(PLY)PLY.enter=true;_nx()}}
 A.plynext=()=>plyNext();
 /* ================== GAMES v2 ================== */
@@ -2237,6 +2255,102 @@ function tileGrid(items){return `<div class="sqgrid">${items.map(a=>`<button cla
   document.querySelectorAll(".kpis .k").forEach((k,i)=>{const sp=k.querySelector("span");if(sp&&!sp.querySelector("svg"))sp.innerHTML=ico(["flame","star","book"][i],26,2)});
   const hx=document.querySelectorAll(".bar .chip");if(hx.length===3&&!hx[0].querySelector("svg")){[["star",0],["flame",1],["target",2]].forEach(([k,i])=>{const c=hx[i];const n=c.querySelector("span");c.innerHTML=ico(k,16,2.2);c.appendChild(n)})}
 }}
+const EMO={"hello":["👋","1f44b"],"please":["🙏","1f64f"],"thank you":["💐","1f490"],"sorry":["😔","1f614"],"yes":["✅","2705"],"no":["❌","274c"],"welcome":["🤗","1f917"],"friend":["🧑‍🤝‍🧑","1f9d1-200d-1f91d-200d-1f9d1"],"name":["📛","1f4db"],"morning":["🌅","1f305"],"night":["🌙","1f319"],"father":["👨","1f468"],"mother":["👩","1f469"],"brother":["👦","1f466"],"sister":["👧","1f467"],"son":["🧒","1f9d2"],"daughter":["👧","1f467"],"grandfather":["👴","1f474"],"grandmother":["👵","1f475"],"uncle":["🧔","1f9d4"],"family":["👨‍👩‍👧","1f468-200d-1f469-200d-1f467"],"bread":["🍞","1f35e"],"water":["💧","1f4a7"],"rice":["🍚","1f35a"],"chicken":["🍗","1f357"],"apple":["🍎","1f34e"],"milk":["🥛","1f95b"],"egg":["🥚","1f95a"],"tea":["🍵","1f375"],"salt":["🧂","1f9c2"],"breakfast":["🍳","1f373"],"dinner":["🍽️","1f37d"],"house":["🏠","1f3e0"],"door":["🚪","1f6aa"],"window":["🪟","1fa9f"],"bedroom":["🛏️","1f6cf"],"chair":["🪑","1fa91"],"bed":["🛏️","1f6cf"],"key":["🔑","1f511"],"wall":["🧱","1f9f1"],"hand":["✋","270b"],"eye":["👁️","1f441"],"ear":["👂","1f442"],"nose":["👃","1f443"],"mouth":["👄","1f444"],"leg":["🦵","1f9b5"],"foot":["🦶","1f9b6"],"heart":["🫀","1fac0"],"blood":["🩸","1fa78"],"tooth":["🦷","1f9b7"],"red":["🔴","1f534"],"blue":["🔵","1f535"],"green":["🟢","1f7e2"],"yellow":["🟡","1f7e1"],"black":["⚫","26ab"],"white":["⚪","26aa"],"one":["1️⃣","31-20e3"],"two":["2️⃣","32-20e3"],"three":["3️⃣","33-20e3"],"ten":["🔟","1f51f"],"hundred":["💯","1f4af"],"go":["🚶","1f6b6"],"eat":["🍽️","1f37d"],"drink":["🥤","1f964"],"write":["✍️","270d"],"read":["📖","1f4d6"],"speak":["🗣️","1f5e3"],"listen":["👂","1f442"],"learn":["🎓","1f393"],"work":["💼","1f4bc"],"sleep":["😴","1f634"],"buy":["🛒","1f6d2"],"big":["🐘","1f418"],"small":["🐭","1f42d"],"happy":["😄","1f604"],"sad":["😢","1f622"],"hot":["🔥","1f525"],"cold":["🥶","1f976"],"new":["✨","2728"],"easy":["👌","1f44c"],"fast":["⚡","26a1"],"beautiful":["🌸","1f338"],"school":["🏫","1f3eb"],"hospital":["🏥","1f3e5"],"market":["🏪","1f3ea"],"street":["🛣️","1f6e3"],"city":["🏙️","1f3d9"],"mosque":["🕌","1f54c"],"pharmacy":["💊","1f48a"],"bank":["🏦","1f3e6"],"airport":["✈️","2708"],"beach":["🏖️","1f3d6"],"restaurant":["🍽️","1f37d"],"library":["📚","1f4da"],"teacher":["🧑‍🏫","1f9d1-200d-1f3eb"],"student":["🧑‍🎓","1f9d1-200d-1f393"],"doctor":["🧑‍⚕️","1f9d1-200d-2695-fe0f"],"nurse":["👩‍⚕️","1f469-200d-2695-fe0f"],"engineer":["👷","1f477"],"book":["📕","1f4d5"],"pen":["🖊️","1f58a"],"notebook":["📓","1f4d3"],"lesson":["📝","1f4dd"],"exam":["📝","1f4dd"],"job":["💼","1f4bc"],"meeting":["🤝","1f91d"],"today":["📅","1f4c5"],"tomorrow":["🗓️","1f5d3"],"week":["📆","1f4c6"],"month":["🗓️","1f5d3"],"hour":["⏰","23f0"],"minute":["⏱️","23f1"],"always":["♾️","267e"],"never":["🚫","1f6ab"],"shirt":["👕","1f455"],"trousers":["👖","1f456"],"dress":["👗","1f457"],"shoes":["👟","1f45f"],"jacket":["🧥","1f9e5"],"hat":["🧢","1f9e2"],"socks":["🧦","1f9e6"],"bag":["👜","1f45c"],"coat":["🧥","1f9e5"],"scarf":["🧣","1f9e3"],"watch":["⌚","231a"],"glasses":["👓","1f453"],"cat":["🐱","1f431"],"dog":["🐶","1f436"],"bird":["🐦","1f426"],"horse":["🐴","1f434"],"cow":["🐄","1f404"],"sheep":["🐑","1f411"],"fish":["🐟","1f41f"],"camel":["🐪","1f42a"],"lion":["🦁","1f981"],"donkey":["🫏","1facf"],"rabbit":["🐰","1f430"],"bee":["🐝","1f41d"],"sun":["☀️","2600"],"rain":["🌧️","1f327"],"wind":["💨","1f4a8"],"cloud":["☁️","2601"],"snow":["❄️","2744"],"sunny":["🌞","1f31e"],"rainy":["☔","2614"],"warm":["🌤️","1f324"],"storm":["⛈️","26c8"],"summer":["🏖️","1f3d6"],"winter":["⛄","26c4"],"weather":["🌦️","1f326"],"car":["🚗","1f697"],"bus":["🚌","1f68c"],"taxi":["🚕","1f695"],"bike":["🚲","1f6b2"],"train":["🚆","1f686"],"plane":["✈️","2708"],"ship":["🚢","1f6a2"],"ticket":["🎫","1f3ab"],"road":["🛣️","1f6e3"],"station":["🚉","1f689"],"walk":["🚶","1f6b6"],"tired":["😫","1f62b"],"hungry":["🤤","1f924"],"angry":["😠","1f620"],"afraid":["😨","1f628"],"bored":["🥱","1f971"],"excited":["🤩","1f929"],"worried":["😟","1f61f"],"calm":["😌","1f60c"],"surprised":["😲","1f632"],"lonely":["😞","1f61e"],"pain":["🤕","1f915"],"fever":["🤒","1f912"],"medicine":["💊","1f48a"],"test":["🧪","1f9ea"],"sample":["🧫","1f9eb"],"result":["📋","1f4cb"],"appointment":["📅","1f4c5"],"sick":["🤢","1f922"],"healthy":["💪","1f4aa"],"cough":["😷","1f637"],"laboratory":["🔬","1f52c"],"price":["🏷️","1f3f7"],"expensive":["💎","1f48e"],"money":["💵","1f4b5"],"pay":["💳","1f4b3"],"change":["🪙","1fa99"],"size":["📏","1f4cf"],"discount":["🏷️","1f3f7"],"receipt":["🧾","1f9fe"],"shop":["🏪","1f3ea"],"passport":["🛂","1f6c2"],"hotel":["🏨","1f3e8"],"luggage":["🧳","1f9f3"],"map":["🗺️","1f5fa"],"abroad":["🌍","1f30d"],"border":["🛃","1f6c3"],"flight":["🛫","1f6eb"],"tourist":["📸","1f4f8"],"arrive":["🛬","1f6ec"],"manager":["👔","1f454"],"worker":["👷","1f477"],"lawyer":["⚖️","2696"],"farmer":["🧑‍🌾","1f9d1-200d-1f33e"],"pharmacist":["💊","1f48a"],"accountant":["🧮","1f9ee"],"mechanic":["🧑‍🔧","1f9d1-200d-1f527"],"programmer":["🧑‍💻","1f9d1-200d-1f4bb"],"journalist":["📰","1f4f0"],"police officer":["👮","1f46e"],"carpenter":["🪚","1fa9a"],"salary":["💰","1f4b0"],"sea":["🌊","1f30a"],"tree":["🌳","1f333"],"flower":["🌸","1f338"],"mountain":["⛰️","26f0"],"river":["🏞️","1f3de"],"desert":["🏜️","1f3dc"],"moon":["🌙","1f319"],"star":["⭐","2b50"],"field":["🌾","1f33e"],"stone":["🪨","1faa8"],"phone":["📱","1f4f1"],"computer":["💻","1f4bb"],"internet":["🌐","1f310"],"screen":["🖥️","1f5a5"],"password":["🔒","1f512"],"message":["💬","1f4ac"],"charger":["🔌","1f50c"],"app":["📲","1f4f2"],"email":["📧","1f4e7"],"battery":["🔋","1f50b"],"website":["🌐","1f310"],"football":["⚽","26bd"],"swim":["🏊","1f3ca"],"draw":["🎨","1f3a8"],"music":["🎵","1f3b5"],"game":["🎮","1f3ae"],"team":["👥","1f465"],"win":["🏆","1f3c6"],"practice":["🏋️","1f3cb"],"run":["🏃","1f3c3"],"cook":["🍳","1f373"],"plate":["🍽️","1f37d"],"cup":["☕","2615"],"spoon":["🥄","1f944"],"knife":["🔪","1f52a"],"fork":["🍴","1f374"],"pot":["🍲","1f372"],"boil":["♨️","2668"],"fry":["🍳","1f373"],"recipe":["📜","1f4dc"],"open":["📂","1f4c2"],"start":["🏁","1f3c1"],"wait":["⏳","23f3"],"ask":["❓","2753"],"find":["🔍","1f50d"],"remember":["🧠","1f9e0"],"clean":["🧼","1f9fc"],"light":["🪶","1fab6"],"strong":["💪","1f4aa"],"quiet":["🤫","1f92b"],"noisy":["📢","1f4e2"],"safe":["🛡️","1f6e1"],"dangerous":["⚠️","26a0"],"wake up":["⏰","23f0"],"brush":["🪥","1faa5"],"shower":["🚿","1f6bf"],"get dressed":["👔","1f454"],"lunch":["🥪","1f96a"],"nap":["😴","1f634"],"homework":["📝","1f4dd"],"watch tv":["📺","1f4fa"],"go to bed":["🛏️","1f6cf"],"early":["🌅","1f305"],"late":["⌛","231b"],"banana":["🍌","1f34c"],"orange":["🍊","1f34a"],"grapes":["🍇","1f347"],"lemon":["🍋","1f34b"],"watermelon":["🍉","1f349"],"tomato":["🍅","1f345"],"potato":["🥔","1f954"],"onion":["🧅","1f9c5"],"carrot":["🥕","1f955"],"cucumber":["🥒","1f952"],"olive":["🫒","1fad2"],"vegetables":["🥦","1f966"],"wash":["🧽","1f9fd"],"sweep":["🧹","1f9f9"],"laundry":["🧺","1f9fa"],"rubbish":["🗑️","1f5d1"],"fix":["🔧","1f527"],"water the plants":["🪴","1fab4"],"make the bed":["🛏️","1f6cf"],"left":["⬅️","2b05"],"right":["➡️","27a1"],"straight":["⬆️","2b06"],"traffic lights":["🚦","1f6a6"],"bridge":["🌉","1f309"],"pollution":["🏭","1f3ed"],"recycle":["♻️","267b"],"climate":["🌡️","1f321"],"energy":["⚡","26a1"],"waste":["🗑️","1f5d1"],"protect":["🛡️","1f6e1"],"plastic":["🧴","1f9f4"],"drought":["🏜️","1f3dc"],"temperature":["🌡️","1f321"],"solar":["🔆","1f506"],"environment":["🌍","1f30d"],"social media":["📱","1f4f1"],"post":["📝","1f4dd"],"share":["🔗","1f517"],"follow":["➕","2795"],"comment":["💬","1f4ac"],"channel":["📺","1f4fa"],"fake news":["📰","1f4f0"],"online":["🌐","1f310"],"search":["🔍","1f50d"],"upload":["⬆️","2b06"],"privacy":["🔒","1f512"],"account":["👤","1f464"],"bacteria":["🦠","1f9a0"],"virus":["🦠","1f9a0"],"microscope":["🔬","1f52c"],"experiment":["🧪","1f9ea"],"analysis":["📊","1f4ca"],"data":["📈","1f4c8"],"infection":["🤒","1f912"],"diagnosis":["🩺","1fa7a"],"treatment":["💉","1f489"],"vaccine":["💉","1f489"],"company":["🏢","1f3e2"],"contract":["📄","1f4c4"],"deadline":["⏰","23f0"],"employee":["🧑‍💼","1f9d1-200d-1f4bc"],"profit":["📈","1f4c8"],"project":["📁","1f4c1"],"report":["📊","1f4ca"],"skill":["🛠️","1f6e0"],"colleague":["🤝","1f91d"],"budget":["💰","1f4b0"],"invest":["📈","1f4c8"],"revenue":["💵","1f4b5"],"strategy":["♟️","265f"],"launch":["🚀","1f680"],"client":["🤝","1f91d"],"proposal":["📄","1f4c4"],"university":["🏛️","1f3db"],"degree":["🎓","1f393"],"research":["🔬","1f52c"],"subject":["📚","1f4da"],"grade":["💯","1f4af"],"knowledge":["🧠","1f9e0"],"lecture":["🧑‍🏫","1f9d1-200d-1f3eb"],"scholarship":["🎓","1f393"],"graduate":["🎓","1f393"],"certificate":["📜","1f4dc"],"government":["🏛️","1f3db"],"peace":["🕊️","1f54a"],"news":["📰","1f4f0"],"problem":["❗","2757"],"solution":["💡","1f4a1"],"opinion":["💭","1f4ad"],"future":["🔮","1f52e"]};
+/* ================== PICTURES + PRONUNCIATION + FLIP CARDS ================== */
+const TW="https://cdn.jsdelivr.net/npm/@twemoji/svg@15.0.0/";
+const emoOf=en=>EMO[String(en).toLowerCase()]||null;
+function pic(en,size,cls){const e=emoOf(en);if(!e)return "";return `<span class="pic ${cls||""}" style="--s:${size||64}px"><img src="${TW}${e[1]}.svg" alt="" data-emo="${e[0]}" draggable="false"></span>`}
+function picFrame(en,size){const p=pic(en,size||96);return p?`<div class="picframe">${p}</div>`:""}
+
+/* ---------- smarter voice selection ---------- */
+const BADV=/espeak|compact|fred|albert|bad news|bells|boing|bubbles|cellos|deranged|good news|hysterical|junior|organ|pipe|trinoids|whisper|zarvox|jester|superstar|grandma|grandpa|rocko|shelley|flo\b|eddy|reed|sandy|wobble|kathy|ralph/i;
+function voiceScore(v){const n=v.name,l=v.lang.replace("_","-");let s=0;
+  if(l===S.accent)s+=50;else if(/^en/i.test(l))s+=(/en-(US|GB|AU|CA)/i.test(l)?12:4);else return -999;
+  if(/natural|neural/i.test(n))s+=45;if(/online/i.test(n))s+=20;if(/google/i.test(n))s+=30;if(/premium|enhanced/i.test(n))s+=35;
+  if(/samantha|ava|allison|susan|zoe|aria|jenny|guy|libby|sonia|ryan|daniel|serena|karen|moira|tessa|nicky|evan|joelle|nathan|michelle|christopher|emma|brian/i.test(n))s+=18;
+  if(BADV.test(n))s-=200;if(/india|en-IN/i.test(n+l))s-=10;return s}
+function enVoices(){return voices.filter(v=>voiceScore(v)>-100).sort((a,b)=>voiceScore(b)-voiceScore(a))}
+function pickVoice(alt){const list=enVoices();if(!list.length)return null;
+  if(!alt&&S.voiceName){const v=list.find(x=>x.name===S.voiceName);if(v)return v}
+  if(alt){const main=S.voiceName&&list.find(x=>x.name===S.voiceName)||list[0];return list.find(x=>x!==main&&voiceScore(x)>0)||main}
+  return list[0]}
+
+/* ---------- real human pronunciation for single words (online only) ---------- */
+const ONLINE=typeof window.APP_CONFIG!=="undefined";
+let WI={};try{WI=JSON.parse(localStorage.getItem("su_wi")||"{}")}catch(e){}
+const saveWI=()=>{try{const k=Object.keys(WI);if(k.length>600)k.slice(0,k.length-600).forEach(x=>delete WI[x]);localStorage.setItem("su_wi",JSON.stringify(WI))}catch(e){}};
+const isWord=t=>/^[A-Za-z][A-Za-z'-]{0,24}$/.test(String(t).trim());
+async function wordInfo(w){w=w.toLowerCase();if(!ONLINE)return null;if(w in WI)return WI[w];
+  try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),2500);const r=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(w),{signal:c.signal});clearTimeout(tm);
+    if(!r.ok){WI[w]=null;saveWI();return null}const d=await r.json();const ph=(d||[]).flatMap(x=>x.phonetics||[]);
+    const au=ph.filter(p=>p.audio);const pref=S.accent==="en-GB"?/-uk\.mp3/:/-us\.mp3/;const a=(au.find(p=>pref.test(p.audio))||au[0]||{}).audio||null;
+    const ipa=(d[0]&&d[0].phonetic)||(ph.find(p=>p.text)||{}).text||null;WI[w]={a,ipa};saveWI();return WI[w]}
+  catch(e){return null}}
+let curAudio=null;
+{const _speak=speak;speak=function(t,o){o=o||{};
+  if(!o.keep&&ONLINE&&isWord(t)&&S.human!==false){const w=String(t).trim();
+    try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}
+    wordInfo(w).then(inf=>{if(inf&&inf.a){const au=new Audio(inf.a);au.playbackRate=o.slow?.75:1;curAudio=au;au.onended=()=>{o.onend&&o.onend()};au.play().catch(()=>_speak(t,o))}else _speak(t,o)});return}
+  _speak(t,o)}}
+function fillIPA(){document.querySelectorAll("[data-ipa]").forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;wordInfo(el.dataset.ipa).then(i=>{if(i&&i.ipa){el.textContent=i.ipa;el.classList.add("show")}})})}
+
+/* ---------- flip flashcards ---------- */
+{const _vw=vWords;vWords=function(){
+  if(!W.cat||W.list)return _vw();const c=CATS.find(x=>x.id===W.cat);if(W.i>=W.order.length)return _vw();
+  const [en,ar,ex]=c.w[W.order[W.i]],known=S.known[c.id+":"+en];
+  const bar=`<div class="spread"><button class="back" data-act="wback" aria-label="رجوع">→</button>${seg("wlist","cards",[["cards","بطاقات"],["list","قائمة"]])}</div>
+    <div class="spread" style="margin-top:12px"><h2 style="margin:0">${c.icon} ${c.name}</h2><span class="muted">${W.i+1} / ${W.order.length}</span></div>
+    <div class="progress"><i style="width:${100*W.i/W.order.length}%"></i></div>`;
+  return `<section class="panel">${bar}
+    <div class="flip ${W.show?"on":""}" data-act="wflip" role="button" tabindex="0" aria-label="اقلب البطاقة">
+      <div class="face f-front">${known?'<span class="known-tag">✓ محفوظة</span>':""}${picFrame(en,110)}<div class="fw" dir="ltr">${esc(en)}</div><div class="ipa" data-ipa="${esc(en)}" dir="ltr"></div><small class="tap">اضغط لتقلب البطاقة 🔄</small></div>
+      <div class="face f-back"><div class="fa">${esc(ar)}</div><div class="fw sm" dir="ltr">${esc(en)}</div><p class="fex" dir="ltr">${esc(ex)}</p><small class="tap">اضغط لترجع</small></div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:14px">${sayBtn(en)}${slowBtn(en)}${sayBtn(ex,"💬 المثال")}</div>
+    <div class="yn" style="margin-top:14px"><button class="btn ghost" data-act="wnext">راجعها بعدين</button><button class="btn good" data-act="wknow">بعرفها ✓</button></div></section>`}}
+A.wflip=()=>{W.show=!W.show;const f=document.querySelector(".flip");if(f){f.classList.toggle("on",W.show);if(W.show)sfx("tap")}else render()};
+{const _wk=A.wknow,_wn=A.wnext;A.wknow=()=>{_wk();AFTER=()=>{const c=CATS.find(x=>x.id===W.cat);if(c&&W.i<W.order.length)speak(c.w[W.order[W.i]][0])}};A.wnext=()=>{_wn()}}
+A.wcat=d=>{startCat(d.id);render();window.scrollTo(0,0);const c=CATS.find(x=>x.id===d.id);setTimeout(()=>speak(c.w[W.order[0]][0]),350)};
+
+/* ---------- pictures in quiz + match game ---------- */
+{const _mq=makeQuiz;makeQuiz=function(){const Q0=_mq();Q0.qs.forEach(q=>{if(emoOf(q.w.en)&&q.type!=="listen"&&Math.random()<.45)q.type="pic"});return Q0}}
+{A.qstart=()=>{const Qz=makeQuiz();
+  startPlayer({back:"quiz",qs:Qz.qs.map(q=>q.type==="pic"?{label:"شو اسم هاد بالإنجليزي؟",prompt:`<div class="center">${picFrame(q.w.en,120)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+      :q.type==="en2ar"?{label:"شو معنى الكلمة؟",prompt:wordPrompt(q.w.en),opts:q.opts.map(o=>o.ar),a:q.w.ar,en:q.w.en}
+      :q.type==="ar2en"?{label:"اختار الكلمة الإنجليزية",prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+      :{label:"اسمع واختار الكلمة",prompt:listenPrompt(q.w.en),opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,say:q.w.en,en:q.w.en}),
+    onAnswer:(q,ok)=>{if(ok)addXP(2);else{const w=ALL.find(x=>x.en===q.en);addMistake(q.en,w?w.ar:"","اختبار")}},
+    onFinish:P=>{if(P.score>S.best)S.best=P.score;S.st.quiz=(S.st.quiz||0)+1;save();checkAch();
+      showResult({title:"اختبار سريع",score:P.score,total:P.qs.length,back:"quiz",actions:`<button class="btn big wide" data-act="qstart">اختبار جديد</button>`})}})}}
+{const _mr=mRound;mRound=function(){const m=GM.m;if(m.mode!=="pics")return _mr();
+  const used=new Set(m.words.map(w=>w.en));const pool=shuffle(ALL.filter(w=>emoOf(w.en)&&!used.has(w.en)&&lvOK(w.lv)));
+  const ws=[],seen=new Set();for(const w of pool){if(ws.length>=6)break;const e=emoOf(w.en)[1];if(seen.has(e))continue;seen.add(e);ws.push(w)}
+  m.cur=ws;m.words=m.words.concat(ws);m.matched=new Set();m.sel=null;m.bad=m.bad2=null;
+  m.tiles=shuffle(ws.flatMap((w,i)=>[{id:i,txt:w.en,side:"en",w},{id:i,txt:"",side:"pc",w}]))}}
+{const _vg=vGames;vGames=function(){let h=_vg();
+  if(GM.g==="match"&&!GM.m)h=h.replace('</div></section>',`<button class="sq" data-act="mstart" data-m="pics"><span class="ic">${ico("match",28)}</span><b>الصور</b><small>وصّل الصورة بكلمتها${(S.gbest||{}).m_pics?` · أفضل وقت ${fmtT(S.gbest.m_pics)}`:""}</small></button></div></section>`);
+  if(GM.g==="match"&&GM.m&&GM.m.mode==="pics"){h=h.replace(/<button class="tile mt ([^"]*)" data-act="mtile" data-i="(\d+)"([^>]*)><\/button>/g,(all,cls,i,rest)=>{const t=GM.m.tiles[+i];return `<button class="tile mt pc ${cls}" data-act="mtile" data-i="${i}"${rest}>${pic(t.w.en,46)}</button>`}).replace("🧩 المعنى","🧩 الصور").replace("اختار كلمة، بعدين اختار معناها","اختار صورة، بعدين اختار كلمتها")}
+  if(GM.g==="hang"&&GM.h)h=h.replace('<p class="center" style="margin:10px 0 4px">المعنى:',`<div class="center" style="margin-top:6px">${picFrame(GM.h.w.en,76)}</div><p class="center" style="margin:10px 0 4px">المعنى:`);
+  return h}}
+{const _vs=vSpelling;vSpelling=function(){const h=_vs();return SP.item?h.replace(`<div class="ar-big">${esc(SP.item.ar)}</div>`,`${picFrame(SP.item.en,90)}<div class="ar-big">${esc(SP.item.ar)}</div>`):h}}
+
+/* ---------- voice settings in Me ---------- */
+{const _vm=vMe;vMe=function(){const vs=enVoices().slice(0,14);const cur=(pickVoice()||{}).name||"";
+  const block=`<div class="set"><label for="setVoice">صوت النطق</label><select id="setVoice" data-voice>${vs.length?vs.map(v=>`<option value="${esc(v.name)}" ${v.name===cur?"selected":""}>${esc(v.name.replace(/Microsoft |Google |\(.*\)/g,"").trim())} · ${v.lang}</option>`).join(""):"<option>الافتراضي</option>"}</select><button class="say" data-act="voicetest">▶ جرّب</button></div>
+    ${ONLINE?`<div class="set"><span>نطق الكلمات بصوت إنسان حقيقي</span>${seg("sethuman",S.human===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div>`:""}`;
+  return _vm().replace('<div class="set"><label for="setRate">',block+'<div class="set"><label for="setRate">')}}
+A.voicetest=()=>speak("Hello! This is how English sounds with this voice.");
+A.sethuman=d=>{S.human=d.m==="on";save();render();speak("apple")};
+document.addEventListener("change",e=>{if(e.target.dataset&&e.target.dataset.voice!==undefined){S.voiceName=e.target.value;save();speak("Hello! Nice to meet you.")}});
+
+/* ---------- after every render: image fallbacks + IPA + word-of-day picture ---------- */
+{const _r=render;render=function(){_r();
+  document.querySelectorAll(".pic img").forEach(img=>{if(img.dataset.b)return;img.dataset.b=1;img.addEventListener("error",()=>{const s=document.createElement("span");s.className="emo";s.textContent=img.dataset.emo;img.replaceWith(s)})});
+  const wod=document.querySelector(".wod");if(wod&&!wod.querySelector(".picframe")){const w=wod.querySelector(".guide .w");if(w){const pf=picFrame(w.textContent,84);if(pf)wod.querySelector(".guide").insertAdjacentHTML("beforebegin",pf);w.parentElement.insertAdjacentHTML("afterend",`<div class="ipa" data-ipa="${esc(w.textContent)}" dir="ltr"></div>`)}}
+  fillIPA()}}
+if("speechSynthesis" in window){const upd=()=>{loadVoices();if(route==="me")render()};speechSynthesis.onvoiceschanged=upd}
+
+VIEWS.words=vWords;VIEWS.games=vGames;VIEWS.spelling=vSpelling;VIEWS.me=vMe;
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);

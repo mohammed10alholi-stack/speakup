@@ -1,5 +1,5 @@
 // SpeakUp service worker — يخلي الموقع يشتغل كتطبيق ويفتح بسرعة
-const CACHE = "speakup-v9";
+const CACHE = "speakup-v10";
 const CORE = ["./", "./index.html", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -18,7 +18,7 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(req).then((r) => r || caches.match("./index.html"))));
     return;
   }
-  if (u.hostname === "cdn.jsdelivr.net" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") {
+  if (u.hostname === "cdn.jsdelivr.net" || u.hostname === "api.dictionaryapi.dev" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") {
     e.respondWith(caches.match(req).then((r) => r || fetch(req).then((res) => { const cp = res.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); return res; })));
   }
 });
