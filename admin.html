@@ -73,7 +73,7 @@ function vMain(){const s=ST.stats||{};
     <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
     <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
   <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
-    <button data-a="reload">🔄 تحديث</button></div>
+    <button data-a="reload">🔄 تحديث</button><button data-a="backup">⬇️ نسخة احتياطية</button></div>
   ${ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
 function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
   ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
@@ -144,6 +144,17 @@ const act={
   revoke:async v=>{if(!confirm("إلغاء اشتراك هاد المستخدم؟"))return;const {error}=await sb.rpc("admin_revoke",{uid:v});ST.msg=error?null:"انلغى الاشتراك";ST.err=error?error.message:null;load()},
   saveplan:async v=>{const {error}=await sb.from("plans").update({name:$("#pn_"+v).value.trim(),months:+$("#pm_"+v).value,price:+$("#pp_"+v).value,active:$("#pa_"+v).checked}).eq("id",v);ST.msg=error?null:"انحفظت الخطة ✅";ST.err=error?error.message:null;load()},
   andays:async v=>{ST.anDays=+v;const {data,error}=await sb.rpc("admin_analytics",{days:ST.anDays});ST.an=error?{error:error.message}:data;render()},
+  backup:async()=>{ST.msg="عم بجهّز النسخة الاحتياطية…";render();
+    const all=async(t,sel)=>{let out=[],from=0;for(;;){const {data,error}=await sb.from(t).select(sel).range(from,from+999);if(error)throw error;out=out.concat(data||[]);if(!data||data.length<1000)break;from+=1000}return out};
+    const csv=(rows,cols,heads)=>"\ufeff"+[heads.join(",")].concat(rows.map(r=>cols.map(c=>{let v=typeof c==="function"?c(r):r[c];v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(","))).join("\r\n");
+    const dl=(name,text)=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
+    try{const d=new Date().toISOString().slice(0,10);
+      const users=await all("profiles","id,email,full_name,role,level,plan_until,is_trial,created_at,week_xp,ref_code");
+      dl(`speakup-users-${d}.csv`,csv(users,["email","full_name","role","level",r=>r.plan_until?r.plan_until.slice(0,10):"",r=>r.is_trial?"تجربة":"",r=>(r.created_at||"").slice(0,10),"week_xp","ref_code","id"],["الإيميل","الاسم","الدور","المستوى","الاشتراك لحد","تجربة","تاريخ التسجيل","نقاط الأسبوع","كود الدعوة","المعرّف"]));
+      const pays=await all("payment_requests","*, profiles(email,full_name), plans(name)");
+      setTimeout(()=>dl(`speakup-payments-${d}.csv`,csv(pays,[r=>(r.created_at||"").slice(0,16).replace("T"," "),r=>r.profiles?.full_name,r=>r.profiles?.email,r=>r.plans?.name||r.plan_id,"amount","original_amount","coupon","method","reference","status","admin_note",r=>(r.reviewed_at||"").slice(0,16).replace("T"," ")],["التاريخ","الاسم","الإيميل","الخطة","المبلغ","السعر الأصلي","كود الخصم","الطريقة","المرجع","الحالة","ملاحظة","تاريخ المراجعة"])),600);
+      ST.msg=`✅ نزلت نسختين: المستخدمين (${users.length}) والاشتراكات (${pays.length}). بيفتحوا بـ Excel.`;ST.err=null}
+    catch(e){ST.msg=null;ST.err="فشل التصدير: "+e.message}render()},
   addcoupon:async()=>{const code=$("#c_code").value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,""),pct=+$("#c_pct").value,mx=$("#c_max").value,ex=$("#c_exp").value;
     if(!code||!(pct>=1&&pct<=100)){alert("اكتب الكود ونسبة من 1 لـ 100");return}
     const {error}=await sb.from("coupons").insert({code,percent:pct,max_uses:mx?+mx:null,expires_at:ex?new Date(ex+"T23:59:59").toISOString():null});ST.msg=error?null:"انضاف الكود ✅";ST.err=error?(/duplicate/.test(error.message)?"الكود موجود من قبل":error.message):null;load()},
