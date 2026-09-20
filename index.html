@@ -432,6 +432,34 @@ body.chatmode main{padding:0;max-width:760px}
 @keyframes vpSpeak{50%{transform:scale(1.07)}}@keyframes vpListen{0%{box-shadow:0 0 0 0 rgba(255,90,95,.35)}100%{box-shadow:0 0 0 26px rgba(255,90,95,0)}}
 body.playing #toast,body.chatmode #toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
+/* ===== games v2 ===== */
+.gm-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.gm-head h2{flex:1;margin:0}
+.match .tile.mt{min-height:62px;transition:transform .15s,opacity .35s}
+.match .tile.au{font-size:1.6rem;background:var(--primary-soft);border-color:#C7D8FF;box-shadow:0 4px 0 #C7D8FF}
+.match .tile.gone{opacity:0;transform:scale(.8);pointer-events:none}
+.match .tile.hit{animation:pop .35s}
+.match .tile.bad{animation:tshake .35s}
+@keyframes pop{50%{transform:scale(1.12)}}
+.round-badge{display:inline-block;background:var(--primary);color:#fff;font-weight:800;border-radius:14px;padding:6px 18px;margin-bottom:10px;box-shadow:0 4px 0 var(--primary-d)}
+.stars{font-size:2.6rem;letter-spacing:6px;margin:4px 0}.stars span{color:var(--rule)}.stars span.on{color:var(--hl);text-shadow:0 3px 0 var(--hl-d)}
+.newbest{font-weight:800;color:var(--good-d);font-size:1.1rem}
+.timer.low{background:var(--bad-bg);color:var(--margin)}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.flash-ok{animation:fok .35s}.flash-bad{animation:tshake .35s}@keyframes fok{50%{transform:scale(1.06)}}
+.review-list{text-align:start;max-width:520px;margin:0 auto 16px}
+.rv{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:2px solid var(--line)}.rv:last-of-type{border-bottom:none}
+.rv b[dir=ltr]{display:block;font-size:1.1rem;font-weight:800;text-align:right}.rv span{display:block}.rv small{display:block;color:var(--soft);font-weight:600}
+.letters{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;margin:16px 0}
+.letters .lt{flex:1 1 0;max-width:40px;min-width:0;height:50px;border-bottom:4px solid var(--rule);display:grid;place-items:center;font-size:1.7rem;font-weight:800;text-transform:lowercase}
+.letters .lt.on{border-color:var(--primary);color:var(--ink)}.letters .lt.hinted{color:#C98A00;border-color:var(--hl)}
+.hint-row{display:flex;justify-content:center;gap:10px;margin:6px 0 14px;flex-wrap:wrap}
+.qwerty{display:grid;gap:7px;max-width:520px;margin:0 auto}
+.kr{display:flex;justify-content:center;gap:5px}
+.key{flex:1;max-width:44px;height:50px;border:2px solid var(--line);border-radius:12px;background:var(--card);font-size:1.15rem;font-weight:800;color:var(--ink);box-shadow:0 3px 0 var(--line);padding:0;text-transform:lowercase}
+.key:active{transform:translateY(3px);box-shadow:none}
+.key.hit{background:var(--good-bg);border-color:var(--good);color:var(--good-d);box-shadow:0 3px 0 var(--good)}
+.key.miss{background:var(--sky);color:var(--rule);box-shadow:none;border-color:transparent}
+@media (max-width:380px){.key{height:44px;font-size:1rem;border-radius:9px}.kr{gap:3px}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -2016,6 +2044,98 @@ A.tuquick=d=>tuSend(d.t);
 {const _vp=vPlayer;vPlayer=function(){const h=_vp();if(PLY&&PLY.enter!==false){PLY.enter=false;return h.replace('class="ply-card"','class="ply-card enter"')}return h}}
 {const _nx=plyNext;plyNext=function(){if(PLY)PLY.enter=true;_nx()}}
 A.plynext=()=>plyNext();
+/* ================== GAMES v2 ================== */
+const QWERTY=["qwertyuiop","asdfghjkl","zxcvbnm"];
+function quietMistake(en,ar,src){S.mistakes=S.mistakes.filter(m=>m.en!==en);S.mistakes.unshift({en,ar,src,d:Date.now()});S.mistakes=S.mistakes.slice(0,200);const k=WKEY[en.toLowerCase()];if(k)srsAdd(k,0)}
+function stopGame(){if(gTimer){clearInterval(gTimer);gTimer=null}}
+const fmtT=ms=>{const s=Math.max(0,Math.round(ms/1000));return s>=60?`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`:s+"ث"};
+function vGames(){
+  const head=topbar("ألعاب","تعلّم وإنت بتلعب"),B=S.gbest||{};
+  if(!GM.g)return `<section class="panel">${head}<div class="sqgrid">
+    <button class="sq" data-act="gstart" data-g="match"><span class="ic">🧩</span><b>توصيل الكلمات</b><small>${B.match?`أفضل وقت: ${fmtT(B.match)}`:"3 جولات، وضع المعنى والاستماع"}</small></button>
+    <button class="sq" data-act="gstart" data-g="speed"><span class="ic">⚡</span><b>تحدي السرعة</b><small>${B.speed?`أعلى نتيجة: ${B.speed}`:"صح ولا غلط؟ عندك 60 ثانية"}</small></button>
+    <button class="sq" data-act="gstart" data-g="hang"><span class="ic">🔠</span><b>خمّن الكلمة</b><small>خمّن الحروف، ومعك تلميحات</small></button></div></section>`;
+  const back=`<button class="back" data-act="gquit" aria-label="رجوع">→</button>`;
+  /* ---- match ---- */
+  if(GM.g==="match"){const m=GM.m;
+    if(!m)return `<section class="panel"><div class="gm-head">${back}<h2>🧩 توصيل الكلمات</h2></div><p class="muted">اختار الوضع. في 3 جولات، كل جولة 6 أزواج، وكل ما كنت أسرع بأخطاء أقل بتاخد نجوم أكثر.</p>
+      <div class="sqgrid"><button class="sq" data-act="mstart" data-m="meaning"><span class="ic">🔤</span><b>المعنى</b><small>وصّل الكلمة الإنجليزية بمعناها العربي${B.m_meaning?` · أفضل وقت ${fmtT(B.m_meaning)}`:""}</small></button>
+      <button class="sq" data-act="mstart" data-m="listen"><span class="ic">🎧</span><b>الاستماع</b><small>اسمع 🔊 ووصّلها بكتابتها${B.m_listen?` · أفضل وقت ${fmtT(B.m_listen)}`:""}</small></button></div></section>`;
+    if(m.done){const st=m.stars;return `<section class="result">${mascot(st===3?"wow":st===2?"happy":"smile",120)}<h1>${["","منيح!","ممتاز!","أسطوري!"][st]}</h1>
+      <div class="stars">${[1,2,3].map(i=>`<span class="${i<=st?"on":""}">★</span>`).join("")}</div>
+      <div class="res-stats"><div><b>${fmtT(m.total)}</b><span>الوقت</span></div><div><b>${m.miss}</b><span>أخطاء</span></div><div><b>${m.words.length}</b><span>كلمة</span></div></div>
+      ${m.newBest?`<p class="newbest">🏆 رقم قياسي جديد!</p>`:""}
+      <div class="res-actions"><button class="btn big wide" data-act="mstart" data-m="${m.mode}">العب كمان</button><button class="btn ghost wide" data-act="gstart" data-g="match">غيّر الوضع</button><button class="btn ghost wide" data-act="gquit">كل الألعاب</button></div></section>`}
+    if(m.between)return `<section class="result"><div class="round-badge">جولة ${m.round}</div>${mascot("wow",110)}<h2>كمّل هيك! 🔥</h2><p class="muted">الجولة الجاية أصعب شوي</p></section>`;
+    return `<section class="panel"><div class="gm-head">${back}<h2>🧩 ${m.mode==="listen"?"الاستماع":"المعنى"}</h2><span class="chip">جولة ${m.round}/3</span><span class="chip">⏱ <span id="mtime">${fmtT(Date.now()-m.start)}</span></span></div>
+      <div class="progress"><i style="width:${100*((m.round-1)*6+m.matched.size)/18}%"></i></div>
+      <p class="muted" style="margin:8px 0 0">${m.mode==="listen"?"اضغط 🔊 لتسمع، بعدين اختار الكلمة المكتوبة":"اختار كلمة، بعدين اختار معناها"}</p>
+      <div class="match">${m.tiles.map((t,i)=>{const done=m.matched.has(t.id);return `<button class="tile mt ${t.side==="en"?"en":""} ${t.side==="au"?"au":""} ${done?"gone":""} ${m.sel===i?"sel":""} ${m.bad===i||m.bad2===i?"bad":""} ${m.hit===t.id?"hit":""}" data-act="mtile" data-i="${i}" ${done?"disabled":""}>${t.side==="au"?"🔊":esc(t.txt)}</button>`}).join("")}</div></section>`}
+  /* ---- speed ---- */
+  if(GM.g==="speed"){const s=GM.s,left=Math.max(0,Math.ceil((s.end-Date.now())/1000));
+    if(s.over){const wrong=s.log.filter(x=>!x.ok);return `<section class="result">${mascot(s.score>=15?"wow":s.score>=8?"happy":"smile",110)}<h1>انتهى الوقت ⚡</h1>
+      <div class="res-stats"><div><b>${s.score}</b><span>صح</span></div><div><b>${s.wrong}</b><span>غلط</span></div>${s.newBest?`<div><b>🏆</b><span>رقم قياسي</span></div>`:""}</div>
+      ${wrong.length?`<div class="panel review-list"><h3 style="margin-top:0">راجع أخطاءك ✍️</h3>${wrong.map(x=>`<div class="rv"><button class="say" data-act="say" data-t="${esc(x.w.en)}">🔊</button><div><b dir="ltr">${esc(x.w.en)}</b><span>معناها: <b>${esc(x.w.ar)}</b></span><small>${x.ok===false&&x.said?`قلت «صح» لـ «${esc(x.shown)}»`:`قلت «غلط» مع إنها صح`}</small></div></div>`).join("")}<p class="muted" style="margin:8px 0 0">انضافوا لدفتر أخطائك ومراجعتك الذكية.</p></div>`:`<p class="newbest">ولا غلطة! 👏</p>`}
+      <div class="res-actions"><button class="btn big wide" data-act="gstart" data-g="speed">العب كمان</button><button class="btn ghost wide" data-act="gquit">كل الألعاب</button></div></section>`}
+    return `<section class="panel"><div class="gm-head">${back}<h2>⚡ تحدي السرعة</h2><span class="chip timer ${left<=10?"low":""}">⏱ <span id="timer">${left}</span></span></div>
+      <div class="progress"><i id="tbar" style="width:${100*left/60}%"></i></div>
+      <p class="muted center" style="margin-top:10px">هل الترجمة صحيحة؟ · النتيجة: <b>${s.score}</b></p>
+      <div class="guide s"><span class="w">${esc(s.w.en)}</span></div><div class="ar-big">${esc(s.shown)}</div>
+      <div class="yn"><button class="btn bad-btn big" data-act="sans" data-v="0">✗ غلط</button><button class="btn good big" data-act="sans" data-v="1">✓ صح</button></div></section>`}
+  /* ---- hangman ---- */
+  const h=GM.h,word=h.w.en.toLowerCase(),win=[...word].every(c=>h.g.has(c)),lose=h.lives<=0;
+  const shown=[...word].map(c=>`<span class="lt ${h.g.has(c)||win||lose?"on":""} ${h.hinted.has(c)?"hinted":""}">${h.g.has(c)||lose?esc(c):""}</span>`).join("");
+  const hintsLeft=2-h.hints;
+  return `<section class="panel"><div class="gm-head">${back}<h2>🔠 خمّن الكلمة</h2><span class="chip">${"❤️".repeat(Math.max(h.lives,0))}${"🤍".repeat(6-Math.max(h.lives,0))}</span></div>
+    <p class="center" style="margin:10px 0 4px">المعنى: <b>${esc(h.w.ar)}</b> · ${h.w.en.length} حروف</p>
+    <div class="letters" dir="ltr">${shown}</div>
+    ${win?`<div class="fb good center"><b>صح! 👏 +${Math.max(2,8-3*h.hints)} ⭐</b></div>`:lose?`<div class="fb bad center"><b>خلصت المحاولات. الكلمة: <span dir="ltr">${esc(h.w.en)}</span></b></div>`:""}
+    ${win||lose?`<div class="row" style="justify-content:center;margin-top:12px">${sayBtn(h.w.en)}<button class="btn" data-act="gstart" data-g="hang">كلمة ثانية</button></div>`
+    :`<div class="hint-row"><button class="btn hl" data-act="hhint" ${hintsLeft<=0?"disabled":""}>💡 تلميح (${hintsLeft})</button>${sayBtn(h.w.en,"🔊 اسمعها")}</div>
+      <div class="qwerty" dir="ltr">${QWERTY.map(r=>`<div class="kr">${[...r].map(c=>`<button class="key ${h.g.has(c)?(word.includes(c)?"hit":"miss"):""}" data-act="hkey" data-c="${c}" ${h.g.has(c)?"disabled":""}>${c}</button>`).join("")}</div>`).join("")}</div>`}</section>`}
+function gStart(g){stopGame();S.st.games++;save();checkAch();GM.g=g;
+  if(g==="match")GM.m=null;
+  if(g==="speed"){GM.s={end:Date.now()+60000,score:0,wrong:0,over:false,log:[]};nextSpeed();
+    gTimer=setInterval(()=>{const s=GM.s,left=Math.ceil((s.end-Date.now())/1000),el=$("#timer"),bar=$("#tbar");
+      if(left<=0){stopGame();s.over=true;const B=S.gbest=S.gbest||{};if(s.score>(B.speed||0)){B.speed=s.score;s.newBest=true}
+        s.log.filter(x=>!x.ok).forEach(x=>quietMistake(x.w.en,x.w.ar,"تحدي السرعة"));save();if(s.score)addXP(Math.min(12,s.score));sfx("win");if(s.newBest)confetti();render()}
+      else{if(el)el.textContent=left;if(bar)bar.style.width=(100*left/60)+"%";const tc=el&&el.parentElement;if(tc)tc.classList.toggle("low",left<=10)}},250)}
+  if(g==="hang"){GM.h={w:pick(poolWords().filter(w=>/^[a-z]+$/i.test(w.en)&&w.en.length>=4)),g:new Set(),lives:6,hints:0,hinted:new Set()}}
+  render()}
+function nextSpeed(){const w=pick(poolWords());const ok=Math.random()<.5;GM.s.w=w;GM.s.ok=ok;GM.s.shown=ok?w.ar:pick(ALL.filter(x=>x.ar!==w.ar)).ar}
+function mRound(){const m=GM.m,used=new Set(m.words.map(w=>w.en));
+  const pool=shuffle(poolWords().filter(w=>w.en.length<14&&!used.has(w.en)&&(m.mode!=="listen"||!/\s/.test(w.en)||w.en.length<12)));
+  const ws=[];const seenAr=new Set();for(const w of pool){if(ws.length>=6)break;if(seenAr.has(w.ar))continue;seenAr.add(w.ar);ws.push(w)}
+  m.cur=ws;m.words=m.words.concat(ws);m.matched=new Set();m.sel=null;m.bad=m.bad2=null;
+  m.tiles=shuffle(ws.flatMap((w,i)=>[{id:i,txt:w.en,side:"en",w},{id:i,txt:m.mode==="listen"?w.en:w.ar,side:m.mode==="listen"?"au":"ar",w}]))}
+function mTick(){stopGame();gTimer=setInterval(()=>{const el=$("#mtime");if(el&&GM.m&&!GM.m.done)el.textContent=fmtT(Date.now()-GM.m.start)},500)}
+Object.assign(A,{
+  gstart:d=>gStart(d.g),
+  gquit:()=>{stopGame();GM.g=null;render()},
+  mstart:d=>{GM.m={mode:d.m,round:1,words:[],miss:0,start:Date.now()};mRound();mTick();render()},
+  mtile:d=>{const m=GM.m,i=+d.i,t=m.tiles[i];if(!t||m.matched.has(t.id))return;m.bad=m.bad2=null;m.hit=null;
+    if(t.side==="au"||(t.side==="en"&&m.mode==="meaning"))speak(t.w.en);
+    if(m.sel===null||m.tiles[m.sel].side===t.side){m.sel=i;render();return}
+    const s=m.tiles[m.sel];
+    if(s.id===t.id){m.matched.add(t.id);m.hit=t.id;m.sel=null;sfx("ok");
+      if(m.matched.size===m.cur.length){if(m.round<3){m.round++;m.between=true;render();setTimeout(()=>{m.between=false;mRound();render()},1100);return}
+        m.done=true;stopGame();m.total=Date.now()-m.start;const sec=m.total/1000;m.stars=m.miss<=1&&sec<=75?3:m.miss<=4&&sec<=120?2:1;
+        const B=S.gbest=S.gbest||{},k="m_"+m.mode,prev=B[k];if(!prev||m.total<prev){B[k]=m.total;m.newBest=!!prev}B.match=Math.min(B.match||1e12,m.total);
+        save();addXP(Math.min(12,4*m.stars));setTimeout(()=>{sfx("win");if(m.stars===3)confetti()},200)}}
+    else{m.miss++;m.bad=i;m.bad2=m.sel;m.sel=null;sfx("bad");if(navigator.vibrate&&S.vibe!==false)try{navigator.vibrate([30,40,30])}catch(e){}}
+    render()},
+  sans:d=>{const s=GM.s;if(!s||s.over)return;const said=d.v==="1",ok=said===s.ok;s.log.push({w:s.w,shown:s.shown,ok,said});
+    if(ok){s.score++;sfx("ok")}else{s.wrong++;sfx("bad")}nextSpeed();render();
+    const card=document.querySelector(".guide .w");if(card){card.parentElement.classList.remove("flash-ok","flash-bad");void card.offsetWidth;card.parentElement.classList.add(ok?"flash-ok":"flash-bad")}},
+  hkey:d=>{const h=GM.h,c=d.c;if(!h||h.g.has(c)||h.lives<=0)return;const word=h.w.en.toLowerCase();h.g.add(c);
+    if(!word.includes(c)){h.lives--;sfx("bad")}else sfx("tap");
+    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.en);setTimeout(confetti,200)}
+    else if(h.lives<=0){quietMistake(h.w.en,h.w.ar,"ألعاب");save();sfx("bad")}render()},
+  hhint:()=>{const h=GM.h;if(!h||h.hints>=2)return;const word=h.w.en.toLowerCase();const hidden=[...new Set(word)].filter(c=>!h.g.has(c));if(!hidden.length)return;
+    const c=pick(hidden);h.hints++;h.g.add(c);h.hinted.add(c);sfx("tap");
+    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.en)}render()}
+});
+document.addEventListener("keydown",e=>{if(route!=="games"||GM.g!=="hang"||!GM.h||/INPUT|TEXTAREA/.test(e.target.tagName))return;const k=e.key.toLowerCase();if(/^[a-z]$/.test(k)){e.preventDefault();A.hkey({c:k})}});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
