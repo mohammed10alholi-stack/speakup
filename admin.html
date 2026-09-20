@@ -117,6 +117,8 @@ function vCoupons(){return `<div class="panel"><p class="muted">الكود بي�
     <td><span class="chip ${c.active?"ok":"no"}">${c.active?"فعّال":"موقّف"}</span></td><td><div class="row"><button class="btn ghost sm" data-a="togglecoupon" data-v="${esc(c.code)}">${c.active?"إيقاف":"تفعيل"}</button><button class="btn bad sm" data-a="delcoupon" data-v="${esc(c.code)}">حذف</button></div></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في أكواد لسا.</p>`}</div>`}
 function vSettings(){const g=ST.settings||{};return `<div class="panel"><h3>🎁 التجربة المجانية</h3><p class="muted">عدد الأيام اللي بياخدها كل حساب جديد بكل الميزات. حط 0 لإلغاء التجربة.</p>
   <div class="row"><input class="in" id="s_trial" type="number" min="0" max="60" value="${esc(g.trial_days??3)}" style="width:100px"><span>يوم</span><button class="btn" data-a="savetrial">حفظ</button></div></div>
+  <div class="panel"><h3>🤝 ادعُ صديقك</h3><p class="muted">عدد الأيام المجانية اللي بياخدها كل واحد (الداعي والمدعو) لما حدا يسجّل من رابط دعوة. حط 0 لإلغائها.</p>
+  <div class="row"><input class="in" id="s_ref" type="number" min="0" max="60" value="${esc(g.ref_days??3)}" style="width:100px"><span>يوم</span><button class="btn" data-a="saveref">حفظ</button></div></div>
   <div class="panel"><h3>🔔 إشعارات تيليجرام</h3><p class="muted">كل ما حدا يبعت طلب اشتراك بتوصلك رسالة على تيليجرام.</p>
   <ol class="muted" style="line-height:2"><li>بتيليجرام افتح <b class="en">@BotFather</b>، وابعتله <b class="en">/newbot</b>، واختار اسم للبوت. رح يعطيك <b>Token</b>.</li>
   <li>افتح البوت اللي عملته واضغط <b>Start</b>.</li><li>افتح <b class="en">@userinfobot</b> واضغط Start، رح يعطيك رقمك (<b>Id</b>).</li><li>الصقهم هون واضغط حفظ، وبعدين «إرسال تجربة».</li></ol>
@@ -148,6 +150,7 @@ const act={
   togglecoupon:async v=>{const c=ST.coupons.find(x=>x.code===v);const {error}=await sb.from("coupons").update({active:!c.active}).eq("code",v);ST.msg=error?null:"تم ✅";ST.err=error?error.message:null;load()},
   delcoupon:async v=>{if(!confirm("حذف الكود "+v+"؟"))return;const {error}=await sb.from("coupons").delete().eq("code",v);ST.msg=error?null:"انحذف";ST.err=error?error.message:null;load()},
   savetrial:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"trial_days",v:String(Math.max(0,+$("#s_trial").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?error.message:null;load()},
+  saveref:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"ref_days",v:String(Math.max(0,+$("#s_ref").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?(/bad_key/.test(error.message)?"شغّل upgrade-v4.sql أول":error.message):null;load()},
   savetg:async()=>{const a=await sb.rpc("admin_set_setting",{k:"telegram_token",v:$("#s_tok").value});const b=await sb.rpc("admin_set_setting",{k:"telegram_chat_id",v:$("#s_chat").value});const e=a.error||b.error;ST.msg=e?null:"انحفظ ✅ جرّب «إرسال تجربة»";ST.err=e?e.message:null;load()},
   testtg:async()=>{const {error}=await sb.rpc("admin_test_telegram");ST.msg=error?null:"انبعتت رسالة تجربة، شيّك تيليجرام 📱";ST.err=error?error.message:null;render()},
   addplan:async()=>{const id=$("#np_id").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,"");if(!id||!$("#np_name").value.trim()){alert("عبّي المعرّف والاسم");return}
