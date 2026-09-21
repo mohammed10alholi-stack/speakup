@@ -723,6 +723,84 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .rm-ut{flex:1;min-width:0}.rm-ut b{display:block;font-weight:700}.rm-ut small{display:block;color:var(--soft);font-weight:500;margin-bottom:4px}
 .rm-st{flex:none;font-size:.8rem;font-weight:700;color:var(--soft)}.rm-unit.cur .rm-st{color:var(--primary)}.rm-unit.done .rm-st{color:var(--good-d)}
 .rm-ub{padding:0 14px 10px}
+
+.vc-cap.live-cap{max-height:28vh;overflow-y:auto;padding:4px 8px;font-size:1.3rem;line-height:1.7;white-space:pre-wrap}
+.tm-mem{margin-top:16px;padding-top:12px;border-top:1.5px dashed var(--line)}.tm-mem p{margin:4px 0 10px}
+
+/* ===== new Toki chat ===== */
+.tc{background:linear-gradient(180deg,var(--bg) 0%,var(--primary-soft) 140%)}
+.tc-head{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--card);border-bottom:1px solid var(--line)}
+.tc-ic{flex:none;width:40px;height:40px;border:none;border-radius:50%;background:transparent;color:var(--ink);display:grid;place-items:center}
+.tc-ic:active{background:var(--sky)}
+.tc-av{position:relative;flex:none;line-height:0}.tc-av i{position:absolute;bottom:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#22C55E;border:2.5px solid var(--card)}
+.tc-name{flex:1;min-width:0}.tc-name b{display:block;font-size:1.1rem;font-weight:700}.tc-name small{color:#16A34A;font-weight:600;font-size:.8rem}.tc-name small.live{color:var(--primary)}
+.tc-call{flex:none;width:44px;height:44px;border:none;border-radius:50%;color:#fff;display:grid;place-items:center;background:linear-gradient(135deg,#34D399,#10B981);box-shadow:0 8px 18px -8px rgba(16,185,129,.8)}
+.tc-call:disabled{opacity:.4;box-shadow:none}
+.tc-sub{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tc-sub::-webkit-scrollbar{display:none}
+.tc-scn{flex:none;display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--sky);color:var(--ink);border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.9rem}
+.tc-scn b{font-weight:700}
+.tc-mis{display:flex;gap:6px;align-items:center}.tc-mt{flex:none;font-weight:700;font-size:.82rem}
+.tc-mg{flex:none;font-size:.78rem;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--soft);white-space:nowrap}.tc-mg.ok{background:var(--good-bg);border-color:var(--good);color:var(--good-d);font-weight:600}
+.tc-body{padding:14px 12px 8px}
+.tc .msg{display:flex;align-items:flex-end;gap:8px;margin-bottom:12px}.tc .msg.me{justify-content:flex-start}
+.tc .msg.bot{justify-content:flex-start;flex-direction:row}
+.tc .bub{max-width:80%;padding:11px 14px;border-radius:22px;font-size:1.02rem;line-height:1.65;box-shadow:0 2px 10px -6px rgba(20,30,70,.35)}
+.tc .bub.a{background:var(--card);border-bottom-right-radius:6px}
+.tc .bub.u{background:linear-gradient(135deg,#4F86FF,#2F6BFF);color:#fff;border-bottom-left-radius:6px}
+.tc .msg.me{flex-direction:row-reverse}
+.tc-acts{display:flex;gap:4px;margin-top:6px}
+.tc-acts button{width:32px;height:32px;border:none;border-radius:50%;background:var(--sky);color:var(--primary);display:grid;place-items:center}
+.tc-acts button:disabled{opacity:.4}
+.tc-quick{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin:6px 0 4px 38px}
+.tc-quick button{border:1.5px solid var(--primary);background:var(--card);color:var(--primary);border-radius:18px;padding:8px 14px;font-weight:600;font-family:inherit;text-align:start}
+.tc-comp{background:var(--card);border-top:1px solid var(--line);padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px))}
+.tc-tools{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;scrollbar-width:none}
+.tc-chip{flex:none;border:1px solid var(--line);background:var(--sky);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.82rem;font-weight:600;font-family:inherit}
+.tc-chip:disabled{opacity:.45}
+.tc-row{display:flex;align-items:flex-end;gap:8px}
+.tc-input{flex:1;display:flex;align-items:flex-end;gap:4px;background:var(--sky);border:1.5px solid var(--line);border-radius:26px;padding:4px 6px 4px 14px}
+.tc-input:focus-within{border-color:var(--primary);background:var(--card)}
+.tc-input textarea{flex:1;border:none;background:transparent;resize:none;font:inherit;font-size:1rem;padding:9px 4px;max-height:120px;color:var(--ink);outline:none}
+.tc-mic{flex:none;width:40px;height:40px;border:none;border-radius:50%;background:transparent;color:var(--soft);display:grid;place-items:center}
+.tc-mic.on{background:#EF4444;color:#fff;animation:tkpulse 1.2s infinite}
+.tc-send{flex:none;width:48px;height:48px;border:none;border-radius:50%;color:#fff;display:grid;place-items:center;background:linear-gradient(135deg,#4F86FF,#2F6BFF);box-shadow:0 8px 18px -8px rgba(47,107,255,.8)}
+.tc-send svg{transform:scaleX(-1)}.tc-send:disabled{opacity:.45}
+@keyframes tkpulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}100%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
+.tc-menu h2,.tc-scs h2{text-align:center;margin-top:0}
+.tc-menu button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;width:100%;text-align:start;border:none;background:var(--sky);border-radius:18px;padding:12px 14px;margin-bottom:8px;color:var(--ink);font-family:inherit}
+.tc-menu button span{grid-row:1/3;font-size:1.5rem}.tc-menu button b{font-weight:700}.tc-menu button small{color:var(--soft)}.tc-menu button:disabled{opacity:.5}
+.tc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tc-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--card);border-radius:18px;padding:12px 6px;color:var(--ink);font-family:inherit}
+.tc-grid button span{font-size:1.6rem}.tc-grid button b{font-size:.82rem;font-weight:600;text-align:center}
+.tc-grid button[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-soft)}
+/* ===== talking Toki character on calls ===== */
+.tk-wrap{position:relative;width:250px;height:250px;display:grid;place-items:center}
+.tk-glow{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,rgba(79,134,255,.55),rgba(79,134,255,0) 68%);transition:transform .08s linear}
+.tk-listen .tk-glow{background:radial-gradient(circle,rgba(255,201,64,.55),rgba(255,201,64,0) 68%)}
+.tk-char{position:relative;width:230px;height:230px;overflow:visible}
+.tk-body{transform-box:fill-box;transform-origin:50% 100%;animation:tkbob 3s ease-in-out infinite}
+.tk-speak .tk-body{animation:tkbob .9s ease-in-out infinite}
+.tk-listen .tk-body{animation:tktilt 2.4s ease-in-out infinite}
+@keyframes tkbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes tktilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(-1deg) translateY(-3px)}}
+.tk-eyes{transform-box:fill-box;transform-origin:center;animation:tkblink 4s infinite}
+@keyframes tkblink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+.tk-think .tk-pupils{transform:translate(4px,-6px)}
+.tk-listen .tk-pupils{transform:translate(-3px,2px)}
+.tk-mouth{transform-box:fill-box;transform-origin:center;transform:scaleY(.35)}
+.tk-speak .tk-mouth:not(.amp){animation:tktalk .5s infinite}
+@keyframes tktalk{0%{transform:scaleY(.3)}25%{transform:scaleY(1.1)}50%{transform:scaleY(.5)}75%{transform:scaleY(1.3)}100%{transform:scaleY(.3)}}
+.tk-think .tk-mouth{transform:scaleY(.2) scaleX(.6)}
+.tk-arm{transform-box:fill-box;transform-origin:50% 10%}
+.tk-speak .tk-arm-r{animation:tkwave 1.1s ease-in-out infinite}
+.tk-speak .tk-arm-l{animation:tkwave 1.4s ease-in-out infinite reverse}
+@keyframes tkwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+.tk-waves{opacity:.35}.tk-listen .tk-waves{opacity:1;animation:tkw 1s infinite}
+@keyframes tkw{0%,100%{opacity:.4}50%{opacity:1}}
+.tk-dots{opacity:0}.tk-think .tk-dots{opacity:1;animation:tkw 1.2s infinite}
+.vc-orb{width:auto;height:auto;background:none!important}
+@media (prefers-reduced-motion:reduce){.tk-body,.tk-eyes,.tk-arm,.tk-mouth,.tk-waves,.tk-dots{animation:none!important}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4110,7 +4188,7 @@ function lvB64(f,inRate){const ratio=inRate/16000,len=Math.floor(f.length/ratio)
   const u8=new Uint8Array(out.buffer);let bin="";for(let i=0;i<u8.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(bin)}
 function lvPlay(b64){if(!LV.outAc)return;const bin=atob(b64),n=bin.length>>1;if(!n)return;const buf=LV.outAc.createBuffer(1,n,24000),d=buf.getChannelData(0);
   for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v>=32768)v-=65536;d[i]=v/32768}
-  const s=LV.outAc.createBufferSource();s.buffer=buf;s.connect(LV.outAc.destination);const t=Math.max(LV.outAc.currentTime+0.03,LV.playT);s.start(t);LV.playT=t+buf.duration;LV.sources.push(s);
+  const s=LV.outAc.createBufferSource();s.buffer=buf;s.connect(LV.outAn||LV.outAc.destination);const t=Math.max(LV.outAc.currentTime+0.03,LV.playT);s.start(t);LV.playT=t+buf.duration;LV.sources.push(s);
   s.onended=()=>{LV.sources=LV.sources.filter(x=>x!==s);if(!LV.sources.length&&LV.state==="speaking"){LV.state="listening";lvUi()}};
   if(LV.state!=="speaking"){LV.state="speaking";lvUi()}}
 function lvStopPlay(){LV.sources.forEach(s=>{try{s.stop()}catch(e){}});LV.sources=[];LV.playT=0}
@@ -4120,14 +4198,14 @@ async function liveStatus(force){if(!window.liveApi||LV.stLoading)return;if(!for
   if(route==="tutor"&&TU.voice&&!TU.live)render()}
 async function liveStart(useBal){if(!liveAvailable()||LV.on)return;LV.useBal=!!useBal;
   tqReset();TU.speaking=false;if(recOn&&rec)try{rec.abort()}catch(e){}
-  LV.on=true;TU.live=true;LV.detail=null;LV.state="connecting";LV.cap="";LV.userCap="";LV.muted=false;LV.ready=false;LV.sid=null;LV.start=0;
-  try{LV.ac=new (window.AudioContext||window.webkitAudioContext)();LV.outAc=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});LV.ac.resume();LV.outAc.resume()}catch(e){}
+  LV.on=true;TU.live=true;LV.lastCap="";if(TU.cc==null)TU.cc=true;LV.detail=null;LV.state="connecting";LV.cap="";LV.userCap="";LV.muted=false;LV.ready=false;LV.sid=null;LV.start=0;
+  try{LV.ac=new (window.AudioContext||window.webkitAudioContext)();LV.outAc=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});LV.ac.resume();LV.outAc.resume();LV.outAn=LV.outAc.createAnalyser();LV.outAn.fftSize=512;LV.outAn.connect(LV.outAc.destination)}catch(e){}
   render();
   try{const [tok,stream]=await Promise.all([window.getLiveToken(LV.useBal?{use_balance:true}:undefined),navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})]);
     LV.stream=stream;if(!LV.on){lvCleanup();return}if(!tok||!tok.token)throw tok||{error:"live_error"};
     LV.sid=tok.sid||null;LV.limitSec=Math.max(20,+tok.seconds||300);LV.source=tok.source||"free";
     await LV.ac.audioWorklet.addModule(URL.createObjectURL(new Blob([LV_WORKLET],{type:"application/javascript"})));
-    LV.src=LV.ac.createMediaStreamSource(stream);LV.node=new AudioWorkletNode(LV.ac,"pcm-cap");LV.src.connect(LV.node);
+    LV.src=LV.ac.createMediaStreamSource(stream);LV.node=new AudioWorkletNode(LV.ac,"pcm-cap");LV.src.connect(LV.node);try{LV.micAn=LV.ac.createAnalyser();LV.micAn.fftSize=512;LV.src.connect(LV.micAn)}catch(e){}
     lvConnect(tok,true)}
   catch(e){const code=(e&&(e.error||e.name))||"live_error";liveFallback(/NotAllowed|Permission/i.test(code)?"mic":code,e)}}
 function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.token)}`;
@@ -4142,7 +4220,7 @@ function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss
   ws.onmessage=async ev=>{let m;try{m=JSON.parse(typeof ev.data==="string"?ev.data:await ev.data.text())}catch(e){return}
     if(m.setupComplete){LV.ready=true;LV.state="listening";LV.start=Date.now();lvUi();
       LV.node.port.onmessage=e=>{if(ws.readyState===1&&!LV.muted)ws.send(JSON.stringify({realtimeInput:{audio:{data:lvB64(e.data,LV.ac.sampleRate),mimeType:"audio/pcm;rate=16000"}}}))};
-      ws.send(JSON.stringify({realtimeInput:{text:"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة واسأله كيفه)"}}));
+      ws.send(JSON.stringify({realtimeInput:{text:(S.tokiMem&&S.tokiMem.summary)||(S.tokiLog||[]).length?"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة، وذكّره باختصار وين وقفنا المرة الماضية، وكمّل من هناك بدون ما تعيد نفس الأسئلة)":"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة واسأله كيفه)"}}));
       clearInterval(LV.timer);LV.timer=setInterval(()=>{const left=Math.max(0,LV.limitSec-Math.floor((Date.now()-LV.start)/1000)),el=document.getElementById("vcTime");
         if(el)el.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;if(left<=0)liveFallback("quota")},1000);return}
     const sc=m.serverContent;if(!sc)return;
@@ -4173,15 +4251,15 @@ EASY MODE (very important):
   return base+`
 - Adapt to level ${userLv()}. Speak ${L} clearly and a little slower than natives, with a neutral standard accent. Prefer simple, everyday words; avoid slang and idioms unless you explain them in Arabic.
 - Keep turns short, then let the learner talk. Correct important mistakes gently in Arabic.`}
-function lvSaveTurn(){const u=LV.userCap.trim(),a=LV.cap.trim();if(!u&&!a)return;const msgs=TU.msgs.buddy||(TU.msgs.buddy=[{role:"assistant",content:(TUTOR.find(x=>x.id==="buddy")||{}).start||""}]);
+function lvSaveTurn(){const u=LV.userCap.trim(),a=LV.cap.trim();if(!u&&!a)return;if(a)LV.lastCap=a;if(typeof tmLog==="function"){if(u)tmLog("u",u);if(a)tmLog("a",a)}const msgs=TU.msgs.buddy||(TU.msgs.buddy=[{role:"assistant",content:(TUTOR.find(x=>x.id==="buddy")||{}).start||""}]);
   if(u)msgs.push({role:"user",content:u});if(a)msgs.push({role:"assistant",content:a});LV.userCap="";LV.cap="";S.st.chat=(S.st.chat||0)+1;save()}
-function lvCap(){if(!TU.cc)return;const el=document.getElementById("vcCap");if(el)el.textContent=LV.cap||LV.userCap}
+function lvCap(){if(!TU.cc)return;const el=document.getElementById("vcCap");if(el){el.textContent=LV.cap||LV.lastCap||"";el.scrollTop=el.scrollHeight}}
 function lvUi(){if(route==="tutor"&&TU.voice)render()}
 function lvCleanup(){clearInterval(LV.timer);lvStopPlay();try{LV.node&&(LV.node.port.onmessage=null)}catch(e){}try{LV.src&&LV.src.disconnect()}catch(e){}
   try{LV.stream&&LV.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{LV.ac&&LV.ac.close()}catch(e){}try{LV.outAc&&LV.outAc.close()}catch(e){}
-  LV.ws=null;LV.ac=null;LV.outAc=null;LV.stream=null;LV.node=null;LV.src=null}
+  LV.ws=null;LV.ac=null;LV.outAc=null;LV.stream=null;LV.node=null;LV.src=null;LV.outAn=null;LV.micAn=null}
 /* end the real-voice session and tell the server how many seconds were really used */
-function liveStop(){const ws=LV.ws,used=LV.ready&&LV.start?Math.round((Date.now()-LV.start)/1000):0,sid=LV.sid;
+function liveStop(){setTimeout(()=>{if(typeof tmSummarize==="function")tmSummarize()},300);const ws=LV.ws,used=LV.ready&&LV.start?Math.round((Date.now()-LV.start)/1000):0,sid=LV.sid;
   LV.on=false;lvSaveTurn();lvCleanup();try{ws&&ws.close()}catch(e){}TU.live=false;LV.state="idle";LV.ready=false;LV.sid=null;
   if(sid&&window.liveApi)window.liveApi("live_end",{sid,used}).then(()=>liveStatus(true));else liveStatus(true)}
 /* anything goes wrong → keep the call going with the regular free voice */
@@ -4204,7 +4282,7 @@ function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.det
   return `<div class="vcall ${st} live" id="vcall">
     <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">${LV.source==="balance"?"من رصيدك":"مجاني اليوم"}</span><span class="vc-time" id="vcTime">${Math.floor(LV.limitSec/60)}:${String(LV.limitSec%60).padStart(2,"0")}</span></div>
     <div class="vc-mid"><div class="vc-orb"><span class="vc-ring"></span><span class="vc-ring r2"></span><span class="vc-core">${mascot(st==="speak"?"wow":st==="think"?"think":"happy",118)}</span></div>
-      <div class="vc-status">${esc(status)}</div><div class="vc-cap" id="vcCap" dir="auto">${TU.cc?esc(LV.cap||LV.userCap):""}</div></div>
+      <div class="vc-status">${esc(status)}</div><div class="vc-cap live-cap" id="vcCap" dir="auto">${TU.cc?esc(LV.cap||LV.lastCap||""):""}</div></div>
     <button class="vc-easy" data-act="lveasy" aria-pressed="${lvEasy()}">🐢 سهل وبطيء: ${lvEasy()?"شغّال":"مطفي"}</button>
     <p class="vc-note">بتقدر تحكي عربي و${LAR()} بنفس الجملة، وتقاطعه وقت ما بدك 🎧</p>
     <div class="vc-ctrl"><button class="vc-b" data-act="vccc" aria-pressed="${!!TU.cc}"><span>💬</span><small>${TU.cc?"إخفاء النص":"إظهار النص"}</small></button>
@@ -4271,6 +4349,133 @@ function vRoadmap(){const d=rmData(),P=planState(),due=dueList().length,today=d.
   </section>`}
 VIEWS.plan=vRoadmap;
 A.rmunit=d=>{RM.open=RM.open===+d.i?-1:+d.i;render()};
+/* ================== ذاكرة توكي: بيتذكّر محادثاتكم ووين وقفتوا ================== */
+const TMEM_MAX=40;
+function tmLog(role,text){text=stripTag(String(text||"")).replace(/\s+/g," ").trim();if(!text)return;
+  S.tokiLog=(S.tokiLog||[]).concat([{r:role,t:text.slice(0,400),d:Date.now()}]).slice(-TMEM_MAX);S.tokiNew=(S.tokiNew||0)+1;save()}
+function tmContext(){const m=S.tokiMem&&S.tokiMem.summary,log=(S.tokiLog||[]).slice(-8);if(!m&&!log.length)return"";
+  return `\nMEMORY — what you already know about this learner and your past conversations:\n${m?m+"\n":""}${log.length?"Most recent exchanges:\n"+log.map(x=>(x.r==="u"?"Learner: ":"Toki: ")+x.t).join("\n")+"\n":""}Use this memory naturally: continue from where you left off, build on what you already taught, and do NOT repeat questions you already asked or topics already covered (unless you are deliberately reviewing).`}
+let tmBusy=false;
+async function tmSummarize(force){if(tmBusy||!AI||AIstate!=="ok")return;const nw=S.tokiNew||0;if(!force&&nw<2)return;
+  const log=(S.tokiLog||[]).slice(-Math.min(TMEM_MAX,nw+4));if(!log.length)return;tmBusy=true;
+  try{const r=await AI.json(`You maintain the long-term memory of Toki, a friendly ${LNAME_EN()} tutor for an Arabic-speaking learner (level ${userLv()}).
+Current memory:
+${(S.tokiMem&&S.tokiMem.summary)||"(empty)"}
+
+New conversation:
+${log.map(x=>(x.r==="u"?"Learner: ":"Toki: ")+x.t).join("\n")}
+
+Update the memory. Keep it under 900 characters, in English, as short lines covering: facts about the learner (name, life, interests, plans), topics already discussed, questions Toki already asked, words/phrases already taught, recurring mistakes, and where the last conversation stopped plus a good next step. Reply as JSON: {"summary":"..."}`,{modelTier:"quick"});
+    if(r&&r.summary){S.tokiMem={summary:String(r.summary).slice(0,1500),d:Date.now()};S.tokiNew=0;save()}}catch(e){}
+  tmBusy=false}
+/* memory goes into Toki's instructions (friend chat + live call) */
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);return sc&&sc.id==="buddy"?r+tmContext():r}}
+/* the friend chat opens where you left off */
+function tuMsgs(){const sc=TUTOR.find(x=>x.id===TU.sc)||TUTOR[0];
+  if(!TU.msgs[TU.sc]){const log=TU.sc==="buddy"?(S.tokiLog||[]).slice(-20):[];
+    TU.msgs[TU.sc]=log.length?log.map(x=>({role:x.r==="u"?"user":"assistant",content:x.t})).concat([{role:"assistant",content:"هلا فيك من جديد! 👋 نكمّل من وين وقفنا؟"}]):[{role:"assistant",content:sc.start}]}
+  return TU.msgs[TU.sc]}
+/* remember text chats with the friend too */
+{const _ts3=tuSend;tuSend=async function(t){const sc=TU.sc,txt=String(t||"").trim(),n0=tuMsgs().length;await _ts3(t);
+  if(sc!=="buddy"||!txt)return;const msgs=TU.msgs.buddy||[];if(msgs.length<=n0)return;
+  tmLog("u",txt);const last=msgs[msgs.length-1];if(last&&last.role==="assistant")tmLog("a",last.content);
+  if((S.tokiNew||0)>=8)tmSummarize()}}
+/* let the learner wipe the memory from «عرّف توكي عليك» */
+{const _tm=A.tokime;A.tokime=()=>{_tm();const box=document.querySelector("#sheet .tokime");if(box){const n=(S.tokiLog||[]).length;
+  box.insertAdjacentHTML("beforeend",`<div class="tm-mem"><b>🧠 ذاكرة توكي</b><p class="muted">${n||S.tokiMem?`توكي متذكّر ${n} رسالة من محادثاتكم ووين وقفتوا.`:"لسا ما في محادثات محفوظة."}</p>${n||S.tokiMem?`<button class="btn ghost wide" data-act="tmclear">🧹 خلّي توكي ينسى محادثاتنا</button>`:""}</div>`)}}}
+A.tmclear=()=>{if(!confirm("أكيد بدك توكي ينسى كل محادثاتكم؟ (معلوماتك الشخصية بتضل)"))return;S.tokiLog=[];S.tokiMem=null;S.tokiNew=0;delete TU.msgs.buddy;save();$("#sheet").hidden=true;render();toast("🧹 توكي نسي المحادثات، ومنبلّش من جديد")};
+{const _rs=A.tureset;A.tureset=d=>{_rs(d);if(TU.sc==="buddy"){TU.msgs.buddy=[{role:"assistant",content:(TUTOR.find(x=>x.id==="buddy")||{}).start||""}];render()}}}
+/* ================== واجهة توكي الجديدة: شات عصري + شخصية بتحكي بالمكالمة ================== */
+const TI={
+  back:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg>',
+  more:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>',
+  send:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3.4 20.4l17.5-7.5a1 1 0 000-1.8L3.4 3.6a1 1 0 00-1.4 1.1L4 11l9 1-9 1-2 6.3a1 1 0 001.4 1.1z"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>'};
+
+/* ---------- Toki as a full character with headset (for calls) ---------- */
+function tokiChar(state){return `<div class="tk-wrap tk-${state}"><div class="tk-glow" id="tkGlow"></div>
+  <svg class="tk-char" viewBox="0 0 200 200" aria-hidden="true">
+   <ellipse cx="100" cy="188" rx="52" ry="7" fill="#000" opacity=".25"/>
+   <g class="tk-body">
+    <g class="tk-arm tk-arm-l"><ellipse cx="36" cy="138" rx="11" ry="20" fill="#2459E0" transform="rotate(28 36 138)"/></g>
+    <g class="tk-arm tk-arm-r"><ellipse cx="164" cy="138" rx="11" ry="20" fill="#2459E0" transform="rotate(-28 164 138)"/></g>
+    <g transform="translate(16 10) scale(1.4)"><path d="M60 8c29 0 50 19 50 46s-21 46-50 46c-7 0-13-1-19-3L22 110l5-20C16 81 10 68 10 54 10 27 31 8 60 8z" fill="#2F6BFF"/><path d="M60 8c29 0 50 19 50 46 0 5-1 10-2 14-6-22-26-37-50-37-17 0-32 8-41 20C19 27 37 8 60 8z" fill="#fff" opacity=".14"/></g>
+    <path d="M42 80 C42 18, 158 18, 158 80" stroke="#1F2433" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <rect x="28" y="70" width="18" height="30" rx="8" fill="#1F2433"/><rect x="154" y="70" width="18" height="30" rx="8" fill="#1F2433"/>
+    <path d="M40 98 Q46 126 76 128" stroke="#1F2433" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="79" cy="128" r="5.5" fill="#1F2433"/>
+    <g class="tk-brows"><path d="M66 60q12-8 24-2M110 58q12-6 24 2" stroke="#1F2433" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="tk-eyes"><ellipse cx="79" cy="83" rx="14" ry="17" fill="#fff"/><ellipse cx="121" cy="83" rx="14" ry="17" fill="#fff"/>
+      <g class="tk-pupils"><circle cx="82" cy="87" r="7.5" fill="#1F2433"/><circle cx="124" cy="87" r="7.5" fill="#1F2433"/><circle cx="85" cy="83" r="2.5" fill="#fff"/><circle cx="127" cy="83" r="2.5" fill="#fff"/></g></g>
+    <ellipse cx="61" cy="107" rx="9" ry="5.5" fill="#FF9EBB" opacity=".85"/><ellipse cx="139" cy="107" rx="9" ry="5.5" fill="#FF9EBB" opacity=".85"/>
+    <g class="tk-mouth" id="tkMouth"><ellipse cx="100" cy="116" rx="14" ry="9" fill="#1F2433"/><ellipse cx="100" cy="121" rx="8" ry="3.5" fill="#FF6B8A"/></g>
+    <g class="tk-waves"><path d="M178 60q9 13 0 26" stroke="#FFC940" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M168 66q4 7 0 14" stroke="#FFC940" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+   </g>
+   <g class="tk-dots"><circle cx="150" cy="22" r="5" fill="#fff"/><circle cx="166" cy="14" r="5" fill="#fff"/><circle cx="182" cy="8" r="5" fill="#fff"/></g>
+  </svg></div>`}
+/* mouth follows the real voice (live), glow follows the learner's mic */
+let tkRAF=0;
+function tkLevel(an){if(!an)return 0;const a=new Uint8Array(an.fftSize);an.getByteTimeDomainData(a);let s=0;for(let i=0;i<a.length;i++){const v=(a[i]-128)/128;s+=v*v}return Math.sqrt(s/a.length)}
+function tkLoop(){cancelAnimationFrame(tkRAF);const step=()=>{const m=document.getElementById("tkMouth"),g=document.getElementById("tkGlow");
+    if(!m&&!g){tkRAF=0;return}
+    if(TU.live&&LV.on){const o=tkLevel(LV.outAn),i=tkLevel(LV.micAn);
+      if(m){m.classList.add("amp");m.style.transform=`scaleY(${Math.min(1.5,.18+o*9).toFixed(2)})`}
+      if(g)g.style.transform=`scale(${(1+Math.min(.45,(LV.state==="speaking"?o:i)*4)).toFixed(3)})`}
+    tkRAF=requestAnimationFrame(step)};tkRAF=requestAnimationFrame(step)}
+{const _vc2=vCall;vCall=function(){let h=_vc2();const st=(/class="vcall (\w+)/.exec(h)||[])[1]||"idle";
+  h=h.replace(/<span class="vc-ring"><\/span><span class="vc-ring r2"><\/span><span class="vc-core">[\s\S]*?<\/svg><\/span>/,tokiChar(st));
+  h=h.replace("اضغط الدائرة لتقاطعه","اضغط على توكي لتقاطعه").replace("اضغط الدائرة واحكي","اضغط على توكي واحكي");
+  setTimeout(tkLoop,0);return h}}
+
+/* ---------- the modern chat screen ---------- */
+function tuHead(){const sc=TUTOR.find(x=>x.id===TU.sc)||TUTOR[0],dis=AIstate!=="ok"?"disabled":"";
+  const status=TU.busy?"عم يكتب…":TU.speaking?"عم يحكي…":TU.on?"عم يسمعك…":"متصل الآن";
+  return `<div class="tc-head"><button class="tc-ic" data-act="go" data-r="home" aria-label="رجوع">${TI.back}</button>
+    <span class="tc-av">${mascot(TU.busy?"think":TU.speaking?"wow":"happy",42)}<i></i></span>
+    <div class="tc-name"><b>توكي</b><small class="${TU.busy||TU.on||TU.speaking?"live":""}">${status}</small></div>
+    ${SR&&TU.sc!=="ask"?`<button class="tc-call" data-act="tuvoice" aria-label="اتصل بتوكي" ${dis}>${TI.phone}</button>`:""}
+    <button class="tc-ic" data-act="tumenu" aria-label="المزيد">${TI.more}</button></div>
+  <div class="tc-sub"><button class="tc-scn" data-act="tuscsheet">${sc.icon} <b>${esc(sc.name)}</b> ${TI.chev}</button>${tuMission()}</div>`}
+function tuMission(){const ms=typeof TOKI_MISSIONS!=="undefined"&&TOKI_MISSIONS[TU.sc];if(!ms)return"";const done=TU.mission[LANG+":"+TU.sc]||[];
+  return `<div class="tc-mis"><span class="tc-mt">🎯 ${done.length}/${ms.length}</span>${ms.map((g,i)=>`<span class="tc-mg ${done.includes(i+1)?"ok":""}">${done.includes(i+1)?"✓":"○"} ${g[0]}</span>`).join("")}</div>`}
+function vTutorNew(){document.body.classList.toggle("incall",!!TU.voice);if(TU.voice)return vCall();
+  const msgs=tuMsgs(),dis=AIstate!=="ok"?"disabled":"",buddy=TU.sc==="buddy";
+  AFTER=()=>{const c=$("#chatBox");if(c)c.scrollTop=c.scrollHeight;tuGrow()};
+  if(!TU.micLang)TU.micLang=buddy?"ar":"t";
+  const quick=buddy?["هلا توكي! شو أخبارك؟","علّمني جملة بستعملها كل يوم","بدي أحكيلك عن يومي"]:["Hi Toki! How are you?","Can you help me practice?","I want to talk about my day"];
+  return `<div class="chat-app tc">${tuHead()}
+  <div class="chat-body tc-body" id="chatBox">
+    ${AIstate!=="ok"?`<div class="chat-warn">${aiMissing()}</div>`:""}
+    ${msgs.map((m,i)=>m.role==="assistant"
+      ?`<div class="msg bot"><span class="av">${mascot("smile",30)}</span><div class="bub a"><div dir="auto">${fmtBot(m.content)||"…"}</div>
+        ${m.content&&TU.sc!=="ask"?`<div class="tc-acts"><button data-act="tusay" data-i="${i}" aria-label="استمع">${TI.speaker}</button><button data-act="tutr" data-i="${i}" aria-label="ترجم" ${dis}>${TI.globe}</button></div>`:""}
+        ${m.tr?`<div class="trn2">${esc(m.tr)}</div>`:m.trBusy?`<div class="trn2 muted">عم بترجم…</div>`:""}</div></div>`
+      :`<div class="msg me"><div class="bub u"><div dir="auto">${esc(m.content)}</div></div></div>`).join("")}
+    ${TU.busy&&msgs[msgs.length-1].role==="user"?`<div class="msg bot"><span class="av">${mascot("think",30)}</span><div class="bub a"><div class="typing"><i></i><i></i><i></i></div></div></div>`:""}
+    ${TU.err?`<div class="chat-err">${TU.err}</div>`:""}
+    ${msgs.length===1&&TU.sc!=="ask"?`<div class="tc-quick">${quick.map(t=>`<button data-act="tuquick" data-t="${esc(t)}" dir="auto" ${dis}>${esc(t)}</button>`).join("")}</div>`:""}
+  </div>
+  ${typeof arMissing==="function"&&arMissing()?`<button class="ar-warn" data-act="arhelp">⚠️ جهازك ما فيه صوت عربي، اضغط لتعرف كيف تضيفه</button>`:""}
+  ${TU.sugg?`<div class="sugg2">${TU.sugg==="busy"?`<span class="muted">توكي عم يفكرلك بردود…</span>`:TU.sugg.map(o=>`<button class="sg" data-act="tusugg" data-t="${esc(o.t)}"><b dir="auto">${esc(o.t)}</b><small>${esc(o.lv||"")} · ${esc(o.ar||"")}</small></button>`).join("")}<button class="sg-x" data-act="tusuggx" aria-label="إغلاق">✕</button></div>`:""}
+  <div class="tc-comp">
+    ${TU.sc!=="ask"?`<div class="tc-tools"><button class="tc-chip" data-act="tuhelp" ${dis}>💡 ساعدني أرد</button>${SR?`<button class="tc-chip" data-act="tuml">🎙️ المايك: ${TU.micLang==="ar"?"عربي":LAR()}</button>`:""}</div>`:""}
+    <div class="tc-row"><div class="tc-input"><textarea id="tuIn" data-keep rows="1" dir="auto" placeholder="${TU.sc==="ask"?"اكتب سؤالك…":buddy?`اكتب عربي أو ${LBI()}…`:`اكتب ${LBI()}…`}" ${dis}></textarea>
+      ${SR&&TU.sc!=="ask"?`<button class="tc-mic ${TU.on?"on":""}" data-act="tumic" aria-label="احكي" ${dis}>${TI.mic}</button>`:""}</div>
+      <button class="tc-send" data-act="${TU.busy?"aistop":"tusend"}" aria-label="${TU.busy?"إيقاف":"إرسال"}" ${dis}>${TU.busy?TI.stop:TI.send}</button></div></div>
+  </div>`}
+vTutor=vTutorNew;VIEWS.tutor=vTutorNew;
+Object.assign(A,{
+  tumenu:()=>showSheet(`<div class="tc-menu"><h2>توكي</h2>
+    <button data-act="tokime"><span>👤</span><b>عرّف توكي عليك</b><small>اسمك واهتماماتك وذاكرة توكي</small></button>
+    <button data-act="tureport" ${AIstate!=="ok"?"disabled":""}><span>📊</span><b>قيّم محادثتي</b><small>علامة وأخطاء وكلمات جديدة</small></button>
+    <button data-act="tumenunew"><span>✨</span><b>محادثة جديدة</b><small>بتمسح الشاشة، وتوكي بيضل متذكّرك</small></button></div>`),
+  tumenunew:()=>{$("#sheet").hidden=true;A.tureset({})},
+  tuscsheet:()=>showSheet(`<div class="tc-scs"><h2>شو بدك نتدرّب؟</h2><div class="tc-grid">${TUTOR.map(t=>`<button data-act="tuscpick" data-id="${t.id}" aria-pressed="${t.id===TU.sc}"><span>${t.icon}</span><b>${esc(t.name)}</b></button>`).join("")}</div></div>`),
+  tuscpick:d=>{$("#sheet").hidden=true;A.tusc({id:d.id})}});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
