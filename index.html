@@ -816,6 +816,33 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 [data-theme="dark"] .abc-tile em{background:rgba(255,201,64,.16);color:#FFE08A}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .abc-tile em{background:rgba(255,201,64,.16);color:#FFE08A}}
 [data-theme="dark"] .abc-tile b{color:#8FB3FF}
+
+/* ===== letters: pronunciation practice ===== */
+.abc-card{display:flex;flex-direction:column;gap:6px}
+.abc-card .abc-tile{width:100%}
+.abc-acts{display:flex;gap:6px;justify-content:center}
+.pn-btn{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0;font-size:1.15rem}
+.pn-btn.on{background:#EF4444;border-color:#EF4444;animation:tkpulse 1.2s infinite}
+.pn-res{border-radius:14px;padding:7px 10px;font-weight:700;font-size:.9rem;text-align:center;line-height:1.5}
+.pn-res small{display:block;font-weight:500;font-size:.8rem;margin-top:3px}
+.pn-res.ok{background:var(--good-bg);color:var(--good-d)}.pn-res.mid{background:var(--gold-soft);color:#6B4A00}.pn-res.bad{background:#FEE2E2;color:#991B1B}
+[data-theme="dark"] .pn-res.mid{background:rgba(255,201,64,.16);color:#FFE08A}[data-theme="dark"] .pn-res.bad{background:rgba(239,68,68,.18);color:#FCA5A5}
+.dr-go{margin:10px 0 4px;background:linear-gradient(135deg,#8B5CF6,#6D28D9);color:#fff;border:none}
+.dr-big{font-size:4.5rem;font-weight:700;color:var(--primary);margin-top:14px;font-family:"Rubik","Noto Sans SC",sans-serif}
+.dr-em{font-size:3rem}.dr-state{margin:14px auto;font-size:1.3rem;font-weight:700;padding:10px 18px;border-radius:18px;background:var(--sky);display:inline-block}
+.dr-state.listen{background:#FEE2E2;color:#B91C1C;animation:tkpulse 1.2s infinite}
+.dr-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.dr-chip{padding:6px 10px;border-radius:12px;background:var(--sky);font-weight:700}.dr-chip.ok{background:var(--good-bg);color:var(--good-d)}.dr-chip.mid{background:var(--gold-soft);color:#6B4A00}.dr-chip.bad{background:#FEE2E2;color:#991B1B}
+.mo-sheet h2{font-size:2.4rem;margin:0;text-align:center}.mo-sheet ol{padding-inline-start:22px;line-height:1.9}
+.mouth .mo-lips{transform-box:fill-box;transform-origin:center;animation:moPuff 1.6s infinite}
+@keyframes moPuff{0%,40%{transform:scaleY(.25)}55%,100%{transform:scaleY(1)}}
+.mouth .mo-air{animation:moAir 1.6s infinite}@keyframes moAir{0%,50%{opacity:0;transform:translateX(-6px)}70%{opacity:1}100%{opacity:0;transform:translateX(6px)}}
+.mouth .mo-round{transform-box:fill-box;transform-origin:center;animation:moRound 1.8s infinite}@keyframes moRound{0%,100%{transform:scale(1)}50%{transform:scale(.8)}}
+.mouth .mo-tongue{transform-box:fill-box;transform-origin:center;animation:moRound 1.4s infinite}
+.mouth .mo-wave{animation:moAir 1.2s infinite}
+.mouth .mo-trill{transform-box:fill-box;transform-origin:center bottom;animation:moTrill .18s infinite alternate}@keyframes moTrill{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.mouth .mo-curl{transform-box:fill-box;transform-origin:left bottom;animation:moCurl 1.6s infinite}@keyframes moCurl{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+@media (prefers-reduced-motion:reduce){.mouth *{animation:none!important}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4865,6 +4892,98 @@ function ctLetterTexts(it){return LANG==="zh"?[it[1]]:[ctLetterText(it),abcName(
 CT.pre={};
 async function ctPreload(texts){for(const t of texts){if(!CT.on())return;const u=await ctUrl(t);if(u&&!CT.pre[u]){const a=new Audio();a.preload="auto";a.src=u;CT.pre[u]=a}}}
 {const _open=A.abcopen;A.abcopen=d=>{_open(d);const g=abcData().groups.find(x=>x.id===d.id);if(g&&CT.on())ctPreload(g.L.map(ctLetterText).concat(g.L.map(abcName)))}}
+/* ================== الحروف: جرّب تلفظها 🎙️ + كيف بطلع الصوت 👄 + اسمع وكرّر 🔁 ================== */
+/* ---- pronunciation check ---- */
+function pnNorm(s){s=String(s||"").toLocaleLowerCase(LANG==="tr"?"tr-TR":undefined).replace(/[.,!?¿¡…"'’«»()\-:;。，！？]/g," ").replace(/\s+/g," ").trim();return typeof foldLang==="function"?foldLang(s):s}
+function pnLev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function pnScore(target,alts){const t=pnNorm(target);let best=0,heard=alts[0]||"";
+  for(const a of alts){const h=pnNorm(a);let sc=h.split(" ").includes(t)||h===t?1:0;
+    if(!sc){const words=h.split(" ").concat([h]);for(const w of words){const r=1-pnLev(w,t)/Math.max(w.length,t.length,1);if(r>sc)sc=r}}
+    if(sc>best){best=sc;heard=a}}
+  return{score:Math.round(best*100),heard}}
+const PN={};  // results per letter: key → {score, heard, tip, busy}
+const pnWord=it=>LANG==="zh"?it[1]:it[2];
+function pnTry(it,key,done){if(!SR){toast("المايك بيحتاج Chrome أو Safari حديث");done&&done(null);return}
+  PN[key]={busy:true};render();
+  listen(alts=>{const r=pnScore(pnWord(it),alts||[]);PN[key]=Object.assign(r,{busy:false});
+      if(r.score>=85){addXP(2);if(typeof sfx==="function")sfx("ok")}else{if(typeof sfx==="function")sfx("bad");pnTip(it,key,r.heard)}
+      render();done&&done(r)},
+    e=>{PN[key]={busy:false,err:e};render();done&&done(null)},
+    ()=>{if(PN[key]&&PN[key].busy){PN[key].busy=false;render();done&&done(null)}})}
+async function pnTip(it,key,heard){if(!AI||AIstate!=="ok"||!heard)return;
+  try{const r=await AI(`An Arabic-speaking beginner tried to pronounce the ${LNAME_EN()} word "${pnWord(it)}". Speech recognition heard: "${heard}". In ONE short sentence of friendly Palestinian Arabic, tell them exactly which sound to fix and how (lips/tongue/throat). No preamble.`,{modelTier:"quick"});
+    const t=String((r&&r.text)||r||"").trim().split("\n")[0].slice(0,220);if(t&&PN[key]){PN[key].tip=t;render()}}catch(e){}}
+
+/* ---- how the sound is made (animated mouth) ---- */
+const MOUTH={
+ puff:{t:"صوت بنفخة هوا",s:["سكّر شفايفك منيح","احبس الهوا شوي ورا شفايفك","افتحهم فجأة مع نفخة هوا خفيفة، بدون صوت من الحنجرة"]},
+ lipteeth:{t:"السنان على الشفة",s:["حط سنانك الفوق على شفتك التحت","طلّع الهوا من بينهم","خلي الحنجرة تهز (حط إيدك على رقبتك وحس فيها)"]},
+ round:{t:"شفايف مدوّرة",s:["دوّر شفايفك كأنك بدك تصفّر","خليهم مدوّرين وإنت بتحكي «إي»","الصوت بيطلع بين «أو» و«إي»"]},
+ teeth:{t:"اللسان بين السنان",s:["طلّع طرف لسانك شوي بين سنانك","طلّع الهوا بهدوء","زي حرف «ث» بالعربي"]},
+ throat:{t:"من الحلق",s:["خلي لسانك مرتاح لتحت","طلّع الصوت من ورا، من الحلق","زي «غ» أو «خ» خفيفة"]},
+ trill:{t:"ر مرعّدة",s:["حط طرف لسانك ورا سنانك الفوق","طلّع هوا قوي","خلي طرف اللسان يهز كذا مرة: ررر"]},
+ silent:{t:"حرف ما بينلفظ",s:["هالحرف بينكتب بس ما بيطلع إله صوت","اقرأ الكلمة كأنه مش موجود","انتبه عليه بالكتابة بس"]},
+ curl:{t:"لف اللسان لورا",s:["ارفع طرف لسانك ولفّه لورا شوي","خليه قريب من سقف الحلق","طلّع الصوت وإنت على هالوضع"]}};
+function mouthType(hint){hint=String(hint||"").replace(/مش ڤ/g,"").replace(/مش ك/g,"");
+  if(/صامت|ما بينلفظ/.test(hint))return"silent";if(/لف اللسان/.test(hint))return"curl";if(/ترعيد|مرعّدة/.test(hint))return"trill";
+  if(/مدوّرة|تدوّر/.test(hint))return"round";if(/نفخة/.test(hint))return"puff";if(/ڤ/.test(hint))return"lipteeth";
+  if(/(^|[^ا-ي])ث/.test(hint))return"teeth";if(/الحلق|(^|\s)خ(\s|$)|خ خفيفة/.test(hint))return"throat";return null}
+function mouthSvg(type){const lipsO='<path d="M20 45 Q60 20 100 45 Q60 72 20 45Z" fill="#E8697D"/>',skin='<rect x="0" y="0" width="120" height="90" rx="18" fill="#FFD9B8"/>';
+  const T={
+   puff:`${skin}<g class="mo-lips">${lipsO}<path d="M28 45 Q60 38 92 45 Q60 52 28 45Z" fill="#7A2233"/></g><g class="mo-air"><path d="M104 38h12M106 46h12M104 54h12" stroke="#4F86FF" stroke-width="4" stroke-linecap="round"/></g>`,
+   lipteeth:`${skin}<path d="M22 40 Q60 22 98 40" stroke="#E8697D" stroke-width="10" fill="none" stroke-linecap="round"/><rect x="36" y="38" width="48" height="12" rx="3" fill="#fff"/><path d="M22 58 Q60 50 98 58 Q60 72 22 58Z" fill="#E8697D"/><g class="mo-air"><path d="M104 50h12M104 58h10" stroke="#4F86FF" stroke-width="4" stroke-linecap="round"/></g>`,
+   round:`${skin}<g class="mo-round"><ellipse cx="60" cy="46" rx="20" ry="18" fill="#E8697D"/><ellipse cx="60" cy="46" rx="9" ry="8" fill="#7A2233"/></g>`,
+   teeth:`${skin}${lipsO}<path d="M30 45 Q60 30 90 45 Q60 60 30 45Z" fill="#7A2233"/><rect x="38" y="36" width="44" height="7" rx="2" fill="#fff"/><rect x="38" y="48" width="44" height="7" rx="2" fill="#fff"/><g class="mo-tongue"><ellipse cx="60" cy="46" rx="14" ry="5" fill="#FF8FA3"/></g>`,
+   throat:`${skin}${lipsO}<path d="M30 45 Q60 30 90 45 Q60 60 30 45Z" fill="#7A2233"/><g class="mo-wave"><path d="M50 78q5-6 10 0t10 0" stroke="#4F86FF" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M44 86q8-8 16 0t16 0" stroke="#4F86FF" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></g>`,
+   trill:`${skin}${lipsO}<path d="M30 45 Q60 30 90 45 Q60 60 30 45Z" fill="#7A2233"/><rect x="40" y="36" width="40" height="6" rx="2" fill="#fff"/><g class="mo-trill"><path d="M50 52 Q60 40 70 52" stroke="#FF8FA3" stroke-width="7" fill="none" stroke-linecap="round"/></g>`,
+   silent:`${skin}<path d="M30 48 Q60 56 90 48" stroke="#E8697D" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M60 22v52" stroke="#1F2433" stroke-width="5" stroke-linecap="round"/><circle cx="96" cy="22" r="12" fill="#EF4444"/><path d="M90 16l12 12M102 16l-12 12" stroke="#fff" stroke-width="3"/>`,
+   curl:`${skin}${lipsO}<path d="M30 45 Q60 30 90 45 Q60 60 30 45Z" fill="#7A2233"/><g class="mo-curl"><path d="M44 52 Q60 50 70 44 Q76 38 70 36" stroke="#FF8FA3" stroke-width="7" fill="none" stroke-linecap="round"/></g>`};
+  return `<svg class="mouth mo-${type}" viewBox="0 0 120 90" width="180" height="135" aria-hidden="true">${T[type]||""}</svg>`}
+function mouthSheet(it){const ty=mouthType(it[5]),m=MOUTH[ty];if(!m)return;
+  showSheet(`<div class="mo-sheet"><h2 dir="ltr">${esc(it[0])}</h2><p class="muted">${esc(it[5])}</p><div class="center">${mouthSvg(ty)}</div><h3>👄 ${m.t}</h3><ol>${m.s.map(x=>`<li>${x}</li>`).join("")}</ol>
+    <div class="row" style="justify-content:center"><button class="btn" data-act="mosay" data-t="${esc(ctLetterText?ctLetterText(it):it[2])}">🔊 اسمعها</button><button class="btn ghost" data-act="mosayslow" data-t="${esc(pnWord(it))}">🐢 أبطأ</button></div></div>`)}
+
+/* ---- listen & repeat drill ---- */
+let DR={on:false,i:0,phase:"",res:[]};
+const sleepP=ms=>new Promise(r=>setTimeout(r,ms));
+const speakP=items=>new Promise(r=>{let done=false;const f=()=>{if(!done){done=true;r()}};speakSeq(items,f);setTimeout(f,9000)});
+async function drillRun(){const g=abcData().groups.find(x=>x.id===AB.g);if(!g)return;DR={on:true,i:0,phase:"play",res:[]};render();
+  for(let i=0;i<g.L.length&&DR.on;i++){const it=g.L[i];DR.i=i;DR.phase="play";render();await speakP(abcSay(it));if(!DR.on)break;
+    DR.phase="listen";render();
+    if(SR){const r=await new Promise(res=>{let got=null;listen(a=>{got=pnScore(pnWord(it),a||[])},()=>{},()=>res(got))});DR.res[i]=r?r.score:0}
+    else{await sleepP(2500);DR.res[i]=null}
+    if(!DR.on)break;DR.phase="result";render();await sleepP(1100)}
+  if(DR.on){DR.phase="done";const sc=DR.res.filter(x=>x!=null);if(sc.length&&sc.reduce((a,b)=>a+b,0)/sc.length>=70)addXP(8);render()}}
+function vDrill(g){const it=g.L[DR.i]||g.L[0],r=DR.res[DR.i];
+  if(DR.phase==="done"){const sc=DR.res.filter(x=>x!=null),avg=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):null;
+    return `<section class="panel center">${mascot(avg==null||avg>=70?"happy":"think",90)}<h2>${avg==null?"خلّصت الدرس الصوتي 👏":avg>=70?"برافو! نطقك ممتاز 🎉":"منيح! كمّل تدرّب"}</h2>${avg!=null?`<p class="big">معدّلك ${avg}%</p>`:""}
+      <div class="dr-list">${g.L.map((x,i)=>`<span class="dr-chip ${DR.res[i]==null?"":DR.res[i]>=85?"ok":DR.res[i]>=60?"mid":"bad"}" dir="ltr">${esc(x[0].split(" ")[0])} ${DR.res[i]==null?"":DR.res[i]+"%"}</span>`).join("")}</div>
+      <div class="row" style="justify-content:center"><button class="btn hl" data-act="drstart">🔁 كمان مرة</button><button class="btn ghost" data-act="drstop">رجوع للحروف</button></div></section>`}
+  return `<section class="panel center"><div class="spread"><button class="back" data-act="drstop" aria-label="إيقاف">✕</button><span class="muted">${DR.i+1} / ${g.L.length}</span><span></span></div>
+    <div class="progress"><i style="width:${100*DR.i/g.L.length}%"></i></div>
+    <div class="dr-big" dir="ltr">${esc(it[0])}</div><div class="dr-em">${it[4]}</div><div class="abc-w" dir="ltr">${esc(it[2])}</div>
+    <div class="dr-state ${DR.phase}">${DR.phase==="play"?"🔊 اسمع…":DR.phase==="listen"?(SR?"🎙️ دورك! كرّرها هلأ":"🗣️ كرّرها بصوت عالي"):r==null?"👍":r>=85?`✅ ممتاز (${r}%)`:r>=60?`👌 قريبة (${r}%)`:`🔁 جرّب كمان (${r}%)`}</div>
+    <p class="muted">توكي بيحكي كل حرف، وإنت بتعيده وراه</p></section>`}
+
+/* ---- the new letter group screen ---- */
+{const _va=VIEWS.abc;VIEWS.abc=function(){if(!AB.g||(AB.mode!=="learn"&&AB.mode!=="drill"))return _va();
+  const g=abcData().groups.find(x=>x.id===AB.g);if(!g){AB.g=null;return _va()}
+  if(AB.mode==="drill")return vDrill(g);
+  return `<section class="panel"><div class="spread"><button class="back" data-act="abcback" aria-label="رجوع">→</button><h2 style="margin:0">${esc(g.name)}</h2><span></span></div>
+    <p class="muted">اضغط الحرف واسمعه، و🎙️ جرّب تلفظه، و👄 شوف كيف بيطلع الصوت.</p>
+    <button class="btn wide dr-go" data-act="drstart">🔁 اسمع وكرّر: درس صوتي لكل المجموعة</button>
+    <div class="abc-grid">${g.L.map((it,i)=>{const key=AB.g+":"+i,p=PN[key],mt=mouthType(it[5]);
+      return `<div class="abc-card"><button class="abc-tile" data-act="abcsay" data-i="${i}"><b dir="ltr">${esc(it[0])}</b><span class="abc-em">${it[4]}</span><span class="abc-w" dir="ltr">${esc(it[2])}</span><small>${esc(it[3])}</small><em>${esc(it[5])}</em></button>
+        <div class="abc-acts"><button class="pn-btn ${p&&p.busy?"on":""}" data-act="pntry" data-i="${i}" aria-label="جرّب تلفظها">🎙️</button>${mt?`<button class="pn-btn" data-act="mouth" data-i="${i}" aria-label="كيف بطلع الصوت">👄</button>`:""}</div>
+        ${p&&!p.busy&&(p.score!=null||p.err)?`<div class="pn-res ${p.err?"bad":p.score>=85?"ok":p.score>=60?"mid":"bad"}">${p.err?esc(p.err):p.score>=85?`✅ ممتاز ${p.score}%`:p.score>=60?`👌 قريبة ${p.score}%`:`🔁 ${p.score}%، جرّب كمان`}${p.heard&&p.score<85?`<small>سمعت: <span dir="ltr">${esc(p.heard)}</span></small>`:""}${p.tip?`<small>💡 ${esc(p.tip)}</small>`:""}</div>`:p&&p.busy?`<div class="pn-res mid">🎙️ احكي «<span dir="ltr">${esc(pnWord(it))}</span>»…</div>`:""}</div>`}).join("")}</div>
+    <div class="center" style="margin-top:14px"><button class="btn hl big" data-act="abcquiz">🎯 اختبر حالك</button></div></section>`}}
+Object.assign(A,{
+  pntry:d=>{const g=abcData().groups.find(x=>x.id===AB.g);if(g)pnTry(g.L[+d.i],AB.g+":"+d.i)},
+  mouth:d=>{const g=abcData().groups.find(x=>x.id===AB.g);if(g)mouthSheet(g.L[+d.i])},
+  mosay:d=>speak(d.t),mosayslow:d=>speak(d.t,{slow:true}),
+  drstart:()=>{AB.mode="drill";drillRun()},
+  drstop:()=>{DR.on=false;try{if(recOn&&rec)rec.abort()}catch(e){}stopSpeak();AB.mode="learn";render()}});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
