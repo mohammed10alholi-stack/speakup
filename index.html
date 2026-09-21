@@ -679,6 +679,18 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .vc-live.alt{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.35);box-shadow:none}
 .minbal{display:flex;align-items:center;gap:14px;background:linear-gradient(140deg,#4C1D95,#2F6BFF);color:#fff;border-radius:22px;padding:14px 16px;margin-top:6px}
 .minbal small{display:block;opacity:.85;font-weight:600}.minbal b{display:block;font-size:1.6rem;font-weight:700}.minbal span{display:block;font-size:.85rem;opacity:.9}
+
+/* ===== compact header on phones + real-voice balance chip ===== */
+.chip.c-min{border:none;cursor:pointer;background:#F3E8FF;color:#6D28D9;font-weight:700;font-family:inherit}
+.chip.c-min[hidden]{display:none}
+[data-theme="dark"] .chip.c-min{background:rgba(139,92,246,.22);color:#DDD6FE}
+@media (max-width:520px){
+  .top .brand b,.top .brand small{display:none}
+  .top .chip.c-goal{display:none}
+  .top .bar{gap:6px}
+  .top .chip{padding:5px 9px;font-size:.88rem}
+  .top .langbtn{width:34px;height:34px;font-size:1.15rem}
+}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -691,6 +703,7 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
   <span class="chip c-xp" title="نقاط">⭐ <span id="xp">0</span></span>
   <span class="chip c-streak" title="أيام متتالية">🔥 <span id="streak">0</span></span>
   <span class="chip c-goal" title="هدف اليوم">🎯 <span id="goal">0%</span></span>
+  <button class="chip c-min" id="minchip" data-act="go" data-r="minutes" title="رصيد دقائق الصوت الحقيقي" hidden>⚡ <span id="minbal">0</span> د</button>
 </div></header>
 <main id="view"></main>
 <nav class="bnav" id="bnav" aria-label="التنقل"></nav>
@@ -4071,7 +4084,7 @@ function lvPlay(b64){if(!LV.outAc)return;const bin=atob(b64),n=bin.length>>1;if(
 function lvStopPlay(){LV.sources.forEach(s=>{try{s.stop()}catch(e){}});LV.sources=[];LV.playT=0}
 /* how many real-voice minutes are left today */
 async function liveStatus(force){if(!window.liveApi||LV.stLoading)return;if(!force&&LV.status&&Date.now()-LV.statusAt<60000)return;
-  LV.stLoading=true;try{const r=await window.liveApi("live_status");LV.status=r&&!r.error?r:{enabled:false,remaining_sec:0};LV.statusAt=Date.now();if(r&&r.balance_sec!=null&&typeof AUTH!=="undefined"&&AUTH.profile)AUTH.profile.live_balance_sec=r.balance_sec}catch(e){}LV.stLoading=false;
+  LV.stLoading=true;try{const r=await window.liveApi("live_status");LV.status=r&&!r.error?r:{enabled:false,remaining_sec:0};LV.statusAt=Date.now();if(r&&r.balance_sec!=null&&typeof AUTH!=="undefined"&&AUTH.profile){AUTH.profile.live_balance_sec=r.balance_sec;try{header()}catch(e){}}}catch(e){}LV.stLoading=false;
   if(route==="tutor"&&TU.voice&&!TU.live)render()}
 async function liveStart(useBal){if(!liveAvailable()||LV.on)return;LV.useBal=!!useBal;
   tqReset();TU.speaking=false;if(recOn&&rec)try{rec.abort()}catch(e){}
@@ -4129,7 +4142,7 @@ function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.det
 {const _vc=vCall;vCall=function(){if(!TU.live){let h=_vc();if(liveAvailable()){liveStatus();const st=LV.status;
     if(st&&st.enabled){const left=Math.floor((st.remaining_sec||0)/60);
       const bal=Math.floor((st.balance_sec||0)/60),canTop=typeof VIEWS!=="undefined"&&VIEWS.minutes;
-      h=h.replace('<div class="vc-lang">',((st.remaining_sec||0)>=20?`<button class="vc-live" data-act="livestart">⚡ صوت توكي الحقيقي <small>باقيلك ${left>=1?left+" د":"أقل من دقيقة"} مجاناً اليوم</small></button>`
+      h=h.replace('<div class="vc-lang">',(lvIsAdmin()?`<button class="vc-live" data-act="livestart">⚡ صوت توكي الحقيقي <small>أدمن · بدون حد يومي</small></button>`:(st.remaining_sec||0)>=20?`<button class="vc-live" data-act="livestart">⚡ صوت توكي الحقيقي <small>باقيلك ${left>=1?left+" د":"أقل من دقيقة"} مجاناً اليوم</small></button>`
         :(st.balance_sec||0)>=20?`<button class="vc-live" data-act="livestart" data-bal="1">⚡ كمّل بالصوت الحقيقي من رصيدك <small>معك ${bal>=1?bal+" د":"أقل من دقيقة"}</small></button>`
         :`<p class="vc-note">⏳ خلصت دقايقك المجانية لليوم${canTop?"، وبتقدر تشحن دقايق إضافية":"، بترجع بكرة 💙"}</p>${canTop?`<button class="vc-live alt" data-act="lvtopup">💳 اشحن دقايق صوت حقيقي</button>`:""}`)+'<div class="vc-lang">')}}
     return h}
@@ -4435,7 +4448,7 @@ async function loadMin(){if(!AUTH.user)return;
   const [p,o,b]=await Promise.all([sb.from("minute_packs").select("*").eq("active",true).order("sort"),
     sb.from("minute_orders").select("*").eq("user_id",AUTH.user.id).order("created_at",{ascending:false}).limit(10),
     sb.from("profiles").select("live_balance_sec").eq("id",AUTH.user.id).maybeSingle()]);
-  MIN.packs=p.data||[];MIN.orders=o.data||[];MIN.bal=(b.data&&b.data.live_balance_sec)||0;if(AUTH.profile)AUTH.profile.live_balance_sec=MIN.bal;
+  MIN.packs=p.data||[];MIN.orders=o.data||[];MIN.bal=(b.data&&b.data.live_balance_sec)||0;if(AUTH.profile){AUTH.profile.live_balance_sec=MIN.bal;header()}
   if(!MIN.pack&&MIN.packs[0])MIN.pack=MIN.packs[0].id;if(!MIN.method)MIN.method=CFG.PAYMENT_METHODS[0].id;if(route==="minutes")render()}
 function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p>سجّل دخول أول.</p></section>`;
   if(MIN.packs===null){loadMin();return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p class="muted">جاري التحميل…</p></section>`}
@@ -4469,6 +4482,7 @@ async function minSend(){const ref=val("minRef"),fi=$("#minFile"),f=fi&&fi.files
   catch(e){MIN.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":/bad_pack/.test(e.message||"")?"هالباقة مش متاحة هلأ.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
   MIN.busy=false;render()}
 VIEWS.minutes=vMinutes;PARENT.minutes="me";
+{const _hd=header;header=function(){_hd();const c=document.getElementById("minchip");if(!c)return;const on=!!(AUTH.user&&AUTH.profile);c.hidden=!on;if(on){const el=document.getElementById("minbal");if(el)el.textContent=Math.floor((AUTH.profile.live_balance_sec||0)/60)}}}
 Object.assign(A,{minpack:d=>{MIN.pack=+d.id;render()},minmeth:d=>{MIN.method=d.id;render()},minsend:minSend,minreload:()=>{MIN.packs=null;render()}});
 {const _vm3=VIEWS.me;VIEWS.me=function(){let h=_vm3();if(!AUTH.user)return h;const m=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60);
   return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">⚡</span><b>دقائق صوت توكي الحقيقي: ${m} د</b><span>اشحن ›</span></button><section class="rankcard">`)}}
