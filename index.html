@@ -4083,7 +4083,7 @@ addBuddy(EN_DATA.TUTOR,"en");addBuddy(TUTOR,LANG);for(const l in LCACHE)addBuddy
 {const _bl=buildLang;buildLang=function(l){const r=_bl(l);addBuddy(r.TUTOR,l);return r}}
 if(TU.sc==="free")TU.sc="buddy";
 {const _tr=tuRules;tuRules=function(sc){if(sc.id!=="buddy")return _tr(sc);const L=LNAME_EN(),lv=userLv(),me=S.tokiMe||{};
-  const ratio={A1:`about 70% Arabic and 30% ${L}`,A2:`about 60% Arabic and 40% ${L}`,B1:`about 40% Arabic and 60% ${L}`,B2:`mostly ${L}, with Arabic only for quick explanations`}[lv]||`about half Arabic and half ${L}`;
+  const ratio={A1:`about 60% Arabic and 40% ${L}`,A2:`about 60% Arabic and 40% ${L}`,B1:`about 40% Arabic and 60% ${L}`,B2:`mostly ${L}, with Arabic only for quick explanations`}[lv]||`about half Arabic and half ${L}`;
   const weak=(S.mistakes||[]).slice(0,5).map(m=>m.en).filter(Boolean).join(" | ");
   return `You are Toki (توكي), the learner's warm, funny, supportive close friend — not a formal teacher. The learner is an Arabic speaker from Palestine learning ${L} at CEFR level ${lv}.
 How to talk:
@@ -4242,8 +4242,8 @@ TURN-TAKING:
 - If the learner interrupts you, stop at once and listen. Answer what they said first. Then, if your previous point was not finished and is still useful, continue it naturally with a short bridge like «المهم، كنت عم بحكيلك…» and pick up exactly where you stopped. Never silently drop what you were saying.`;
   if(lvEasy())return base+`
 EASY MODE (very important):
-- Speak mostly in Arabic (about 80%).
-- Use ${L} only in very short, simple phrases of 4 to 8 common words.
+- Speak about 60% Arabic and 40% ${L}. Use real ${L} sentences often, not just single words.
+- Keep ${L} sentences short and simple (about 4 to 10 common words).
 - Say every ${L} phrase SLOWLY and CLEARLY, word by word, with small pauses, in a neutral standard accent. No slang, no idioms, no fast connected speech.
 - After each ${L} phrase, give its meaning in Arabic, then invite the learner to repeat it.
 - When the learner repeats, praise them and gently fix pronunciation in Arabic.
@@ -4290,7 +4290,7 @@ function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.det
       <button class="vc-b" data-act="lvmute" aria-pressed="${LV.muted}"><span>${LV.muted?"🔇":"🎙️"}</span><small>${LV.muted?"افتح المايك":"سكّر المايك"}</small></button></div></div>`}}
 {const _tv=A.tuvoice;A.tuvoice=()=>{if(TU.live){liveStop();TU.voice=false;render();return}_tv()}}
 Object.assign(A,{lveasy:()=>{LV.easy=!lvEasy();S.lvEasy=LV.easy;save();const ws=LV.ws;
-    if(ws&&ws.readyState===1&&LV.ready)ws.send(JSON.stringify({realtimeInput:{text:LV.easy?"(From now on use EASY MODE: mostly Arabic, very short and simple English phrases spoken slowly and clearly, give the Arabic meaning, and ask me to repeat.)":"(From now on speak normally for my level: clearer and a bit slower than natives, still simple words.)"}}));
+    if(ws&&ws.readyState===1&&LV.ready)ws.send(JSON.stringify({realtimeInput:{text:LV.easy?"(From now on use EASY MODE: about 60% Arabic and 40% English, short and simple English sentences spoken slowly and clearly, give the Arabic meaning, and ask me to repeat.)":"(From now on speak normally for my level: clearer and a bit slower than natives, still simple words.)"}}));
     toast(LV.easy?"🐢 توكي رح يحكي أسهل وأبطأ":"توكي رجع يحكي عادي حسب مستواك");render()},
   lvtopup:()=>{if(TU.voice)A.tuvoice();go("minutes")},livestart:d=>liveStart(!!(d&&d.bal)),lvmute:()=>{LV.muted=!LV.muted;render()}});
 /* ================== خطتي: خريطة الطريق للمستوى الجاي (توكي بيشرح زي المعلم) ================== */
@@ -4476,6 +4476,32 @@ Object.assign(A,{
   tumenunew:()=>{$("#sheet").hidden=true;A.tureset({})},
   tuscsheet:()=>showSheet(`<div class="tc-scs"><h2>شو بدك نتدرّب؟</h2><div class="tc-grid">${TUTOR.map(t=>`<button data-act="tuscpick" data-id="${t.id}" aria-pressed="${t.id===TU.sc}"><span>${t.icon}</span><b>${esc(t.name)}</b></button>`).join("")}</div></div>`),
   tuscpick:d=>{$("#sheet").hidden=true;A.tusc({id:d.id})}});
+/* ================== توكي الذكي: بيعرف وضعك الدراسي وبيعلّم زي معلم خبير ================== */
+function learnerBrief(){let d=null;try{d=rmData()}catch(e){}
+  const wd=k=>WMAP[String(k).toLowerCase()];
+  const recent=Object.keys(S.known||{}).slice(-8).map(k=>k.split(":").slice(1).join(":"));
+  const learning=[...new Set(dueList().slice(0,6).concat(recent))].map(wd).filter(Boolean).slice(0,10).map(w=>`${w.en} (${w.ar})`);
+  const L=[`- Level: ${userLv()}${d&&d.next?`, working towards ${d.next}`:""}${d?`; progress in this level: ${d.pct}%`:""}.`];
+  if(d){const u=d.units[d.cur];if(u)L.push(`- Current study unit: ${u.title} (${u.done}/${u.items.length} done).`);
+    const nx=d.rest.filter(x=>!x.done).slice(0,3).map(x=>`${x.kind}: ${x.name}`);if(nx.length)L.push(`- Next study steps: ${nx.join("; ")}.`);
+    const w=d.skills.filter(s=>s.done<s.total).sort((a,b)=>a.done/a.total-b.done/b.total)[0];
+    if(w)L.push(`- Weakest area right now: ${({"كلمات":"vocabulary","قواعد":"grammar","قراءة":"reading","محادثات":"conversation"})[w.n]||w.n}.`)}
+  if(learning.length)L.push(`- Words they are learning now: ${learning.join(", ")}.`);
+  if(S.streak)L.push(`- Study streak: ${S.streak} days.`);
+  return `\nLEARNER PROFILE (use it to personalize; never read it out as a list):\n${L.join("\n")}`}
+const TOKI_SMART=`
+HOW TO BE AN EXCELLENT TUTOR:
+- Teach at "i+1": mostly understandable, with one small new thing at a time.
+- Weave the learner's current study words and grammar (from the profile) naturally into the conversation, and invite them to use them.
+- Every few turns, briefly recall something you taught before and check if they remember it (spaced review).
+- Correct with recasts: repeat their idea correctly and naturally; add a one-line Arabic tip only for important mistakes. Don't over-correct.
+- Ask open, personal questions (why / how / what happened) rather than yes/no questions — one question at a time.
+- If they seem confused or reply in Arabic, simplify, give a tiny example, and encourage them.
+- Notice repeated mistakes and fix the root cause simply.
+- React to what they say like a real, curious friend before teaching anything.`;
+const TOKI_EXPLAIN_PLUS=`
+Explain like an expert teacher for Arabic speakers: when helpful, compare with Arabic; mention the typical mistake Arabic speakers make with this point; add a quick pronunciation tip if relevant; end with one short practice question for the learner.`;
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);if(!sc)return r;if(sc.role==="EXPLAIN")return r+TOKI_EXPLAIN_PLUS;return r+learnerBrief()+TOKI_SMART}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
