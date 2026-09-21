@@ -877,6 +877,11 @@ body.chatmode #coach,body.playing #coach{top:calc(12px + env(safe-area-inset-top
 [data-theme="dark"] .dr-chip.mid{background:rgba(255,201,64,.16);color:#FFE08A}
 #sheet{z-index:60}
 .co-more .rm-bub{text-align:start;max-height:55vh;overflow-y:auto}.co-more .rm-bub p{margin:0 0 8px}
+
+.chip.c-min.low{background:#FEE2E2;color:#B91C1C}
+[data-theme="dark"] .chip.c-min.low{background:rgba(239,68,68,.2);color:#FCA5A5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.c-min.low{background:rgba(239,68,68,.2);color:#FCA5A5}}
+.en-sheet h2{margin:8px 0}.en-sheet p{margin:6px 0}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5084,7 +5089,7 @@ const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
 const AUTH={user:null,profile:null,ready:false,mode:"login",err:null,msg:null,busy:false,uid:undefined,email:""};
 let SUB={plans:null,reqs:null,plan:null,method:null,busy:false,err:null,msg:null,loading:false};
-function isPremium(){const p=AUTH.profile;return !!(p&&(p.role==="admin"||(p.plan_until&&new Date(p.plan_until)>new Date())))}
+function isPremium(){return !!(AUTH.user&&AUTH.profile)}
 function lockIcon(lv){return AUTH.user&&!isPremium()&&lv&&lv!=="A1"?" 🔒":""}
 const fmtDate=d=>new Date(d).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"});
 const daysLeft=()=>AUTH.profile&&AUTH.profile.plan_until?Math.ceil((new Date(AUTH.profile.plan_until)-new Date())/864e5):0;
@@ -5093,9 +5098,10 @@ function aiLockedMsg(){return AUTH.user&&isPremium()?`<p class="muted">عم بج
 /* ---------- AI عبر Edge Function ---------- */
 async function callAI(system,messages,signal){
   const {data:{session}}=await sb.auth.getSession();if(!session)throw{code:"not_granted"};
-  let r;try{r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",signal,headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify({system,messages,max_tokens:1200})})}
+  let r;try{r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",signal,headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify({system,messages,max_tokens:1200,charge:(()=>{const c=!!window.__aiCharge;window.__aiCharge=false;return c})()})})}
   catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:"upstream_error"}}
-  const d=await r.json().catch(()=>({}));
+  window.__aiCharge=false;const d=await r.json().catch(()=>({}));
+  if(r.status===402&&d.error==="no_energy"){if(d.energy)enSet(d.energy);enEmpty();throw{code:"no_energy"}}
   if(!r.ok)throw{code:d.error==="rate_limited"?"rate_limited":d.error==="not_subscribed"?"not_granted":d.error==="ai_not_configured"?"ai_not_configured":"upstream_error"};
   return d.text||""}
 window.liveApi=async(action,extra)=>{const {data:{session}}=await sb.auth.getSession();if(!session)return{error:"not_granted"};
@@ -5108,7 +5114,7 @@ const aiShim=async(input,opts={})=>{let system,messages;
 aiShim.json=async(prompt,opts={})=>{const {text}=await aiShim(prompt+"\n\nReturn raw JSON only, with no code fences.",opts);
   const s=text.replace(/```json|```/g,"");const a=s.indexOf("{"),b=s.lastIndexOf("}");try{return JSON.parse(s.slice(a,b+1))}catch(e){throw{code:"invalid_json"}}};
 AIERR.ai_not_configured="المعلم الذكي مش مفعّل على الموقع حالياً.";
-function refreshAI(){AI=isPremium()?aiShim:null;AIstate=isPremium()?"ok":"none"}
+function refreshAI(){AI=isPremium()?aiShim:null;AIstate=isPremium()?"ok":"none";if(AUTH.user)setTimeout(()=>typeof enLoad==="function"&&enLoad(),0)}
 
 /* ---------- مزامنة التقدّم ---------- */
 let syncT=null;
@@ -5157,21 +5163,21 @@ function authErr(e){const m=(e&&e.message)||"";
 const fld=(id,label,type,ac)=>`<label class="fld"><span>${label}</span><input id="${id}" data-keep type="${type}" ${type!=="text"?'dir="ltr"':""} autocomplete="${ac||"off"}"></label>`;
 let LAND={plans:null,trial:null,loading:false,faq:-1};
 async function loadLanding(){LAND.loading=true;
-  try{const [p,t]=await Promise.all([sb.from("plans").select("*").eq("active",true).order("sort"),sb.rpc("public_settings")]);LAND.plans=p.data||[];LAND.trial=(t.data&&t.data.trial_days)||0}catch(e){LAND.plans=[];LAND.trial=0}
+  try{const [p,t]=await Promise.all([sb.from("plans").select("*").eq("active",true).order("sort"),sb.rpc("public_settings")]);LAND.plans=p.data||[];LAND.trial=(t.data&&t.data.trial_days)||0;LAND.energy=(t.data&&t.data.free_daily_energy)||20}catch(e){LAND.plans=[];LAND.trial=0}
   LAND.loading=false;if(!AUTH.user)render()}
-const FAQ=[["كيف بدفع الاشتراك؟","بتحوّل المبلغ على بنك فلسطين أو محفظة PalPay أو Jawwal Pay، وبتبعت رقم الحوالة أو صورة الإيصال من داخل الموقع."],
-  ["إمتى بيتفعّل اشتراكي؟","بعد ما نتأكد من التحويل، عادة "+CFG.ACTIVATION_TIME+"، وبتفتحلك كل الميزات تلقائياً."],
-  ["شو بصير بعد التجربة المجانية؟","بترجع للخطة المجانية (محتوى A1)، وتقدّمك كله بيضل محفوظ. لما تشترك بتكمّل من مكانك."],
+const FAQ=[["الموقع مجاني فعلاً؟","آه! كل يوم بتاخد طاقة ⚡ مجانية، وكل درس أو تمرين أو رسالة لتوكي بـ ⚡ وحدة. كل المستويات والميزات مفتوحة."],
+  ["شو بصير لما تخلص الطاقة؟","بتستنى 24 ساعة وبترجع كاملة، أو بتشحن رصيد ⚡ ما بينتهي وبتكمّل فوراً."],
+  ["كيف بشحن رصيد؟","بتحوّل على بنك فلسطين أو PalPay أو Jawwal Pay، وبتبعت رقم الحوالة أو صورة الإيصال من داخل الموقع، والرصيد بينضاف "+CFG.ACTIVATION_TIME+"."],
   ["بقدر أستخدمه على الجوال؟","أكيد. الموقع مصمم للجوال، وبتقدر تثبّته كتطبيق على شاشتك الرئيسية."],
   ["هل المعلم الذكي بيحكي بصوت؟","آه، في وضع محادثة صوتية: بتحكي وبيرد عليك بصوت وبيصحّحلك أخطاءك بالعربي."],
-  ["بقدر أشارك حسابي مع حدا؟","لا، كل اشتراك لشخص واحد. التفاصيل بصفحة الشروط."]];
+  ["بقدر أشارك حسابي مع حدا؟","لا، كل حساب لشخص واحد. التفاصيل بصفحة الشروط."]];
 function vAuth(){
   if(!AUTH.ready)return `<section class="panel center" style="margin-top:40px"><div style="font-size:2.4rem">📘</div><p class="muted">جاري التحميل…</p></section>`;
   if(AUTH.page==="terms")return `<section class="panel"><button class="btn ghost" data-act="authpage" data-p="">→ رجوع</button>${termsHTML()}</section>`;
   if(LAND.plans===null&&!LAND.loading)loadLanding();
   const m=AUTH.mode,b=AUTH.busy?"disabled":"",tr=LAND.trial;let form;
   if(m==="check")form=`<h2>شيّك إيميلك 📧</h2><p>بعتنالك رابط تأكيد على <b class="en">${esc(AUTH.email)}</b>. افتحه، وبعدين ارجع سجّل دخول.</p><button class="btn" data-act="authmode" data-m="login">تسجيل الدخول</button>`;
-  else if(m==="signup")form=`<h2>حساب جديد${tr?` <span class="chip">🎁 ${tr} أيام مجاناً</span>`:""}</h2>${fld("suName","الاسم الكامل (بيطلع على شهاداتك)","text","name")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
+  else if(m==="signup")form=`<h2>حساب جديد <span class="chip">🎁 مجاني</span></h2>${fld("suName","الاسم الكامل (بيطلع على شهاداتك)","text","name")}${fld("suEmail","الإيميل","email","email")}${fld("suPass","كلمة السر (6 أحرف على الأقل)","password","new-password")}
     <div class="agree"><label><input type="checkbox" id="suAgree" data-act="agree" ${AUTH.agree?"checked":""}> بوافق على</label> <button class="linkbtn" data-act="authpage" data-p="terms">الشروط وسياسة الخصوصية</button></div>
     <button class="btn hl big wide" data-act="dosignup" ${b}>${AUTH.busy?"لحظة…":"إنشاء الحساب"}</button><p class="center" style="margin-top:12px">عندك حساب؟ <button class="linkbtn" data-act="authmode" data-m="login">سجّل دخول</button></p>`;
   else if(m==="forgot")form=`<h2>نسيت كلمة السر</h2><p class="muted">اكتب إيميلك وبنبعتلك رابط تغيير كلمة السر.</p>${fld("fgEmail","الإيميل","email","email")}
@@ -5185,16 +5191,16 @@ function vAuth(){
       <div class="say-hi"><span class="en">Hi! I'm Toki</span> 👋 أنا معلمك</div><div>${mascot("happy",150)}</div>
       <h1>تعلّم الإنجليزي وإنت بتحكيه</h1>
       <p>محادثة صوتية مع معلم ذكي، ومسار على قد مستواك، وكلمات وقواعد وقصص وألعاب، كله بالعربي وبمكان واحد.</p>
-      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷🇪🇸🇩🇪🇫🇷🇨🇳 جديد: تعلّم التركي والإسباني والألماني والفرنسي والصيني كمان!</p>
+      <p class="trial">🎁 <b>مجاني للكل!</b> كل يوم ${LAND.energy||20} ⚡ ببلاش، وإذا بدك أكثر بتشحن رصيد</p>${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷🇪🇸🇩🇪🇫🇷🇨🇳 جديد: تعلّم التركي والإسباني والألماني والفرنسي والصيني كمان!</p>
       <div class="row" style="justify-content:center"><button class="btn hl big" data-act="landgo" data-m="signup">ابدأ مجاناً</button><button class="btn ghost big" data-act="landgo" data-m="login">عندي حساب</button></div>
       ${installBtn()}
     </div></section>
     <section class="panel"><h2 class="center">شو بتلاقي بـ ${esc(CFG.APP_NAME)}؟</h2><div class="feats">${feats.map(f=>`<div><span class="ic">${f[0]}</span><b>${f[1]}</b><span>${f[2]}</span></div>`).join("")}</div></section>
     <section class="panel"><h2 class="center">كيف بتبدأ؟</h2><ol class="how"><li><b>سجّل حساب</b><span>بإيميلك، خلال ثواني.</span></li><li><b>اعمل اختبار المستوى</b><span>7 دقايق وبنعرف من وين تبدأ.</span></li><li><b>اتعلّم كل يوم</b><span>10 دقايق باليوم بتفرق معك.</span></li></ol></section>
-    <section class="panel"><h2 class="center">الأسعار</h2>
-      <div class="plans"><div class="plan"><b>مجاني</b><span class="price">0 ${CFG.CURRENCY}</span><small>محتوى A1 كامل</small></div>
-      ${(LAND.plans||[]).map(x=>`<div class="plan pro"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${x.months>1?`≈ ${Math.round(x.price/x.months)} ${CFG.CURRENCY} بالشهر`:"كل الميزات"}</small></div>`).join("")}</div>
-      <p class="muted center" style="margin-top:10px">الدفع: بنك فلسطين، PalPay، Jawwal Pay</p></section>
+    <section class="panel"><h2 class="center">كيف بيشتغل؟</h2>
+      <div class="plans"><div class="plan pro"><b>مجاني كل يوم</b><span class="price">${LAND.energy||20} ⚡</span><small>كل المستويات وكل الميزات وتوكي</small></div>
+      <div class="plan"><b>بدك أكثر؟</b><span class="price">اشحن ⚡</span><small>رصيد ما بينتهي، بتستخدمه وقت ما بدك</small></div></div>
+      <p class="muted center" style="margin-top:10px">كل درس أو تمرين أو رسالة لتوكي بـ ⚡ وحدة. لما يخلص المجاني بيرجع كامل بعد 24 ساعة.</p></section>
     <section class="panel authcard" id="authcard">${AUTH.err?`<div class="fb bad" style="margin:0 0 12px">${esc(AUTH.err)}</div>`:""}${AUTH.msg?`<div class="fb good" style="margin:0 0 12px">${esc(AUTH.msg)}</div>`:""}${form}</section>
     <section class="panel"><h2 class="center">أسئلة شائعة</h2>${FAQ.map((f,i)=>`<div class="faq"><button data-act="faq" data-i="${i}" aria-expanded="${LAND.faq===i}">${f[0]}<span>${LAND.faq===i?"−":"+"}</span></button>${LAND.faq===i?`<p>${esc(f[1])}</p>`:""}</div>`).join("")}</section>
     <footer class="foot"><button class="linkbtn" data-act="authpage" data-p="terms">الشروط والخصوصية</button> · <a class="linkbtn" href="https://wa.me/${CFG.WHATSAPP}" target="_blank" rel="noopener">تواصل واتساب</a><br><span class="muted">© ${new Date().getFullYear()} ${esc(CFG.APP_NAME)}</span></footer>`}
@@ -5277,11 +5283,13 @@ async function subSend(){
   SUB.busy=false;render()}
 
 /* ---------- لوحات إضافية ---------- */
-function vAccountPanel(){const p=AUTH.profile||{},prem=isPremium();
-  return `<section class="panel"><div class="spread"><div><h2 style="margin:0">${esc(p.full_name||"حسابي")}</h2><p class="muted en" style="text-align:right;margin:0">${esc(AUTH.user.email)}</p></div><span class="chip">${p.role==="admin"?"👑 أدمن":prem&&p.is_trial?"🎁 تجربة":prem?"⭐ مشترك":"مجاني"}</span></div>
-    <p style="margin-top:10px">${prem&&p.is_trial?`تجربتك المجانية بتخلص <b>${fmtDate(p.plan_until)}</b>.`:prem&&p.plan_until?`اشتراكك فعّال لحد <b>${fmtDate(p.plan_until)}</b>.`:prem?"":"إنت على الخطة المجانية (محتوى A1)."}</p>
-    <div class="row"><button class="btn ${prem?"ghost":"hl"}" data-act="go" data-r="subscribe">${prem?"تفاصيل الاشتراك":"⭐ اشترك الآن"}</button>${p.role==="admin"?`<a class="btn ghost" href="admin.html">لوحة التحكم</a>`:""}<button class="btn ghost" data-act="go" data-r="terms">الشروط</button><button class="btn ghost danger" data-act="logout">تسجيل خروج</button></div>${installBtn()}</section>`}
-function vPremiumBanner(){if(!AUTH.user)return "";const p=AUTH.profile||{};
+function vAccountPanel(){const p=AUTH.profile||{},e=EN.st;
+  return `<section class="panel"><div class="spread"><div><h2 style="margin:0">${esc(p.full_name||"حسابي")}</h2><p class="muted en" style="text-align:right;margin:0">${esc(AUTH.user.email)}</p></div><span class="chip">${p.role==="admin"?"👑 أدمن":"⚡ "+enLeft()}</span></div>
+    <p style="margin-top:10px">${p.role==="admin"?"حساب أدمن، بلا حدود.":e?`مجاني اليوم: <b>${e.free_left} من ${e.quota}</b> ⚡ · رصيدك المشحون: <b>${e.balance}</b> ⚡${e.reset_at&&!e.free_left?` · المجاني بيرجع ${enWhen(e.reset_at)}`:""}`:"…"}</p>
+    <div class="row"><button class="btn hl" data-act="entop">⚡ اشحن رصيد</button>${p.role==="admin"?`<a class="btn ghost" href="admin.html">لوحة التحكم</a>`:""}<button class="btn ghost" data-act="go" data-r="terms">الشروط</button><button class="btn ghost danger" data-act="logout">تسجيل خروج</button></div>${installBtn()}</section>`}
+function vPremiumBanner(){if(!AUTH.user)return "";const p=AUTH.profile||{};if(p.role==="admin")return "";const e=EN.st;
+  if(e&&enLeft()<=3)return `<section class="panel hlpanel"><div class="spread"><div><b>${enLeft()?`⚡ باقيلك ${enLeft()} بس`:"⚡ خلصت طاقتك"}</b><p class="muted" style="margin:0">${enLeft()?"اشحن رصيد عشان ما توقف بنص الدرس.":`المجاني بيرجع ${enWhen(e.reset_at)}، أو اشحن وكمّل هلأ.`}</p></div><button class="btn hl" data-act="entop">اشحن</button></div></section>`;
+  return "";
   if(!isPremium())return `<section class="panel hlpanel"><div class="spread"><div><b>⭐ افتح كل المحتوى</b><p class="muted" style="margin:0">كل المستويات لحد B2، المعلم الذكي، وتصحيح الكتابة.</p></div><button class="btn hl" data-act="go" data-r="subscribe">اشترك</button></div></section>`;
   if(p.role!=="admin"&&p.is_trial)return `<section class="panel hlpanel"><div class="spread"><div><b>🎁 تجربتك المجانية: باقي ${daysLeft()} يوم</b><p class="muted" style="margin:0">كل الميزات مفتوحة إلك. اشترك قبل ما تخلص عشان تكمّل.</p></div><button class="btn hl" data-act="go" data-r="subscribe">اشترك</button></div></section>`;
   if(p.role!=="admin"&&daysLeft()<=5)return `<section class="panel hlpanel"><div class="spread"><b>⏰ اشتراكك بيخلص بعد ${daysLeft()} يوم</b><button class="btn hl" data-act="go" data-r="subscribe">جدّد</button></div></section>`;return ""}
@@ -5295,8 +5303,31 @@ function itemLv(act,d){
   if(act==="exopen")return d.lv;
   if(act==="openpath"){if(d.t==="exam")return d.id;return itemLv({cat:"wcat",lesson:"gopen",dialog:"dopen",story:"ropen"}[d.t],d)}
   return null}
-function gateCheck(act,d){if(!AUTH.user||isPremium())return false;const lv=itemLv(act,d);
-  if(lv&&lv!=="A1"){go("subscribe");toast("🔒 هاد المحتوى للمشتركين");return true}return false}
+/* ---------- الطاقة ⚡: كل درس أو تمرين أو لعبة أو رسالة لتوكي بوحدة ---------- */
+const EN={st:null,loading:false,charged:{}};
+function enSet(r){if(r&&r.quota!=null){EN.st=r;try{header()}catch(e){}}}
+function enLeft(){const e=EN.st;if(!e)return 0;if(e.unlimited)return "∞";return (e.free_left||0)+(e.balance||0)}
+function enWhen(t){if(!t)return "قريباً";const ms=new Date(t)-Date.now();if(ms<=0)return "هلأ";const tot=Math.ceil(ms/6e4),h=Math.floor(tot/60),m=tot%60;return `بعد ${h?h+" ساعة":""}${h&&m?" و":""}${m?m+" دقيقة":""}`}
+async function enLoad(){if(!AUTH.user||EN.loading)return;EN.loading=true;try{const {data}=await sb.rpc("use_energy",{n:0});enSet(data)}catch(e){}EN.loading=false}
+function enEmpty(){const e=EN.st||{};
+  showSheet(`<div class="en-sheet center">${mascot("sad",90)}<h2>خلصت طاقتك ⚡</h2>
+    <p>${e.reset_at?`المجاني بيرجع <b>${e.quota||20} ⚡</b> ${enWhen(e.reset_at)}.`:"المجاني بيرجع بعد 24 ساعة."}</p>
+    <p class="muted">أو اشحن رصيد ⚡ وكمّل هلأ. الرصيد المشحون ما بينتهي أبداً.</p>
+    <div class="row" style="justify-content:center"><button class="btn hl big" data-act="entop">⚡ اشحن رصيد</button></div>
+</div>`)}
+const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,drstart:0};
+const EN_ROUTES={dictation:1,spelling:1,speaking:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,typing:1};
+function gateCheck(act,d){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return false;
+  let key=null;
+  if(EN_ACTS[act])key=act+":"+(d.id||d.t||d.g||d.lv||"");
+  else if(act==="go"&&EN_ROUTES[d.r]&&route!==d.r)key="go:"+d.r;
+  if(!key)return false;
+  const last=EN.charged[key];if(last&&Date.now()-last<20*60*1000)return false; // نفس النشاط خلال 20 دقيقة ما بيتحسب مرتين
+  if(EN.st&&!EN.st.unlimited&&enLeft()<1){enEmpty();return true}
+  EN.charged[key]=Date.now();
+  if(EN.st&&!EN.st.unlimited){if(EN.st.free_left>0)EN.st.free_left--;else EN.st.balance--;header();const l=enLeft();if(l===3||l===1)toast(`⚡ باقيلك ${l}`)}
+  sb.rpc("use_energy",{n:1}).then(({data})=>{if(!data)return;enSet(data);if(data.ok===false){delete EN.charged[key];enEmpty();go("home")}}).catch(()=>{});
+  return false}
 
 /* ---------- الأفعال ---------- */
 Object.assign(A,{
@@ -5364,21 +5395,21 @@ VIEWS.invite=vInvite;PARENT.invite="me";
 A.invshare=async d=>{try{if(navigator.share){await navigator.share({text:d.t,url:d.l});return}}catch(e){if(e&&e.name==="AbortError")return}A.copy2({t:d.l})};
 
 /* ---------- رصيد دقائق صوت توكي الحقيقي ---------- */
-const MIN={packs:null,orders:[],pack:null,method:null,busy:false,err:null,msg:null,bal:0};
+const MIN={packs:null,orders:[],pack:null,method:null,busy:false,err:null,msg:null,bal:0,kind:"energy"};
 async function loadMin(){if(!AUTH.user)return;
   const [p,o,b]=await Promise.all([sb.from("minute_packs").select("*").eq("active",true).order("sort"),
     sb.from("minute_orders").select("*").eq("user_id",AUTH.user.id).order("created_at",{ascending:false}).limit(10),
     sb.from("profiles").select("live_balance_sec").eq("id",AUTH.user.id).maybeSingle()]);
   MIN.packs=p.data||[];MIN.orders=o.data||[];MIN.bal=(b.data&&b.data.live_balance_sec)||0;if(AUTH.profile){AUTH.profile.live_balance_sec=MIN.bal;header()}
-  if(!MIN.pack&&MIN.packs[0])MIN.pack=MIN.packs[0].id;if(!MIN.method)MIN.method=CFG.PAYMENT_METHODS[0].id;if(route==="minutes")render()}
+  {const k=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind);if(!k.find(x=>x.id===MIN.pack))MIN.pack=k[0]?k[0].id:null}enLoad();if(!MIN.method)MIN.method=CFG.PAYMENT_METHODS[0].id;if(route==="minutes")render()}
 function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p>سجّل دخول أول.</p></section>`;
   if(MIN.packs===null){loadMin();return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p class="muted">جاري التحميل…</p></section>`}
-  const pack=MIN.packs.find(x=>x.id===MIN.pack),meth=CFG.PAYMENT_METHODS.find(x=>x.id===MIN.method),pending=MIN.orders.find(o=>o.status==="pending");
-  const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت شحن دقائق صوت توكي (${pack?pack.name:""}) على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
-  return `<section class="panel">${topbar("⚡ دقائق صوت توكي الحقيقي","احكي مع توكي بصوت طبيعي أكثر من دقايقك المجانية")}
-    <div class="minbal">${mascot("happy",70)}<div><small>رصيدك</small><b>${Math.floor(MIN.bal/60)} دقيقة</b><span>بتنخصم بس لما تخلص دقايقك المجانية اليومية، وعلى الوقت اللي حكيته فعلاً.</span></div></div></section>
+  const packs=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind),pack=packs.find(x=>x.id===MIN.pack),meth=CFG.PAYMENT_METHODS.find(x=>x.id===MIN.method),pending=MIN.orders.find(o=>o.status==="pending");
+  const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت شحن ${MIN.kind==="energy"?"طاقة":"دقائق صوت"} (${pack?pack.name:""}) على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
+  return `<section class="panel">${topbar("💳 اشحن رصيدك","طاقة للتعلّم ⚡ أو دقائق صوت توكي الحقيقي 🎙️")}${seg("minkind",MIN.kind,[["energy","⚡ طاقة"],["minutes","🎙️ دقائق صوت"]])}
+    ${MIN.kind==="energy"?`<div class="minbal">${mascot("happy",70)}<div><small>طاقتك هلأ</small><b>${enLeft()} ⚡</b><span>${EN.st?`مجاني: ${EN.st.free_left} من ${EN.st.quota} · مشحون: ${EN.st.balance}. كل درس أو تمرين أو رسالة لتوكي بـ ⚡ وحدة، والمشحون ما بينتهي.`:""}</span></div></div>`:`<div class="minbal">${mascot("happy",70)}<div><small>رصيد دقائق الصوت</small><b>${Math.floor(MIN.bal/60)} دقيقة</b><span>بتنخصم بس لما تخلص دقايقك المجانية اليومية، وعلى الوقت اللي حكيته فعلاً.</span></div></div>`}</section>
   <section class="panel"><h2>1. اختار الباقة</h2>
-    ${MIN.packs.length?`<div class="plans">${MIN.packs.map(x=>`<button class="plan" data-act="minpack" data-id="${x.id}" aria-pressed="${x.id===MIN.pack}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${x.minutes} دقيقة</small></button>`).join("")}</div>`:`<p class="muted">ما في باقات متاحة هلأ.</p>`}</section>
+    ${packs.length?`<div class="plans">${packs.map(x=>`<button class="plan" data-act="minpack" data-id="${x.id}" aria-pressed="${x.id===MIN.pack}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${MIN.kind==="energy"?x.minutes+" ⚡":x.minutes+" دقيقة"}</small></button>`).join("")}</div>`:`<p class="muted">ما في باقات متاحة هلأ.</p>`}</section>
   <section class="panel"><h2>2. حوّل المبلغ${pack?` (${+pack.price} ${CFG.CURRENCY})`:""}</h2>
     <div class="row" style="margin-bottom:10px">${CFG.PAYMENT_METHODS.map(x=>`<button class="chipbtn" data-act="minmeth" data-id="${x.id}" aria-pressed="${x.id===MIN.method}">${x.icon} ${esc(x.name)}</button>`).join("")}</div>
     ${meth?`<div class="paybox">${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}</section>
@@ -5389,7 +5420,7 @@ function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ �
     ${MIN.err?`<div class="fb bad">${esc(MIN.err)}</div>`:""}${MIN.msg?`<div class="fb good">${esc(MIN.msg)}</div>`:""}
     <div class="row" style="margin-top:12px"><button class="btn hl" data-act="minsend" ${MIN.busy?"disabled":""}>${MIN.busy?"عم يرسل…":"أرسل طلب الشحن"}</button><a class="btn ghost" href="${wa}" target="_blank" rel="noopener">💬 واتساب</a></div></section>
   ${MIN.orders.length?`<section class="panel"><div class="spread"><h2>طلبات الشحن</h2><button class="say" data-act="minreload">🔄 تحديث</button></div>
-    ${MIN.orders.map(o=>`<div class="lesson-ex"><div class="e"><span style="color:var(--ink)">${{pending:"⏳ قيد المراجعة",approved:"✅ انضافت",rejected:"❌ مرفوض"}[o.status]} — ${o.minutes} دقيقة · ${+o.amount} ${CFG.CURRENCY}</span><span>${fmtDate(o.created_at)}${o.admin_note?" — "+esc(o.admin_note):""}</span></div></div>`).join("")}</section>`:""}`}
+    ${MIN.orders.map(o=>`<div class="lesson-ex"><div class="e"><span style="color:var(--ink)">${{pending:"⏳ قيد المراجعة",approved:"✅ انضافت",rejected:"❌ مرفوض"}[o.status]} — ${(o.kind||"minutes")==="energy"?o.minutes+" ⚡":o.minutes+" دقيقة"} · ${+o.amount} ${CFG.CURRENCY}</span><span>${fmtDate(o.created_at)}${o.admin_note?" — "+esc(o.admin_note):""}</span></div></div>`).join("")}</section>`:""}`}
 async function minSend(){const ref=val("minRef"),fi=$("#minFile"),f=fi&&fi.files&&fi.files[0];MIN.err=null;MIN.msg=null;
   if(!MIN.pack||!MIN.method){MIN.err="اختار الباقة وطريقة الدفع.";render();return}
   if(!ref&&!f){MIN.err="اكتب رقم الحوالة أو ارفع صورة الإيصال.";render();return}
@@ -5399,14 +5430,19 @@ async function minSend(){const ref=val("minRef"),fi=$("#minFile"),f=fi&&fi.files
     if(f){const ext=((f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""))||"jpg";path=`${AUTH.user.id}/min-${Date.now()}.${ext}`;
       const {error}=await sb.storage.from("proofs").upload(path,f,{contentType:f.type||undefined});if(error)throw error}
     const {error}=await sb.rpc("request_minutes",{pack:MIN.pack,meth:MIN.method,ref:ref||"",proof:path});if(error)throw error;
-    clearField("minRef");const mf=$("#minFile");if(mf)mf.value="";MIN.msg="وصلنا طلبك ✅ الدقايق بتنضاف لرصيدك "+CFG.ACTIVATION_TIME+".";await loadMin()}
+    clearField("minRef");const mf=$("#minFile");if(mf)mf.value="";MIN.msg="وصلنا طلبك ✅ الرصيد بينضاف "+CFG.ACTIVATION_TIME+".";await loadMin()}
   catch(e){MIN.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":/bad_pack/.test(e.message||"")?"هالباقة مش متاحة هلأ.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
   MIN.busy=false;render()}
 VIEWS.minutes=vMinutes;PARENT.minutes="me";
-{const _hd=header;header=function(){_hd();const c=document.getElementById("minchip");if(!c)return;const on=!!(AUTH.user&&AUTH.profile);c.hidden=!on;if(on){const el=document.getElementById("minbal");if(el)el.textContent=Math.floor((AUTH.profile.live_balance_sec||0)/60)}}}
-Object.assign(A,{minpack:d=>{MIN.pack=+d.id;render()},minmeth:d=>{MIN.method=d.id;render()},minsend:minSend,minreload:()=>{MIN.packs=null;render()}});
+{const _hd=header;header=function(){_hd();const c=document.getElementById("minchip");if(!c)return;const on=!!(AUTH.user&&AUTH.profile);c.hidden=!on;if(on){c.innerHTML=`⚡ <span id="minbal">${enLeft()}</span>`;c.title="طاقتك";c.classList.toggle("low",EN.st&&!EN.st.unlimited&&enLeft()<=3)}}}
+Object.assign(A,{minkind:d=>{MIN.kind=d.m;MIN.pack=null;MIN.packs&&(()=>{const k=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind);MIN.pack=k[0]?k[0].id:null})();render()},entop:()=>{const sh=$("#sheet");if(sh)sh.hidden=true;MIN.kind="energy";MIN.packs=null;go("minutes")},enclose:()=>{$("#sheet").hidden=true},minpack:d=>{MIN.pack=+d.id;render()},minmeth:d=>{MIN.method=d.id;render()},minsend:minSend,minreload:()=>{MIN.packs=null;render()}});
 {const _vm3=VIEWS.me;VIEWS.me=function(){let h=_vm3();if(!AUTH.user)return h;const m=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60);
-  return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">⚡</span><b>دقائق صوت توكي الحقيقي: ${m} د</b><span>اشحن ›</span></button><section class="rankcard">`)}}
+  return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="entop"><span class="lf">⚡</span><b>طاقتك: ${enLeft()}</b><span>اشحن ›</span></button><button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">🎙️</span><b>دقائق صوت توكي: ${m} د</b><span>اشحن ›</span></button><section class="rankcard">`)}}
+/* subscription page is gone → top-up */
+VIEWS.subscribe=()=>{MIN.kind="energy";return vMinutes()};PARENT.subscribe="me";
+/* Toki chat: each message spends ⚡ on the server */
+{const _ts9=tuSend;tuSend=async function(t){if(AUTH.profile&&AUTH.profile.role!=="admin"&&EN.st&&!EN.st.unlimited&&enLeft()<1){enEmpty();return}
+  window.__aiCharge=true;try{await _ts9(t)}finally{window.__aiCharge=false;setTimeout(enLoad,400)}}}
 
 /* ---------- التشغيل ---------- */
 applyTheme();render();
@@ -5417,6 +5453,9 @@ sb.auth.onAuthStateChange((ev,session)=>{
   if(ev==="INITIAL_SESSION"||uid!==AUTH.uid){AUTH.uid=uid;setTimeout(()=>onSession(session),0)}
   else if(ev==="PASSWORD_RECOVERY")setTimeout(render,0);
 });
+
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&typeof enLoad==="function")enLoad()});
+setInterval(()=>{if(EN.st&&EN.st.reset_at&&new Date(EN.st.reset_at)<=new Date())enLoad()},60000);
 
 </script>
 </body>
