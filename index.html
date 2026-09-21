@@ -669,6 +669,12 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .lv-caps{width:100%;min-height:5.5em;display:flex;flex-direction:column;gap:8px;text-align:center}
 .lv-u{opacity:.7;font-size:1rem}.lv-t{font-size:1.2rem;line-height:1.6}
 .live-btn{background:linear-gradient(135deg,#8B5CF6,#2F6BFF)!important;color:#fff!important}
+
+.vc-live{border:none;border-radius:999px;padding:10px 20px;font-weight:700;background:linear-gradient(90deg,#FFC940,#FF8A3D);color:#2A1E00;box-shadow:0 10px 30px -10px rgba(255,160,60,.7)}
+.vc-live small{font-weight:600;opacity:.75;margin-inline-start:4px}
+.vc-badge{font-size:.75rem;padding:3px 10px;border-radius:999px;background:rgba(255,201,64,.2);color:#FFE08A;font-weight:600}
+.vcall.live{background:radial-gradient(120% 80% at 50% 0%,#4C1D95 0%,#0B1022 70%)}
+.vc-note{font-size:.85rem;opacity:.8;text-align:center;max-width:420px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4044,6 +4050,76 @@ Object.assign(A,{
   h=h.replace('<div class="composer2">',`${arMissing()?`<button class="ar-warn" data-act="arhelp">⚠️ جهازك ما فيه صوت عربي، اضغط لتعرف كيف تضيفه</button>`:""}<div class="composer2">`);
   h=h.replace('<button class="c-mic ',`<button class="c-ml" data-act="tuml" title="لغة الميكروفون" aria-label="لغة الميكروفون">${TU.micLang==="ar"?"ع":LANGS[LANG].flag}</button><button class="c-mic `);
   return h};VIEWS.tutor=vTutor}
+/* ================== TOKI LIVE — real voice via Gemini Live (trial) ================== */
+const LV={on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",err:null,start:0,timer:null,maxMin:5,muted:false,ready:false};
+const liveAvailable=()=>typeof window.getLiveToken==="function";
+const LV_WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){const c=i[0]&&i[0][0];if(c){this.b.push(new Float32Array(c));this.n+=c.length;if(this.n>=2048){const a=new Float32Array(this.n);let o=0;for(const x of this.b){a.set(x,o);o+=x.length}this.b=[];this.n=0;this.port.postMessage(a,[a.buffer])}}return true}}registerProcessor("pcm-cap",P);`;
+function lvB64(f,inRate){const ratio=inRate/16000,len=Math.floor(f.length/ratio),out=new Int16Array(len);
+  for(let i=0;i<len;i++){const s=Math.max(-1,Math.min(1,f[Math.floor(i*ratio)]));out[i]=s<0?s*0x8000:s*0x7fff}
+  const u8=new Uint8Array(out.buffer);let bin="";for(let i=0;i<u8.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(bin)}
+function lvPlay(b64){if(!LV.outAc)return;const bin=atob(b64),n=bin.length>>1;if(!n)return;const buf=LV.outAc.createBuffer(1,n,24000),d=buf.getChannelData(0);
+  for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v>=32768)v-=65536;d[i]=v/32768}
+  const s=LV.outAc.createBufferSource();s.buffer=buf;s.connect(LV.outAc.destination);const t=Math.max(LV.outAc.currentTime+0.03,LV.playT);s.start(t);LV.playT=t+buf.duration;LV.sources.push(s);
+  s.onended=()=>{LV.sources=LV.sources.filter(x=>x!==s);if(!LV.sources.length&&LV.state==="speaking"){LV.state="listening";lvUi()}};
+  if(LV.state!=="speaking"){LV.state="speaking";lvUi()}}
+function lvStopPlay(){LV.sources.forEach(s=>{try{s.stop()}catch(e){}});LV.sources=[];LV.playT=0}
+function lvErr(e){const c=(e&&(e.error||e.code||e.name||e.message))||"";if(e&&e.detail){LV.detail=String(e.detail);console.warn("Toki Live:",LV.detail)}
+  return c==="live_disabled"?"الصوت الحقيقي لسا بالتجربة، ومفعّل للأدمن بس.":c==="not_subscribed"||c==="not_granted"?"الميزة للمشتركين.":c==="rate_limited"?"خلصت محاولات اليوم، جرّب بكرة.":/NotAllowed|Permission/i.test(c)?"لازم تسمح للموقع يستخدم الميكروفون.":"ما قدرت أتصل بتوكي الحقيقي هلأ، جرّب كمان شوي."}
+async function liveStart(){if(!liveAvailable()||LV.on)return;
+  tqReset();TU.speaking=false;if(recOn&&rec)try{rec.abort()}catch(e){}
+  LV.on=true;TU.live=true;LV.err=null;LV.state="connecting";LV.cap="";LV.userCap="";LV.muted=false;LV.ready=false;
+  try{LV.ac=new (window.AudioContext||window.webkitAudioContext)();LV.outAc=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});LV.ac.resume();LV.outAc.resume()}catch(e){}
+  render();
+  try{const [tok,stream]=await Promise.all([window.getLiveToken(),navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})]);
+    LV.stream=stream;if(!LV.on){lvCleanup();return}if(!tok||!tok.token)throw tok||{error:"live_error"};
+    await LV.ac.audioWorklet.addModule(URL.createObjectURL(new Blob([LV_WORKLET],{type:"application/javascript"})));
+    LV.src=LV.ac.createMediaStreamSource(stream);LV.node=new AudioWorkletNode(LV.ac,"pcm-cap");LV.src.connect(LV.node);
+    lvConnect(tok,true)}catch(e){LV.err=lvErr(e);liveStop(true)}}
+function lvConnect(tok,full){const url=`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.token)}`;
+  const ws=new WebSocket(url);LV.ws=ws;
+  ws.onopen=()=>{const sc=TUTOR.find(x=>x.id==="buddy")||TUTOR[0];
+    const sys=tuRules(sc)+`\nThis is a live VOICE call. Speak naturally, warmly and briefly, like a real friend on the phone. Speak Arabic in Palestinian/Levantine dialect and ${LNAME_EN()} with a natural native accent. Let the learner talk; don't lecture.`;
+    const setup={model:"models/"+tok.model,responseModalities:["AUDIO"],systemInstruction:{parts:[{text:sys}]}};
+    if(full){setup.inputAudioTranscription={};setup.outputAudioTranscription={};setup.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}}}
+    ws.send(JSON.stringify({setup}))};
+  ws.onmessage=async ev=>{let m;try{m=JSON.parse(typeof ev.data==="string"?ev.data:await ev.data.text())}catch(e){return}
+    if(m.setupComplete){LV.ready=true;LV.state="listening";LV.start=Date.now();lvUi();
+      LV.node.port.onmessage=e=>{if(ws.readyState===1&&!LV.muted)ws.send(JSON.stringify({realtimeInput:{audio:{data:lvB64(e.data,LV.ac.sampleRate),mimeType:"audio/pcm;rate=16000"}}}))};
+      ws.send(JSON.stringify({realtimeInput:{text:"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة واسأله كيفه)"}}));
+      clearInterval(LV.timer);LV.timer=setInterval(()=>{const s=Math.floor((Date.now()-LV.start)/1000),el=document.getElementById("vcTime");if(el)el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+        if(Date.now()-LV.start>LV.maxMin*60000){LV.err=`خلصت مدة التجربة (${LV.maxMin} دقايق). 🙂`;liveStop()}},1000);return}
+    const sc=m.serverContent;if(!sc)return;
+    if(sc.interrupted){lvStopPlay();LV.state="listening";lvUi()}
+    ((sc.modelTurn&&sc.modelTurn.parts)||[]).forEach(p=>{if(p.inlineData&&p.inlineData.data)lvPlay(p.inlineData.data)});
+    if(sc.outputTranscription&&sc.outputTranscription.text){LV.cap+=sc.outputTranscription.text;lvCap()}
+    if(sc.inputTranscription&&sc.inputTranscription.text){LV.userCap+=sc.inputTranscription.text;lvCap()}
+    if(sc.turnComplete||sc.generationComplete){lvSaveTurn()}};
+  ws.onclose=ev=>{if(!LV.on||LV.ws!==ws)return;if(ev&&ev.reason)LV.detail=`ws ${ev.code}: ${ev.reason}`;
+    if(!LV.ready&&full){window.getLiveToken().then(t=>{if(LV.on&&t&&t.token)lvConnect(t,false);else{LV.err=lvErr(t);liveStop(true)}});return}
+    if(!LV.err&&!LV.ready)LV.err="ما قدرت أتصل بتوكي الحقيقي هلأ، جرّب كمان شوي.";liveStop(true)};}
+function lvSaveTurn(){const u=LV.userCap.trim(),a=LV.cap.trim();if(!u&&!a)return;const msgs=TU.msgs.buddy||(TU.msgs.buddy=[{role:"assistant",content:(TUTOR.find(x=>x.id==="buddy")||{}).start||""}]);
+  if(u)msgs.push({role:"user",content:u});if(a)msgs.push({role:"assistant",content:a});LV.userCap="";LV.cap="";S.st.chat=(S.st.chat||0)+1;save()}
+function lvCap(){if(!TU.cc)return;const el=document.getElementById("vcCap");if(el)el.textContent=LV.cap||LV.userCap}
+function lvUi(){if(route==="tutor"&&TU.voice)render()}
+function lvCleanup(){clearInterval(LV.timer);lvStopPlay();try{LV.node&&(LV.node.port.onmessage=null)}catch(e){}try{LV.src&&LV.src.disconnect()}catch(e){}
+  try{LV.stream&&LV.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{LV.ac&&LV.ac.close()}catch(e){}try{LV.outAc&&LV.outAc.close()}catch(e){}
+  LV.ws=null;LV.ac=null;LV.outAc=null;LV.stream=null;LV.node=null;LV.src=null}
+function liveStop(keepCall){const ws=LV.ws;LV.on=false;lvSaveTurn();lvCleanup();try{ws&&ws.close()}catch(e){}TU.live=false;LV.state="idle";
+  if(LV.err){if(LV.detail&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")showSheet(`<div class="arhelp"><h2>⚠️ ما زبط الاتصال</h2><p>${esc(LV.err)}</p><p class="muted" style="font-size:.85rem">تفاصيل للأدمن (ابعتها لإلي):</p><pre dir="ltr" style="white-space:pre-wrap;font-size:.8rem;background:var(--sky);padding:10px;border-radius:12px">${esc(LV.detail)}</pre></div>`);else toast(LV.err)}
+  LV.detail=null;render()}
+{const _vc=vCall;vCall=function(){if(!TU.live){let h=_vc();if(liveAvailable())h=h.replace('<div class="vc-lang">',`<button class="vc-live" data-act="livestart">⚡ جرّب صوت توكي الحقيقي <small>تجريبي</small></button><div class="vc-lang">`);return h}
+  const st=LV.state==="speaking"?"speak":LV.state==="connecting"?"think":"listen";
+  const status={connecting:"عم يتصل بتوكي…",listening:LV.muted?"الميكروفون مسكّر 🔇":"احكي براحتك… توكي سامعك، عربي أو "+LAR(),speaking:"توكي عم يحكي… احكي وقت ما بدك لتقاطعه"}[LV.state]||"";
+  return `<div class="vcall ${st} live" id="vcall">
+    <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">تجريبي · ${LV.maxMin} د</span><span class="vc-time" id="vcTime">0:00</span></div>
+    <div class="vc-mid"><div class="vc-orb"><span class="vc-ring"></span><span class="vc-ring r2"></span><span class="vc-core">${mascot(st==="speak"?"wow":st==="think"?"think":"happy",118)}</span></div>
+      <div class="vc-status">${esc(status)}</div><div class="vc-cap" id="vcCap" dir="auto">${TU.cc?esc(LV.cap||LV.userCap):""}</div></div>
+    <p class="vc-note">بتقدر تحكي عربي و${LAR()} بنفس الجملة، وتقاطعه وقت ما بدك 🎧</p>
+    <div class="vc-ctrl"><button class="vc-b" data-act="vccc" aria-pressed="${!!TU.cc}"><span>💬</span><small>${TU.cc?"إخفاء النص":"إظهار النص"}</small></button>
+      <button class="vc-b end" data-act="tuvoice"><span>✕</span><small>إنهاء</small></button>
+      <button class="vc-b" data-act="lvmute" aria-pressed="${LV.muted}"><span>${LV.muted?"🔇":"🎙️"}</span><small>${LV.muted?"افتح المايك":"سكّر المايك"}</small></button></div></div>`}}
+{const _tv=A.tuvoice;A.tuvoice=()=>{if(TU.live){liveStop();TU.voice=false;render();return}_tv()}}
+Object.assign(A,{livestart:()=>liveStart(),lvmute:()=>{LV.muted=!LV.muted;render()}});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -4063,6 +4139,9 @@ async function callAI(system,messages,signal){
   const d=await r.json().catch(()=>({}));
   if(!r.ok)throw{code:d.error==="rate_limited"?"rate_limited":d.error==="not_subscribed"?"not_granted":d.error==="ai_not_configured"?"ai_not_configured":"upstream_error"};
   return d.text||""}
+window.getLiveToken=async()=>{const {data:{session}}=await sb.auth.getSession();if(!session)return{error:"not_granted"};
+  try{const r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify({action:"live_token"})});
+    const d=await r.json().catch(()=>({}));return r.ok?d:{error:d.error||"live_error"}}catch(e){return{error:"live_error"}}};
 const aiShim=async(input,opts={})=>{let system,messages;
   if(typeof input==="string")messages=[{role:"user",content:input}];else{system=input[0].content;messages=input.slice(1)}
   const text=await callAI(system,messages,opts.signal);if(!text)throw{code:"empty_completion"};opts.onText&&opts.onText({text,delta:text});return{text,truncated:false}};
@@ -4333,74 +4412,6 @@ sb.auth.onAuthStateChange((ev,session)=>{
   if(ev==="INITIAL_SESSION"||uid!==AUTH.uid){AUTH.uid=uid;setTimeout(()=>onSession(session),0)}
   else if(ev==="PASSWORD_RECOVERY")setTimeout(render,0);
 });
-/* ================== REAL VOICE (Gemini Live) — TRIAL ================== */
-const LIVE={on:false,show:false,ws:null,ctxIn:null,ctxOut:null,stream:null,node:null,playT:0,srcs:[],state:"idle",err:null,capU:"",capT:"",start:0,muted:false,acc:[],accLen:0,level:0};
-const LIVE_WORKLET="class P extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}}registerProcessor('pcm-cap',P);";
-function pcm16B64(f32,rate){const ratio=rate/16000,len=Math.floor(f32.length/ratio),out=new Int16Array(len);
-  for(let i=0;i<len;i++){let s=f32[Math.floor(i*ratio)];s=Math.max(-1,Math.min(1,s));out[i]=s<0?s*32768:s*32767}
-  const b=new Uint8Array(out.buffer);let bin="";for(let i=0;i<b.length;i+=32768)bin+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(bin)}
-function b64F32(b64){const bin=atob(b64),n=bin.length>>1,o=new Float32Array(n);for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v>=32768)v-=65536;o[i]=v/32768}return o}
-function livePrompt(){const b=TUTOR.find(t=>t.id==="buddy")||TUTOR[0];const L=LNAME_EN();
-  return tuRules(b)+`\nThis is a REAL-TIME VOICE CALL. Speak naturally and warmly like a Palestinian friend on the phone, in Levantine Arabic mixed with ${L}. Pronounce ${L} with a native accent. Keep each turn short (1-3 sentences), then let the learner talk. If the learner interrupts, stop and listen. Start by greeting the learner warmly${(S.tokiMe||{}).name?` by name (${S.tokiMe.name})`:""} and asking how their day is going.`}
-function liveErr(e){const m=String(e&&e.message||e||"");
-  if(/login/.test(m))return "لازم تسجّل دخول أول";if(/forbidden/.test(m))return "الصوت الحقيقي لسا تجريبي، ومتاح للإدارة بس هلأ";if(/no_key/.test(m))return "مفتاح Gemini مش مضاف بـ Supabase";
-  if(/NotAllowed|Permission/i.test(m))return "لازم تسمح للموقع يستخدم الميكروفون";if(/token_failed/.test(m))return "Google رفضت تعطي تذكرة المكالمة. تأكد إنه مفتاحك شغّال وإنه النموذج متاح";
-  if(/404|Failed to fetch|token_4/.test(m))return "لسا ما رفعت دالة live-token على Supabase";return "صار خطأ: "+m.slice(0,120)}
-function liveUI(){const el=document.getElementById("lvcall");if(!el){render();return}
-  el.className="vcall lv "+LIVE.state;const st=document.getElementById("lvStatus");if(st)st.textContent=liveStatus();
-  const cu=document.getElementById("lvU"),ct=document.getElementById("lvT");if(cu)cu.textContent=LIVE.capU;if(ct)ct.textContent=LIVE.capT}
-function liveStatus(){return LIVE.err||({connecting:"عم نتصل بتوكي…",listen:LIVE.muted?"المايك مسكّر 🔇":"احكي… توكي سامعك",speak:"توكي عم يحكي… احكي لتقاطعه",idle:""})[LIVE.state]||""}
-async function liveStart(){if(LIVE.on)return;if(TU.voice){TU.voice=false;tqReset()}
-  Object.assign(LIVE,{on:true,show:true,err:null,state:"connecting",capU:"",capT:"",muted:false,playT:0,srcs:[],acc:[],accLen:0,start:Date.now()});render();
-  try{const {data:{session}}=await sb.auth.getSession();if(!session)throw new Error("login");
-    const r=await fetch(CFG.SUPABASE_URL+"/functions/v1/live-token",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:"{}"}).catch(()=>{throw new Error("Failed to fetch")});
-    const d=await r.json().catch(()=>({}));if(!r.ok||!d.token)throw new Error((d.error||"token_"+r.status)+(d.detail?": "+d.detail:""));
-    LIVE.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}});
-    LIVE.ctxIn=new (window.AudioContext||window.webkitAudioContext)();LIVE.ctxOut=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});
-    await LIVE.ctxIn.audioWorklet.addModule(URL.createObjectURL(new Blob([LIVE_WORKLET],{type:"application/javascript"})));
-    const ws=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(d.token));LIVE.ws=ws;
-    ws.onopen=()=>ws.send(JSON.stringify({setup:{model:"models/"+d.model,responseModalities:["AUDIO"],systemInstruction:{parts:[{text:livePrompt()}]},inputAudioTranscription:{},outputAudioTranscription:{}}}));
-    ws.onmessage=async ev=>{let t=ev.data;if(typeof t!=="string")t=await t.text();let m;try{m=JSON.parse(t)}catch(e){return}liveMsg(m)};
-    ws.onerror=()=>{LIVE.err=LIVE.err||"انقطع الاتصال بـ Google"};
-    ws.onclose=ev=>{if(LIVE.on){if(ev.code!==1000&&!LIVE.err)LIVE.err="انقطعت المكالمة"+(ev.reason?": "+ev.reason.slice(0,140):"");liveStop()}}}
-  catch(e){LIVE.err=liveErr(e);liveStop()}}
-function liveMic(){const c=LIVE.ctxIn,src=c.createMediaStreamSource(LIVE.stream),node=new AudioWorkletNode(c,"pcm-cap"),g=c.createGain();g.gain.value=0;LIVE.node=node;
-  node.port.onmessage=e=>{if(LIVE.muted||!LIVE.ws||LIVE.ws.readyState!==1)return;const f=e.data;LIVE.acc.push(f);LIVE.accLen+=f.length;
-    if(LIVE.accLen>=c.sampleRate*0.1){const all=new Float32Array(LIVE.accLen);let o=0;LIVE.acc.forEach(a=>{all.set(a,o);o+=a.length});LIVE.acc=[];LIVE.accLen=0;
-      LIVE.ws.send(JSON.stringify({realtimeInput:{audio:{data:pcm16B64(all,c.sampleRate),mimeType:"audio/pcm;rate=16000"}}}))}};
-  src.connect(node);node.connect(g);g.connect(c.destination)}
-function livePlay(b64){const c=LIVE.ctxOut,f=b64F32(b64);if(!f.length)return;const buf=c.createBuffer(1,f.length,24000);buf.getChannelData(0).set(f);
-  const s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);const at=Math.max(c.currentTime+0.02,LIVE.playT);s.start(at);LIVE.playT=at+buf.duration;LIVE.srcs.push(s);
-  s.onended=()=>{LIVE.srcs=LIVE.srcs.filter(x=>x!==s);if(!LIVE.srcs.length&&LIVE.on){LIVE.state="listen";liveUI()}};if(LIVE.state!=="speak"){LIVE.state="speak";liveUI()}}
-function liveHush(){LIVE.srcs.forEach(s=>{try{s.stop()}catch(e){}});LIVE.srcs=[];LIVE.playT=0}
-function liveMsg(m){if(m.setupComplete){LIVE.state="listen";liveMic();LIVE.ws.send(JSON.stringify({realtimeInput:{text:"(بلّش المكالمة: سلّم عليّ)"}}));liveUI();return}
-  if(m.goAway){LIVE.err="المكالمة وصلت حدّها، ابدأ مكالمة جديدة"}
-  const sc=m.serverContent;if(!sc)return;
-  if(sc.interrupted){liveHush();LIVE.state="listen";LIVE.capT=""}
-  (sc.modelTurn&&sc.modelTurn.parts||[]).forEach(p=>{if(p.inlineData&&p.inlineData.data)livePlay(p.inlineData.data)});
-  if(sc.inputTranscription&&sc.inputTranscription.text){if(LIVE.state==="speak"&&LIVE.capT)LIVE.capU="";LIVE.capU=(LIVE.capU+sc.inputTranscription.text).slice(-160)}
-  if(sc.outputTranscription&&sc.outputTranscription.text){LIVE.capT=(LIVE.capT+sc.outputTranscription.text).slice(-220)}
-  if(sc.turnComplete){setTimeout(()=>{LIVE.capU=""},1500);LIVE.capT=LIVE.capT}
-  liveUI()}
-function liveStop(){const had=LIVE.on;LIVE.on=false;liveHush();try{LIVE.ws&&LIVE.ws.close(1000)}catch(e){}LIVE.ws=null;
-  try{LIVE.node&&LIVE.node.disconnect()}catch(e){}try{LIVE.stream&&LIVE.stream.getTracks().forEach(t=>t.stop())}catch(e){}
-  try{LIVE.ctxIn&&LIVE.ctxIn.close()}catch(e){}try{LIVE.ctxOut&&LIVE.ctxOut.close()}catch(e){}LIVE.ctxIn=LIVE.ctxOut=LIVE.stream=LIVE.node=null;
-  if(!LIVE.err)LIVE.show=false;if(had||LIVE.show)render()}
-function vLive(){const sec=Math.floor((Date.now()-LIVE.start)/1000),st=LIVE.err?"idle":LIVE.state;
-  setTimeout(()=>{const el=document.getElementById("lvTime");if(el&&LIVE.on){const tick=()=>{const e2=document.getElementById("lvTime");if(!e2||!LIVE.on)return;const s=Math.floor((Date.now()-LIVE.start)/1000);e2.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;setTimeout(tick,1000)};tick()}},0);
-  return `<div class="vcall lv ${st}" id="lvcall"><div class="vc-top"><span class="vc-t">✨ صوت حقيقي · ${LANGS[LANG].flag} <small class="lv-beta">تجريبي</small></span><span class="vc-time" id="lvTime">${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}</span></div>
-    <div class="vc-mid"><button class="vc-orb" data-act="${LIVE.err?"livestart":"livemute"}" aria-label="المايك"><span class="vc-ring"></span><span class="vc-ring r2"></span><span class="vc-core">${mascot(LIVE.err?"sad":st==="speak"?"wow":"happy",118)}</span></button>
-      <div class="vc-status" id="lvStatus">${esc(liveStatus())}</div>
-      <div class="lv-caps"><div class="lv-u" id="lvU" dir="auto">${esc(LIVE.capU)}</div><div class="lv-t" id="lvT" dir="auto">${esc(LIVE.capT)}</div></div></div>
-    <div class="vc-ctrl">${LIVE.err?`<button class="vc-b" data-act="livestart"><span>🔄</span><small>جرّب كمان مرة</small></button><button class="vc-b end" data-act="liveclose"><span>✕</span><small>رجوع</small></button>`
-      :`<button class="vc-b" data-act="livemute" aria-pressed="${LIVE.muted}"><span>${LIVE.muted?"🔇":"🎙️"}</span><small>${LIVE.muted?"افتح المايك":"سكّر المايك"}</small></button><button class="vc-b end" data-act="liveend"><span>✕</span><small>إنهاء</small></button>`}</div></div>`}
-{const _vt3=vTutor;vTutor=function(){if(LIVE.show){document.body.classList.add("incall");return vLive()}let h=_vt3();
-  if(!TU.voice)h=h.replace('<button class="ch-btn" data-act="tokime"','<button class="ch-btn live-btn" data-act="livestart" title="صوت حقيقي (تجريبي)" aria-label="صوت حقيقي">✨</button><button class="ch-btn" data-act="tokime"');
-  else h=h.replace('<button class="vc-test" data-act="artest">','<button class="vc-test" data-act="livestart">✨ صوت حقيقي</button><button class="vc-test" data-act="artest">');
-  return h};VIEWS.tutor=vTutor}
-Object.assign(A,{livestart:()=>{LIVE.err=null;liveStart()},liveend:()=>{LIVE.err=null;liveStop()},liveclose:()=>{LIVE.err=null;LIVE.show=false;render()},
-  livemute:()=>{if(!LIVE.on)return;LIVE.muted=!LIVE.muted;if(LIVE.muted){LIVE.acc=[];LIVE.accLen=0;try{LIVE.ws&&LIVE.ws.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(e){}}render()}});
-{const _go=go;go=function(r){if(LIVE.on&&r!=="tutor"){LIVE.err=null;liveStop()}return _go(r)}}
 
 </script>
 </body>
