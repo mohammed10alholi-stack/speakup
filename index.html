@@ -862,6 +862,21 @@ body.chatmode #coach,body.playing #coach{top:calc(12px + env(safe-area-inset-top
 .co-acts .co-ok{background:var(--primary);color:#fff}
 .co-card{max-height:46vh;overflow-y:auto}
 @media (prefers-reduced-motion:reduce){#coach{transition:none}}
+
+/* dark mode when the phone decides (no manual theme): same fixes as [data-theme=dark] */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .co-row.bad{background:rgba(239,68,68,.18);color:#FCA5A5}
+  :root:not([data-theme="light"]) .pn-res.mid{background:rgba(255,201,64,.16);color:#FFE08A}
+  :root:not([data-theme="light"]) .pn-res.bad,:root:not([data-theme="light"]) .dr-chip.bad{background:rgba(239,68,68,.18);color:#FCA5A5}
+  :root:not([data-theme="light"]) .dr-chip.mid{background:rgba(255,201,64,.16);color:#FFE08A}
+  :root:not([data-theme="light"]) .abc-tile b{color:#8FB3FF}
+  :root:not([data-theme="light"]) .chip.c-min{background:rgba(139,92,246,.22);color:#DDD6FE}
+  :root:not([data-theme="light"]) .dr-state.listen{background:rgba(239,68,68,.18);color:#FCA5A5}
+}
+[data-theme="dark"] .dr-chip.bad,[data-theme="dark"] .dr-state.listen{background:rgba(239,68,68,.18);color:#FCA5A5}
+[data-theme="dark"] .dr-chip.mid{background:rgba(255,201,64,.16);color:#FFE08A}
+#sheet{z-index:60}
+.co-more .rm-bub{text-align:start;max-height:55vh;overflow-y:auto}.co-more .rm-bub p{margin:0 0 8px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5047,7 +5062,7 @@ Object.assign(A,{
   cohide:()=>coHide(),
   cosay:()=>{const c=CO.cur;if(c)speak(String(c.en).split(/ → | - /).pop())},
   comute:()=>{S.coachOff=dayStr(new Date());save();coHide();toast("🔕 توكي رح يسكت عن الأخطاء لليوم، وبيرجع بكرة")},
-  comore:async()=>{const c=CO.cur;if(!c)return;
+  comore:async()=>{const c=CO.cur;if(!c)return;const el0=document.getElementById("coach");if(el0)el0.classList.remove("show");
     showSheet(`<div class="co-more"><div class="rm-teacher">${mascot("happy",54)}<div class="rm-bub" id="coMore"><span class="typing"><i></i><i></i><i></i></span></div></div>
       <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="cosay">🔊 اسمع الصح</button></div></div>`);
     try{const r=await AI(`You are Toki, an expert, friendly ${LNAME_EN()} teacher for an Arabic-speaking learner (level ${userLv()}).
