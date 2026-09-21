@@ -812,6 +812,10 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .abc-qw{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px 0}.abc-qw span{font-size:3rem}.abc-qw b{font-size:1.6rem}
 .abc-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .abc-opts .opt{text-align:center;font-size:1.5rem;font-weight:700}
+
+[data-theme="dark"] .abc-tile em{background:rgba(255,201,64,.16);color:#FFE08A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .abc-tile em{background:rgba(255,201,64,.16);color:#FFE08A}}
+[data-theme="dark"] .abc-tile b{color:#8FB3FF}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4751,7 +4755,7 @@ zh:{intro:"الصيني ما إله أبجدية! بنتعلم النطق بـ �
  {id:"zh5",name:"j q x zh ch sh",L:[["j","鸡","鸡 jī","دجاجة","🐔","دجـ خفيفة"],["q","七","七 qī","سبعة","7️⃣","تشـ مع نفخة هوا"],["x","西","西 xī","غرب","🧭","بين س وش"],["zh","中","中 zhōng","وسط","🎯","دج مع لف اللسان لورا"],["ch","吃","吃 chī","ياكل","🍜","تش مع لف اللسان"],["sh","书","书 shū","كتاب","📖","ش"]]},
  {id:"zh6",name:"r z c s y w",L:[["r","日","日 rì","شمس / يوم","☀️","بين ژ ور خفيفة"],["z","字","字 zì","حرف صيني","🔤","دز"],["c","菜","菜 cài","خضرة","🥬","تس مع نفخة هوا"],["s","三","三 sān","ثلاثة","3️⃣","س"],["y","鱼","鱼 yú","سمكة","🐟","ي"],["w","我","我 wǒ","أنا","🙋","و"]]}]}};
 const abcData=()=>ABC_DATA[LANG]||ABC_DATA.en;
-const abcSay=it=>LANG==="zh"?[{t:it[1]}]:[{t:it[1]},{t:it[2]}];
+let abcSay=it=>LANG==="zh"?[{t:it[1]}]:[{t:it[1]},{t:it[2]}];
 let AB={g:null,mode:"learn",q:null,i:0,score:0,res:null};
 function abcQuiz(g){const L=g.L,all=abcData().groups.flatMap(x=>x.L),qs=[];
   const opts=it=>{const pool=(L.length>=4?L:all).filter(x=>x!==it);return shuffle([it].concat(shuffle(pool).slice(0,3)))};
@@ -4765,7 +4769,7 @@ function vAbc(){const D=abcData(),gs=D.groups;
     <section class="rm-units">${gs.map((g,i)=>{const d=abcDone(g.id),cur=!d&&gs.slice(0,i).every(x=>abcDone(x.id));
       return `<div class="rm-unit ${d?"done":cur?"cur":"next"}"><button class="rm-uh" data-act="abcopen" data-id="${g.id}"><span class="rm-no">${d?"✓":i+1}</span><span class="rm-ut"><b>${esc(g.name)}</b><small dir="ltr" style="text-align:right">${g.L.map(x=>x[0].split(" ")[0]).join("  ")}</small></span><span class="rm-st">${d?"مكتملة":cur?"إنت هون 📍":"›"}</span></button></div>`}).join("")}</section>
     ${LANG==="en"?`<button class="plan-task" data-act="go" data-r="sounds"><span class="pi">🎧</span><span class="pt"><b>أصوات صعبة وتمرين الأذن</b><small>الفروق اللي بتلخبط العرب</small></span><span class="pc">›</span></button>`:""}`}
-  const g=gs.find(x=>x.id===AB.g);
+  const g=gs.find(x=>x.id===AB.g);if(!g){AB.g=null;return vAbc()}
   if(AB.mode==="learn")return `<section class="panel"><div class="spread"><button class="back" data-act="abcback" aria-label="رجوع">→</button><h2 style="margin:0">${esc(g.name)}</h2><span></span></div>
     <p class="muted">اضغط على كل حرف واسمعه، واقرأ التلميح. بعدين اختبر حالك 👇</p>
     <div class="abc-grid">${g.L.map((it,i)=>`<button class="abc-tile" data-act="abcsay" data-i="${i}"><b dir="ltr">${esc(it[0])}</b><span class="abc-em">${it[4]}</span><span class="abc-w" dir="ltr">${esc(it[2])}</span><small>${esc(it[3])}</small><em>${esc(it[5])}</em></button>`).join("")}</div>
@@ -4800,6 +4804,17 @@ Object.assign(A,{
 RM_TYPES.unshift(["abc","حروف","🔤"]);
 {const i=LEARN.findIndex(x=>x[0]==="sounds");const tile=["abc","🔤","الحروف","تعلّم الحروف ونطقها، أول خطوة"];if(i>=0)LEARN[i]=tile;else LEARN.unshift(tile)}
 if(typeof ICMAP!=="undefined")ICMAP.abc="sounds";
+/* letter NAMES written as words, so phones read "be / hache / jota" instead of "capital B" */
+const ABC_NAMES={
+ en:{a:"ay",b:"bee",c:"see",d:"dee",e:"ee",f:"ef",g:"jee",h:"aitch",i:"eye",j:"jay",k:"kay",l:"el",m:"em",n:"en",o:"oh",p:"pee",q:"cue",r:"are",s:"ess",t:"tee",u:"you",v:"vee",w:"double you",x:"ex",y:"why",z:"zee"},
+ tr:{a:"a",b:"be",c:"ce",ç:"çe",d:"de",e:"e",f:"fe",g:"ge",ğ:"yumuşak ge",h:"he",ı:"ı",i:"i",j:"je",k:"ke",l:"le",m:"me",n:"ne",o:"o",ö:"ö",p:"pe",r:"re",s:"se",ş:"şe",t:"te",u:"u",ü:"ü",v:"ve",y:"ye",z:"ze"},
+ es:{a:"a",b:"be",c:"ce",d:"de",e:"e",f:"efe",g:"ge",h:"hache",i:"i",j:"jota",k:"ka",l:"ele",m:"eme",n:"ene",ñ:"eñe",o:"o",p:"pe",q:"cu",r:"erre",s:"ese",t:"te",u:"u",v:"uve",w:"uve doble",x:"equis",y:"ye",z:"zeta",ll:"elle"},
+ de:{a:"a",b:"be",c:"ze",d:"de",e:"e",f:"eff",g:"ge",h:"ha",i:"i",j:"jott",k:"ka",l:"ell",m:"emm",n:"enn",o:"o",p:"pe",q:"ku",r:"err",s:"ess",t:"te",u:"u",v:"fau",w:"we",x:"ix",y:"üpsilon",z:"zett","ä":"äh","ö":"öh","ü":"üh","ß":"eszett"},
+ fr:{a:"a",b:"bé",c:"cé",d:"dé",e:"e",é:"é",f:"effe",g:"gé",h:"hache",i:"i",j:"ji",k:"ka",l:"elle",m:"emme",n:"enne",o:"o",p:"pé",q:"qu",r:"erre",s:"esse",t:"té",u:"u",v:"vé",w:"double vé",x:"ixe",y:"i grec",z:"zède",ç:"cé cédille"},
+ it:{a:"a",b:"bi",c:"ci",d:"di",e:"e",f:"effe",g:"gi",h:"acca",i:"i",l:"elle",m:"emme",n:"enne",o:"o",p:"pi",q:"cu",r:"erre",s:"esse",t:"ti",u:"u",v:"vu",z:"zeta"}};
+function abcName(it){if(LANG==="zh")return it[1];const k=String(it[1]).toLocaleLowerCase(LANG==="tr"?"tr-TR":undefined),m=ABC_NAMES[LANG]||{};return m[k]||k}
+abcSay=it=>LANG==="zh"?[{t:it[1]}]:[{t:abcName(it)},{t:it[2]}];
+A.abcqsay=()=>{const q=AB.q&&AB.q[AB.i];if(!q)return;speak(q.type==="listen"?abcName(q.it):(LANG==="zh"?q.it[1]:q.it[2]))};
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
