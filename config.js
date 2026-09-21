@@ -6,7 +6,7 @@ window.APP_CONFIG = {
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxaW1reXFzemx3bm5kZGRpemtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDIyNTgsImV4cCI6MjEwNTQxODI1OH0.i6NypjJZt2qt8Dqgyd0ONrqFa5_gTF5e5BhvyWT9C54",
 
   CURRENCY: "₪",
-  ACTIVATION_TIME: "خلال 24 ساعة",
+  ACTIVATION_TIME: "خلال دقائق",
 
   // رقم واتساب بصيغة دولية بدون +
   WHATSAPP: "972567385853",
