@@ -843,6 +843,25 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .mouth .mo-trill{transform-box:fill-box;transform-origin:center bottom;animation:moTrill .18s infinite alternate}@keyframes moTrill{from{transform:translateY(0)}to{transform:translateY(-4px)}}
 .mouth .mo-curl{transform-box:fill-box;transform-origin:left bottom;animation:moCurl 1.6s infinite}@keyframes moCurl{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
 @media (prefers-reduced-motion:reduce){.mouth *{animation:none!important}}
+
+/* ===== Toki coach (appears after any mistake) ===== */
+#coach{position:fixed;left:10px;right:10px;top:calc(70px + env(safe-area-inset-top,0px));z-index:40;transform:translateY(-140%);opacity:0;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .25s;pointer-events:none;max-width:560px;margin:0 auto}
+#coach.show{transform:none;opacity:1;pointer-events:auto}
+body.chatmode #coach,body.playing #coach{top:calc(12px + env(safe-area-inset-top,0px))}
+.co-card{background:var(--card);border:1.5px solid var(--primary);border-radius:22px;box-shadow:0 18px 40px -16px rgba(20,30,80,.5);padding:12px 14px}
+.co-head{display:flex;align-items:center;gap:8px}.co-head b{font-weight:700}.co-head small{color:var(--soft);flex:1}
+.co-x{border:none;background:var(--sky);width:30px;height:30px;border-radius:50%;color:var(--ink)}
+.co-body{margin-top:8px}.co-row{display:flex;gap:8px;align-items:baseline;padding:6px 10px;border-radius:12px;margin-bottom:6px}
+.co-row span{flex:none;font-size:.8rem;font-weight:600;opacity:.8}.co-row b{font-weight:700}
+.co-row.bad{background:#FEE2E2;color:#991B1B}.co-row.bad b{text-decoration:line-through;text-decoration-thickness:2px}.co-row.good{background:var(--good-bg);color:var(--good-d)}
+[data-theme="dark"] .co-row.bad{background:rgba(239,68,68,.18);color:#FCA5A5}
+.co-tip{margin:6px 2px 4px;line-height:1.7;min-height:1.4em}
+.co-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.co-acts button{border:none;background:var(--primary-soft);color:var(--primary);border-radius:999px;padding:7px 12px;font-weight:700;font-family:inherit;font-size:.85rem}
+.co-acts .co-mute{background:transparent;color:var(--soft);margin-inline-start:auto}
+.co-acts .co-ok{background:var(--primary);color:#fff}
+.co-card{max-height:46vh;overflow-y:auto}
+@media (prefers-reduced-motion:reduce){#coach{transition:none}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4988,6 +5007,63 @@ Object.assign(A,{
   mosay:d=>speak(d.t),mosayslow:d=>speak(d.t,{slow:true}),
   drstart:()=>{AB.mode="drill";drillRun()},
   drstop:()=>{DR.on=false;try{if(recOn&&rec)rec.abort()}catch(e){}stopSpeak();AB.mode="learn";render()}});
+/* ================== توكي بكل الموقع: بيصحّحلك بكل تمرين وبيشرحلك ليش ================== */
+const CO={pick:null,pickT:0,typed:"",typedT:0,heard:"",heardT:0,cache:{},cur:null};
+/* remember what the learner just answered (tap, typing, or speaking) */
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-act]");if(!b)return;
+  if(b.dataset.o!=null||b.dataset.k!=null||/pick|ans|opt/i.test(b.dataset.act)){CO.pick=(b.textContent||"").replace(/\s+/g," ").trim().replace(/^[0-9A-D]\s*(?=\S)/,"").trim().slice(0,120);CO.pickT=Date.now()}},{capture:true});
+document.addEventListener("input",e=>{const t=e.target;if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA")&&t.id!=="tuIn"){CO.typed=String(t.value||"").slice(0,200);CO.typedT=Date.now()}},{capture:true});
+{const _ls=listen;listen=function(onAlts,onErr,onEnd){return _ls(alts=>{CO.heard=(alts&&alts[0])||"";CO.heardT=Date.now();onAlts&&onAlts(alts)},onErr,onEnd)}}
+function coGiven(src){const n=Date.now();
+  if(/نطق/.test(src)&&n-CO.heardT<15000)return{g:CO.heard,how:"spoke"};
+  if(n-CO.pickT<2500&&CO.pick)return{g:CO.pick,how:"picked"};
+  if(n-CO.typedT<120000&&CO.typed)return{g:CO.typed,how:"typed"};
+  if(n-CO.heardT<15000&&CO.heard)return{g:CO.heard,how:"spoke"};return{g:"",how:""}}
+const coOn=()=>S.coach!==false&&S.coachOff!==dayStr(new Date());
+const CO_SKIP=/ألعاب|تحدي السرعة/;
+/* every wrong answer in the site passes through here */
+{const _am=addMistake;addMistake=function(en,ar,src){const will=coOn()&&!CO_SKIP.test(src||"")&&route!=="tutor"&&route!=="placement";CO.quiet=will;try{_am(en,ar,src)}finally{CO.quiet=false}if(!will)return;
+  const giv=coGiven(src||"");coShow({en,ar,src:src||"",given:giv.g,how:giv.how})}}
+{const _re=react;react=function(ok,extra){if(!ok&&(CO.quiet||(CO.cur&&document.getElementById("coach"))))return;return _re(ok,extra)}}
+function coEl(){let el=document.getElementById("coach");if(!el){el=document.createElement("div");el.id="coach";el.setAttribute("role","status");el.setAttribute("aria-live","polite");document.body.appendChild(el)}return el}
+function coHide(){const el=document.getElementById("coach");if(el)el.classList.remove("show");CO.cur=null}
+function coRender(){const c=CO.cur;if(!c)return;const el=coEl();
+  el.innerHTML=`<div class="co-card"><div class="co-head">${mascot(c.tip?"smile":"think",40)}<b>توكي</b><small>${esc(c.src)}</small><button class="co-x" data-act="cohide" aria-label="سكّر">✕</button></div>
+    <div class="co-body">${c.given?`<div class="co-row bad"><span>${c.how==="spoke"?"سمعتك حكيت":c.how==="picked"?"اخترت":"كتبت"}</span><b dir="auto">${esc(c.given)}</b></div>`:""}
+      <div class="co-row good"><span>الصح</span><b dir="auto">${esc(c.en)}</b></div>
+      <p class="co-tip">${c.tip?esc(c.tip):AIstate==="ok"?`<span class="typing"><i></i><i></i><i></i></span>`:esc(c.ar?("المعنى: "+c.ar):"ركّز عالإجابة الصح وجرّب كمان 💪")}</p></div>
+    <div class="co-acts"><button data-act="cosay">🔊 اسمع الصح</button>${AIstate==="ok"?`<button data-act="comore">💬 اشرحلي أكثر</button>`:""}<button class="co-mute" data-act="comute">🔕 اليوم</button><button class="co-ok" data-act="cohide">تمام ✓</button></div></div>`;
+  el.classList.add("show")}
+async function coShow(c){CO.cur=c;coRender();if(AIstate!=="ok")return;
+  const key=[LANG,c.src,c.en,c.given].join("|");if(CO.cache[key]){c.tip=CO.cache[key];coRender();return}
+  const L=LNAME_EN(),lv=userLv();
+  const what=c.how==="spoke"?`Speech recognition heard the learner say: "${c.given}"`:c.given?`The learner ${c.how==="picked"?"chose":"wrote"}: "${c.given}"`:"The learner didn't know it";
+  try{const r=await AI(`You are Toki, a warm, expert ${L} tutor for an Arabic-speaking learner (level ${lv}).
+Exercise type: ${c.src}. Correct answer: "${c.en}"${c.ar?` (Arabic meaning: ${c.ar})`:""}.
+${what}.
+In friendly Palestinian Arabic, in at most 2 short sentences: point out exactly what was wrong (the specific letter, word, word order, grammar rule or sound), and give the rule or a memory trick to get it right next time. If useful, add one very short ${L} example. No greeting, no markdown.`,{modelTier:"quick"});
+    const t=String((r&&r.text)||r||"").replace(/\*\*/g,"").trim().slice(0,400);if(t){CO.cache[key]=t;if(CO.cur===c){c.tip=t;coRender()}}}catch(e){}}
+Object.assign(A,{
+  cohide:()=>coHide(),
+  cosay:()=>{const c=CO.cur;if(c)speak(String(c.en).split(/ → | - /).pop())},
+  comute:()=>{S.coachOff=dayStr(new Date());save();coHide();toast("🔕 توكي رح يسكت عن الأخطاء لليوم، وبيرجع بكرة")},
+  comore:async()=>{const c=CO.cur;if(!c)return;
+    showSheet(`<div class="co-more"><div class="rm-teacher">${mascot("happy",54)}<div class="rm-bub" id="coMore"><span class="typing"><i></i><i></i><i></i></span></div></div>
+      <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="cosay">🔊 اسمع الصح</button></div></div>`);
+    try{const r=await AI(`You are Toki, an expert, friendly ${LNAME_EN()} teacher for an Arabic-speaking learner (level ${userLv()}).
+Exercise: ${c.src}. Correct answer: "${c.en}"${c.ar?` (meaning: ${c.ar})`:""}. ${c.given?`The learner answered: "${c.given}".`:"The learner didn't know it."}
+Explain in friendly Palestinian Arabic, like a good teacher, in 3-5 short sentences: what the mistake is, the rule behind it (compare with Arabic if helpful), the common trap for Arabic speakers, and 2 short ${LNAME_EN()} example sentences with Arabic meaning. End with one tiny practice question. Plain text, no markdown.`,{modelTier:"quick"});
+      const t=String((r&&r.text)||r||"").replace(/\*\*/g,"").trim();const el=document.getElementById("coMore");if(el)el.innerHTML=t.split(/\n+/).map(x=>`<p dir="auto">${esc(x)}</p>`).join("")}
+    catch(e){const el=document.getElementById("coMore");if(el)el.textContent="ما قدرت أشرح هلأ، جرّب كمان شوي."}}});
+/* hide the coach when leaving the page */
+{const _go=go;go=function(r){if(r!==route)coHide();return _go.apply(this,arguments)}}
+/* a switch in settings (أنا ← الإعدادات) */
+{const _vm=VIEWS.me;VIEWS.me=function(){return _vm().replace('<div class="set"><span>الاهتزاز</span>',`<div class="set"><span>💙 توكي بيصحّحلي بالتمارين</span>${seg("setcoach",S.coach===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div><div class="set"><span>الاهتزاز</span>`)}}
+A.setcoach=d=>{S.coach=d.m!=="off";if(S.coach)delete S.coachOff;save();render()};
+
+/* tapping anywhere else (like «next») closes the coach so it never blocks the exercise */
+document.addEventListener("pointerdown",e=>{const c=document.getElementById("coach");if(!c||!c.classList.contains("show"))return;
+  if(e.target.closest&&(e.target.closest("#coach")||e.target.closest("#sheet")))return;coHide()},{capture:true});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
