@@ -4815,6 +4815,37 @@ const ABC_NAMES={
 function abcName(it){if(LANG==="zh")return it[1];const k=String(it[1]).toLocaleLowerCase(LANG==="tr"?"tr-TR":undefined),m=ABC_NAMES[LANG]||{};return m[k]||k}
 abcSay=it=>LANG==="zh"?[{t:it[1]}]:[{t:abcName(it)},{t:it[2]}];
 A.abcqsay=()=>{const q=AB.q&&AB.q[AB.i];if(!q)return;speak(q.type==="listen"?abcName(q.it):(LANG==="zh"?q.it[1]:q.it[2]))};
+/* ================== صوت نطق عالي الجودة لكل الموقع (Google)، مع رجوع تلقائي لصوت الجوال ================== */
+const CT={on:()=>typeof window.liveApi==="function"&&typeof CFG!=="undefined"&&!!CFG.SUPABASE_URL&&S.cloudVoice!==false,
+  el:null,unlocked:false,cache:{},bad:{},seq:0};
+function ctEl(){if(!CT.el){CT.el=new Audio();CT.el.preload="auto";CT.el.setAttribute("playsinline","")}return CT.el}
+/* iPhone needs one tap to allow audio playing later */
+document.addEventListener("pointerdown",()=>{if(CT.unlocked||!CT.on())return;CT.unlocked=true;const a=ctEl();
+  a.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";a.play().catch(()=>{})},{capture:true});
+async function ctHash(lang,text){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`v1|${lang}|Kore|${text}`));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function ctUrl(text){const lang=LANG,k=lang+"|"+text;if(CT.cache[k])return CT.cache[k];if(CT.bad[k])return null;
+  try{const pub=`${CFG.SUPABASE_URL}/storage/v1/object/public/tts/${lang}/${await ctHash(lang,text)}.wav`;
+    const h=await fetch(pub,{method:"HEAD"}).catch(()=>null);if(h&&h.ok)return CT.cache[k]=pub;
+    const r=await Promise.race([window.liveApi("tts",{text,lang}),new Promise(res=>setTimeout(()=>res({error:"timeout"}),9000))]);
+    if(r&&r.url)return CT.cache[k]=r.url;if(r&&r.error&&r.error!=="timeout")CT.bad[k]=1}catch(e){}
+  return null}
+const AR_CHARS=/[\u0600-\u06FF]/;
+{const _speak=speak;speak=function(t,o={}){
+  if(!CT.on()||!t||String(t).length>300||AR_CHARS.test(t))return _speak(t,o);
+  const my=++CT.seq,text=String(t).trim();if(!o.keep)try{speechSynthesis.cancel()}catch(e){}
+  const a=ctEl();try{a.pause()}catch(e){}
+  ctUrl(text).then(url=>{if(my!==CT.seq)return;
+    if(!url){_speak(t,o);return}
+    let ok=false,done=false;a.onplaying=()=>{ok=true};a.onended=()=>{ok=true;if(done)return;done=true;if(my===CT.seq&&o.onend)o.onend()};a.onerror=()=>{if(ok||done||my!==CT.seq)return;done=true;delete CT.cache[LANG+"|"+text];_speak(t,o)};
+    a.src=url;a.playbackRate=o.slow?0.75:Math.min(1.1,Math.max(.7,S.rate||1));try{a.preservesPitch=true}catch(e){}
+    const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{if(ok||done||my!==CT.seq)return;done=true;_speak(t,o)})})}}
+{const _stop=stopSpeak;stopSpeak=function(){CT.seq++;try{CT.el&&CT.el.pause()}catch(e){}_stop()}}
+/* admin helper: prepare all letter sounds in advance so everyone hears them instantly */
+async function ctPrewarm(){if(!CT.on())return;const items=[];abcData().groups.forEach(g=>g.L.forEach(it=>{(LANG==="zh"?[it[1]]:[abcName(it),it[2]]).forEach(x=>items.push(x))}));
+  let n=0;toast(`عم بجهّز ${items.length} صوت…`);for(const x of items){await ctUrl(x);n++;if(n%10===0)toast(`جهزت ${n} من ${items.length}`)}toast("✅ كل أصوات الحروف جاهزة")}
+{const _va=VIEWS.abc;VIEWS.abc=function(){let h=_va();if(!AB.g&&CT.on()&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")
+  h+=`<button class="plan-task" data-act="ctprewarm"><span class="pi">⚡</span><span class="pt"><b>جهّز أصوات كل الحروف (للأدمن)</b><small>بتتولّد مرة وحدة وبتصير فورية للكل</small></span><span class="pc">›</span></button>`;return h}}
+A.ctprewarm=()=>ctPrewarm();
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
