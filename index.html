@@ -4079,8 +4079,8 @@ function lvConnect(tok,full){const url=`wss://generativelanguage.googleapis.com/
   const ws=new WebSocket(url);LV.ws=ws;
   ws.onopen=()=>{const sc=TUTOR.find(x=>x.id==="buddy")||TUTOR[0];
     const sys=tuRules(sc)+`\nThis is a live VOICE call. Speak naturally, warmly and briefly, like a real friend on the phone. Speak Arabic in Palestinian/Levantine dialect and ${LNAME_EN()} with a natural native accent. Let the learner talk; don't lecture.`;
-    const setup={model:"models/"+tok.model,responseModalities:["AUDIO"],systemInstruction:{parts:[{text:sys}]}};
-    if(full){setup.inputAudioTranscription={};setup.outputAudioTranscription={};setup.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}}}
+    const setup={model:"models/"+tok.model,generationConfig:{responseModalities:["AUDIO"]},systemInstruction:{parts:[{text:sys}]}};
+    if(full){setup.generationConfig.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}};setup.inputAudioTranscription={};setup.outputAudioTranscription={}}
     ws.send(JSON.stringify({setup}))};
   ws.onmessage=async ev=>{let m;try{m=JSON.parse(typeof ev.data==="string"?ev.data:await ev.data.text())}catch(e){return}
     if(m.setupComplete){LV.ready=true;LV.state="listening";LV.start=Date.now();lvUi();
