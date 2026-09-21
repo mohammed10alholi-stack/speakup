@@ -801,6 +801,17 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .tk-dots{opacity:0}.tk-think .tk-dots{opacity:1;animation:tkw 1.2s infinite}
 .vc-orb{width:auto;height:auto;background:none!important}
 @media (prefers-reduced-motion:reduce){.tk-body,.tk-eyes,.tk-arm,.tk-mouth,.tk-waves,.tk-dots{animation:none!important}}
+
+/* ===== letters course ===== */
+.abc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.abc-tile{display:flex;flex-direction:column;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:12px 8px;color:var(--ink);font-family:inherit;box-shadow:var(--elev)}
+.abc-tile b{font-size:2rem;font-weight:700;color:var(--primary);font-family:"Rubik","Noto Sans SC",sans-serif}
+.abc-em{font-size:1.6rem}.abc-w{font-weight:700;font-size:1.05rem}.abc-tile small{color:var(--soft)}
+.abc-tile em{font-style:normal;font-size:.8rem;background:var(--gold-soft);color:#6B4A00;border-radius:10px;padding:4px 8px;margin-top:4px;line-height:1.5}
+.abc-tile:active{transform:scale(.97)}
+.abc-qw{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px 0}.abc-qw span{font-size:3rem}.abc-qw b{font-size:1.6rem}
+.abc-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.abc-opts .opt{text-align:center;font-size:1.5rem;font-weight:700}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4502,6 +4513,97 @@ HOW TO BE AN EXCELLENT TUTOR:
 const TOKI_EXPLAIN_PLUS=`
 Explain like an expert teacher for Arabic speakers: when helpful, compare with Arabic; mention the typical mistake Arabic speakers make with this point; add a quick pronunciation tip if relevant; end with one short practice question for the learner.`;
 {const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);if(!sc)return r;if(sc.role==="EXPLAIN")return r+TOKI_EXPLAIN_PLUS;return r+learnerBrief()+TOKI_SMART}}
+/* ================== الحروف: كورس الأبجدية لكل لغة (أول خطوة بالخطة) ================== */
+/* [الحرف كما يظهر, النص اللي بينقرأ للحرف, كلمة مثال, معناها, إيموجي, تلميح بالعربي] */
+const ABC_DATA={
+en:{intro:"الإنجليزي فيه 26 حرف، منهم 5 أحرف علّة (A E I O U). كل حرف إله «اسم» (زي بي، سي) و«صوت» جوّا الكلمات. تعلّم الاثنين!",groups:[
+ {id:"en1",name:"أحرف العلّة",L:[["A a","A","apple","تفاحة","🍎","اسمه «إيه»، وبالكلمات غالباً «أَ»"],["E e","E","egg","بيضة","🥚","اسمه «إي»، وبالكلمات «إِ»"],["I i","I","ice","ثلج","🧊","اسمه «آي»، وبالكلمات غالباً «إِ» قصيرة"],["O o","O","orange","برتقالة","🍊","اسمه «أو»، وبالكلمات «أُ» أو «آ»"],["U u","U","umbrella","شمسية","☂️","اسمه «يو»، وبالكلمات غالباً «أَ»"]]},
+ {id:"en2",name:"B إلى H",L:[["B b","B","ball","كرة","⚽","ب"],["C c","C","cat","قطة","🐱","ك، وقبل e أو i أو y بتصير س"],["D d","D","dog","كلب","🐶","د"],["F f","F","fish","سمكة","🐟","ف"],["G g","G","girl","بنت","👧","گ (زي الجيم المصرية)، وأحياناً ج"],["H h","H","house","بيت","🏠","هـ"]]},
+ {id:"en3",name:"J إلى P",L:[["J j","J","juice","عصير","🧃","ج"],["K k","K","key","مفتاح","🔑","ك"],["L l","L","lion","أسد","🦁","ل"],["M m","M","moon","قمر","🌙","م"],["N n","N","nose","أنف","👃","ن"],["P p","P","pen","قلم","🖊️","پ: زي الباء بس بنفخة هوا (مش موجود بالعربي)"]]},
+ {id:"en4",name:"Q إلى V",L:[["Q q","Q","queen","ملكة","👑","ك، وغالباً بتيجي qu = «كو»"],["R r","R","rain","مطر","🌧️","ر خفيفة بدون ترعيد"],["S s","S","sun","شمس","☀️","س"],["T t","T","tree","شجرة","🌳","ت"],["V v","V","van","فان","🚐","ڤ: زي الفاء بس بصوت (مش موجود بالعربي)"]]},
+ {id:"en5",name:"W إلى Z",L:[["W w","W","water","مي","💧","و"],["X x","X","box","صندوق","📦","كس"],["Y y","Y","yellow","أصفر","💛","ي"],["Z z","Z","zoo","حديقة حيوانات","🦓","ز"]]}]},
+tr:{intro:"التركي فيه 29 حرف، وكل حرف إله صوت واحد بس، يعني بتقرأ الكلمة زي ما هي مكتوبة! انتبه للحروف الخاصة: Ç Ş Ğ I Ö Ü.",groups:[
+ {id:"tr1",name:"أحرف العلّة",L:[["A a","A","araba","سيارة","🚗","آ"],["E e","E","elma","تفاحة","🍎","إ"],["I ı","ı","kırmızı","أحمر","🔴","صوت بين «إ» و«أ»، مش موجود بالعربي"],["İ i","i","inek","بقرة","🐄","إي"],["O o","O","okul","مدرسة","🏫","أو"],["Ö ö","ö","göz","عين","👁️","أو بس بتدوّر شفايفك"],["U u","U","uçak","طيارة","✈️","أو"],["Ü ü","ü","üzüm","عنب","🍇","يو بشفايف مدوّرة"]]},
+ {id:"tr2",name:"B إلى G",L:[["B b","B","balık","سمكة","🐟","ب"],["C c","C","ceviz","جوز","🌰","ج (مش ك!)"],["Ç ç","Ç","çay","شاي","🍵","تش"],["D d","D","deniz","بحر","🌊","د"],["F f","F","fil","فيل","🐘","ف"],["G g","G","gemi","سفينة","🚢","گ (زي الجيم المصرية)"]]},
+ {id:"tr3",name:"Ğ إلى M",L:[["Ğ ğ","ğ","dağ","جبل","⛰️","ما بينلفظ! بيطوّل الحرف اللي قبله"],["H h","H","horoz","ديك","🐓","هـ"],["J j","J","jöle","جيلي","🍮","ژ (ج شامية ناعمة)"],["K k","K","kedi","قطة","🐱","ك"],["L l","L","limon","ليمون","🍋","ل"],["M m","M","masa","طاولة","🪑","م"]]},
+ {id:"tr4",name:"N إلى T",L:[["N n","N","not","ملاحظة","📝","ن"],["P p","P","para","مصاري","💰","پ: زي الباء بنفخة هوا"],["R r","R","radyo","راديو","📻","ر"],["S s","S","su","مي","💧","س"],["Ş ş","Ş","şeker","سكر","🍬","ش"],["T t","T","top","كرة","⚽","ت"]]},
+ {id:"tr5",name:"V إلى Z",L:[["V v","V","vapur","عبّارة","⛴️","ڤ: زي الفاء بصوت"],["Y y","Y","yol","طريق","🛣️","ي"],["Z z","Z","zeytin","زيتون","🫒","ز"]]}]},
+es:{intro:"الإسباني فيه 27 حرف، ومنهم Ñ الخاص فيه. الحلو إنه بتقرأ زي ما بتكتب تقريباً! انتبه: H ما بتنلفظ، وJ = خ.",groups:[
+ {id:"es1",name:"أحرف العلّة",L:[["A a","A","agua","مي","💧","آ"],["E e","E","elefante","فيل","🐘","إ"],["I i","I","isla","جزيرة","🏝️","إي"],["O o","O","oso","دب","🐻","أو"],["U u","U","uva","عنب","🍇","أو"]]},
+ {id:"es2",name:"B إلى H",L:[["B b","B","barco","سفينة","🚢","ب"],["C c","C","casa","بيت","🏠","ك، وقبل e أو i: ث (بإسبانيا) أو س"],["D d","D","dedo","إصبع","👆","د ناعمة"],["F f","F","flor","وردة","🌸","ف"],["G g","G","gato","قطة","🐱","گ، وقبل e أو i: خ"],["H h","H","huevo","بيضة","🥚","صامت! ما بينلفظ أبداً"]]},
+ {id:"es3",name:"J إلى Ñ",L:[["J j","J","jugo","عصير","🧃","خ"],["K k","K","kilo","كيلو","⚖️","ك"],["L l","L","luna","قمر","🌙","ل"],["M m","M","mano","إيد","✋","م"],["N n","N","nariz","أنف","👃","ن"],["Ñ ñ","Ñ","niño","ولد","👦","نيـ (زي «نيو»)"]]},
+ {id:"es4",name:"P إلى V",L:[["P p","P","pan","خبز","🍞","پ: زي الباء بنفخة خفيفة"],["Q q","Q","queso","جبنة","🧀","ك (qu = ك)"],["R r","R","rosa","وردة","🌹","ر، وبأول الكلمة أو rr بترعيد قوي"],["S s","S","sol","شمس","☀️","س"],["T t","T","tomate","بندورة","🍅","ت"],["V v","V","vaca","بقرة","🐄","ب (مش ڤ!)"]]},
+ {id:"es5",name:"W إلى Z و LL",L:[["W w","W","wifi","واي فاي","📶","و"],["X x","X","taxi","تاكسي","🚕","كس"],["Y y","Y","yo","أنا","🙋","ي"],["Z z","Z","zapato","حذاء","👞","ث (بإسبانيا) أو س"],["LL ll","ll","llave","مفتاح","🔑","ي أو ج خفيفة"]]}]},
+de:{intro:"الألماني فيه 26 حرف، وفوقهم Ä Ö Ü وß. القراءة منتظمة: sch = ش، ch = خ أو ش، ei = آي، ie = إي.",groups:[
+ {id:"de1",name:"أحرف العلّة",L:[["A a","A","Apfel","تفاحة","🍎","آ"],["E e","E","Ei","بيضة","🥚","إي أو إ"],["I i","I","Igel","قنفذ","🦔","إي"],["O o","O","Ohr","أذن","👂","أو"],["U u","U","Uhr","ساعة","⌚","أو"]]},
+ {id:"de2",name:"Ä Ö Ü ß",L:[["Ä ä","Ä","Bär","دب","🐻","إ مفتوحة"],["Ö ö","Ö","Öl","زيت","🛢️","أو بشفايف مدوّرة"],["Ü ü","Ü","Tür","باب","🚪","يو بشفايف مدوّرة"],["ß","ß","Fuß","رجل","🦶","س قوية (زي ss)"]]},
+ {id:"de3",name:"B إلى H",L:[["B b","B","Ball","كرة","⚽","ب"],["C c","C","Computer","كمبيوتر","💻","ك"],["D d","D","Dorf","قرية","🏘️","د"],["F f","F","Fisch","سمكة","🐟","ف"],["G g","G","Glas","كاسة","🥛","گ (زي الجيم المصرية)"],["H h","H","Haus","بيت","🏠","هـ"]]},
+ {id:"de4",name:"J إلى P",L:[["J j","J","Junge","ولد","👦","ي (مش ج!)"],["K k","K","Katze","قطة","🐱","ك"],["L l","L","Löwe","أسد","🦁","ل"],["M m","M","Mond","قمر","🌙","م"],["N n","N","Nase","أنف","👃","ن"],["P p","P","Papier","ورق","📄","پ: زي الباء بنفخة هوا"]]},
+ {id:"de5",name:"Q إلى V",L:[["Q q","Q","Qualle","قنديل بحر","🪼","كڤ (qu)"],["R r","R","Rose","وردة","🌹","ر من الحلق، قريبة من غ خفيفة"],["S s","S","Sonne","شمس","☀️","ز بأول الكلمة"],["T t","T","Tisch","طاولة","🪑","ت"],["V v","V","Vogel","عصفور","🐦","ف (مش ڤ!)"]]},
+ {id:"de6",name:"W إلى Z",L:[["W w","W","Wasser","مي","💧","ڤ"],["X x","X","Hexe","ساحرة","🧙","كس"],["Y y","Y","Yoga","يوغا","🧘","ي"],["Z z","Z","Zug","قطار","🚆","تس"]]}]},
+fr:{intro:"الفرنسي فيه 26 حرف، وفي علامات فوق الحروف (é è ê à ç) بتغيّر الصوت. كثير حروف بآخر الكلمة ما بتنلفظ، وH دايماً صامت.",groups:[
+ {id:"fr1",name:"أحرف العلّة",L:[["A a","A","arbre","شجرة","🌳","آ"],["É é","é","école","مدرسة","🏫","é = إي مغلقة، وe لحالها = أُ خفيفة"],["I i","I","île","جزيرة","🏝️","إي"],["O o","O","orange","برتقالة","🍊","أو"],["U u","U","lune","قمر","🌙","يو بشفايف مدوّرة (مش أو!)"],["Y y","Y","yaourt","لبن","🥛","إي"]]},
+ {id:"fr2",name:"B إلى G",L:[["B b","B","bateau","سفينة","🚢","ب"],["C c","C","chat","قطة","🐱","ك، وقبل e أو i: س، وch = ش"],["Ç ç","ç","garçon","ولد","👦","س دايماً"],["D d","D","dent","سن","🦷","د"],["F f","F","fleur","وردة","🌸","ف"],["G g","G","gâteau","كيكة","🎂","گ، وقبل e أو i: ژ"]]},
+ {id:"fr3",name:"H إلى N",L:[["H h","H","hôtel","فندق","🏨","صامت دايماً!"],["J j","J","jus","عصير","🧃","ژ (ج شامية ناعمة)"],["K k","K","kiwi","كيوي","🥝","ك"],["L l","L","lion","أسد","🦁","ل"],["M m","M","main","إيد","✋","م"],["N n","N","nez","أنف","👃","ن"]]},
+ {id:"fr4",name:"P إلى V",L:[["P p","P","pain","خبز","🍞","پ: زي الباء بنفخة خفيفة"],["Q q","Q","quatre","أربعة","4️⃣","ك"],["R r","R","rose","وردة","🌹","ر من الحلق، قريبة من غ خفيفة"],["S s","S","soleil","شمس","☀️","س، وبين حرفين علّة: ز"],["T t","T","table","طاولة","🪑","ت"],["V v","V","voiture","سيارة","🚗","ڤ: زي الفاء بصوت"]]},
+ {id:"fr5",name:"W إلى Z",L:[["W w","W","wagon","عربة قطار","🚃","ڤ أو و"],["X x","X","taxi","تاكسي","🚕","كس"],["Z z","Z","zèbre","حمار وحشي","🦓","ز"]]}]},
+zh:{intro:"الصيني ما إله أبجدية! بنتعلم النطق بـ «البينيين»: حروف لاتينية بتكتب الصوت. وأهم إشي النغمات الأربعة، لأنها بتغيّر المعنى كامل.",groups:[
+ {id:"zh1",name:"النغمات الأربعة",L:[["mā","妈","妈 mā","ماما","👩","النغمة 1: عالية وثابتة ‾"],["má","麻","麻 má","قنّب","🌿","النغمة 2: طالعة ↗ زي لما تسأل «هاه؟»"],["mǎ","马","马 mǎ","حصان","🐴","النغمة 3: نازلة وبعدين طالعة ↘↗"],["mà","骂","骂 mà","يوبّخ","😠","النغمة 4: نازلة قوية ↘ زي «لأ!»"]]},
+ {id:"zh2",name:"أحرف العلّة",L:[["a","阿","阿 ā","(صوت نداء)","🗣️","آ"],["o","哦","哦 ó","أوه!","😮","أو"],["e","饿","饿 è","جوعان","🍽️","أُ من الحلق"],["i","一","一 yī","واحد","1️⃣","إي"],["u","五","五 wǔ","خمسة","5️⃣","أو"],["ü","鱼","鱼 yú","سمكة","🐟","يو بشفايف مدوّرة"]]},
+ {id:"zh3",name:"b p m f d t",L:[["b","八","八 bā","ثمانية","8️⃣","پ خفيفة (مش ب قوية)"],["p","爬","爬 pá","يتسلّق","🧗","پ مع نفخة هوا"],["m","猫","猫 māo","قطة","🐱","م"],["f","飞","飞 fēi","يطير","✈️","ف"],["d","大","大 dà","كبير","🐘","ت خفيفة"],["t","他","他 tā","هو","👨","ت مع نفخة هوا"]]},
+ {id:"zh4",name:"n l g k h",L:[["n","你","你 nǐ","إنت","👉","ن"],["l","六","六 liù","ستة","6️⃣","ل"],["g","狗","狗 gǒu","كلب","🐶","ك خفيفة"],["k","口","口 kǒu","تم","👄","ك مع نفخة هوا"],["h","喝","喝 hē","يشرب","🥤","خ خفيفة"]]},
+ {id:"zh5",name:"j q x zh ch sh",L:[["j","鸡","鸡 jī","دجاجة","🐔","دجـ خفيفة"],["q","七","七 qī","سبعة","7️⃣","تشـ مع نفخة هوا"],["x","西","西 xī","غرب","🧭","بين س وش"],["zh","中","中 zhōng","وسط","🎯","دج مع لف اللسان لورا"],["ch","吃","吃 chī","ياكل","🍜","تش مع لف اللسان"],["sh","书","书 shū","كتاب","📖","ش"]]},
+ {id:"zh6",name:"r z c s y w",L:[["r","日","日 rì","شمس / يوم","☀️","بين ژ ور خفيفة"],["z","字","字 zì","حرف صيني","🔤","دز"],["c","菜","菜 cài","خضرة","🥬","تس مع نفخة هوا"],["s","三","三 sān","ثلاثة","3️⃣","س"],["y","鱼","鱼 yú","سمكة","🐟","ي"],["w","我","我 wǒ","أنا","🙋","و"]]}]}};
+const abcData=()=>ABC_DATA[LANG]||ABC_DATA.en;
+const abcSay=it=>LANG==="zh"?[{t:it[1]}]:[{t:it[1]},{t:it[2]}];
+let AB={g:null,mode:"learn",q:null,i:0,score:0,res:null};
+function abcQuiz(g){const L=g.L,all=abcData().groups.flatMap(x=>x.L),qs=[];
+  const opts=it=>{const pool=(L.length>=4?L:all).filter(x=>x!==it);return shuffle([it].concat(shuffle(pool).slice(0,3)))};
+  shuffle(L.slice()).forEach((it,i)=>qs.push({type:i%2?"word":"listen",it,opts:opts(it)}));
+  return qs.slice(0,Math.max(4,Math.min(8,L.length+2)))}
+function abcDone(id){return !!S.done["abc:"+id]}
+function vAbc(){const D=abcData(),gs=D.groups;
+  if(!AB.g){const n=gs.filter(g=>abcDone(g.id)).length;
+    return `<section class="panel">${topbar(LANG==="zh"?"الأصوات والنغمات":"الحروف",LANG==="zh"?"أساس النطق بالصيني":"أول خطوة قبل أي كلمة")}
+      <div class="rm-teacher">${mascot("happy",60)}<div class="rm-bub"><p>${D.intro}</p><p>خلّصت <b>${n} من ${gs.length}</b> مجموعات.${n<gs.length?" يلا نكمّل!":" ممتاز 🎉 جاهز للكلمات!"}</p></div></div></section>
+    <section class="rm-units">${gs.map((g,i)=>{const d=abcDone(g.id),cur=!d&&gs.slice(0,i).every(x=>abcDone(x.id));
+      return `<div class="rm-unit ${d?"done":cur?"cur":"next"}"><button class="rm-uh" data-act="abcopen" data-id="${g.id}"><span class="rm-no">${d?"✓":i+1}</span><span class="rm-ut"><b>${esc(g.name)}</b><small dir="ltr" style="text-align:right">${g.L.map(x=>x[0].split(" ")[0]).join("  ")}</small></span><span class="rm-st">${d?"مكتملة":cur?"إنت هون 📍":"›"}</span></button></div>`}).join("")}</section>
+    ${LANG==="en"?`<button class="plan-task" data-act="go" data-r="sounds"><span class="pi">🎧</span><span class="pt"><b>أصوات صعبة وتمرين الأذن</b><small>الفروق اللي بتلخبط العرب</small></span><span class="pc">›</span></button>`:""}`}
+  const g=gs.find(x=>x.id===AB.g);
+  if(AB.mode==="learn")return `<section class="panel"><div class="spread"><button class="back" data-act="abcback" aria-label="رجوع">→</button><h2 style="margin:0">${esc(g.name)}</h2><span></span></div>
+    <p class="muted">اضغط على كل حرف واسمعه، واقرأ التلميح. بعدين اختبر حالك 👇</p>
+    <div class="abc-grid">${g.L.map((it,i)=>`<button class="abc-tile" data-act="abcsay" data-i="${i}"><b dir="ltr">${esc(it[0])}</b><span class="abc-em">${it[4]}</span><span class="abc-w" dir="ltr">${esc(it[2])}</span><small>${esc(it[3])}</small><em>${esc(it[5])}</em></button>`).join("")}</div>
+    <div class="center" style="margin-top:14px"><button class="btn hl big" data-act="abcquiz">🎯 اختبر حالك</button></div></section>`;
+  const q=AB.q[AB.i];
+  if(!q){const pct=Math.round(100*AB.score/AB.q.length),ok=pct>=70;
+    if(ok&&!abcDone(g.id)){S.done["abc:"+g.id]=1;addXP(10);save()}
+    return `<section class="panel center">${mascot(ok?"happy":"think",90)}<h2>${ok?"برافو! 🎉":"قرّبت!"}</h2><p class="big">${AB.score} من ${AB.q.length}</p>
+      <p class="muted">${ok?"خلّصت هالمجموعة ✓":"بدك 70% لتنجح. ارجع اسمع الحروف مرة ثانية وجرّب."}</p>
+      <div class="row" style="justify-content:center">${ok?`<button class="btn hl" data-act="abcnext">المجموعة الجاية ›</button>`:`<button class="btn hl" data-act="abcquiz">جرّب مرة ثانية</button>`}<button class="btn ghost" data-act="abclearn">راجع الحروف</button></div></section>`}
+  return `<section class="panel"><div class="spread"><button class="back" data-act="abclearn" aria-label="رجوع">→</button><span class="muted">${AB.i+1} / ${AB.q.length}</span><span></span></div>
+    <div class="progress"><i style="width:${100*AB.i/AB.q.length}%"></i></div>
+    ${q.type==="listen"?`<h3 class="center">اسمع واختار ${LANG==="zh"?"الصوت":"الحرف"}</h3><div class="center" style="margin:12px 0"><button class="play-big" data-act="abcqsay" aria-label="تشغيل">▶</button></div>`
+      :`<h3 class="center">${LANG==="zh"?"بأي صوت بتبلّش هالكلمة؟":"بأي حرف بتبلّش هالكلمة؟"}</h3><div class="center abc-qw"><span>${q.it[4]}</span><b dir="ltr">${esc(LANG==="zh"?q.it[2]:q.it[2].replace(/^./,"_"))}</b><small>${esc(q.it[3])}</small><button class="say" data-act="abcqsay">🔊</button></div>`}
+    <div class="abc-opts">${q.opts.map((o,i)=>`<button class="opt ${AB.res!==null?(o===q.it?"right":(i===AB.res?"wrong":"")):""}" data-act="abcpick" data-i="${i}" dir="ltr" ${AB.res!==null?"disabled":""}>${esc(o[0])}</button>`).join("")}</div>
+    ${AB.res!==null?`<div class="center" style="margin-top:12px"><button class="btn" data-act="abcgo">التالي</button></div>`:""}</section>`}
+VIEWS.abc=vAbc;PARENT.abc="learn";
+Object.assign(A,{
+  abcopen:d=>{AB={g:d.id,mode:"learn",q:null,i:0,score:0,res:null};render();window.scrollTo(0,0)},
+  abcback:()=>{AB.g=null;render()},
+  abclearn:()=>{AB.mode="learn";render()},
+  abcsay:d=>{const g=abcData().groups.find(x=>x.id===AB.g);speakSeq(abcSay(g.L[+d.i]))},
+  abcquiz:()=>{const g=abcData().groups.find(x=>x.id===AB.g);AB.mode="quiz";AB.q=abcQuiz(g);AB.i=0;AB.score=0;AB.res=null;render();setTimeout(()=>A.abcqsay(),250)},
+  abcqsay:()=>{const q=AB.q&&AB.q[AB.i];if(!q)return;speak(q.type==="listen"?q.it[1]:(LANG==="zh"?q.it[1]:q.it[2]))},
+  abcpick:d=>{const q=AB.q[AB.i];if(AB.res!==null)return;AB.res=+d.i;const ok=q.opts[+d.i]===q.it;if(ok)AB.score++;if(typeof sfx==="function")sfx(ok?"ok":"bad");speakSeq(abcSay(q.it));render()},
+  abcgo:()=>{AB.i++;AB.res=null;render();if(AB.q[AB.i])setTimeout(()=>A.abcqsay(),200)},
+  abcnext:()=>{const gs=abcData().groups,i=gs.findIndex(x=>x.id===AB.g),n=gs[i+1];if(n)A.abcopen({id:n.id});else{AB.g=null;render()}}});
+/* the letters come first in the A1 plan, before any word */
+{const _pi=pathItems;pathItems=function(lv){const r=_pi(lv);if(lv!=="A1")return r;
+  return abcData().groups.map(g=>({type:"abc",id:g.id,name:(LANG==="zh"?"الأصوات: ":"الحروف: ")+g.name,icon:"🔤",kind:LANG==="zh"?"نطق":"حروف",done:abcDone(g.id)})).concat(r)}}
+{const _op=openPath;openPath=function(t,id){if(t==="abc"){go("abc");A.abcopen({id});return}_op(t,id)}}
+RM_TYPES.unshift(["abc","حروف","🔤"]);
+{const i=LEARN.findIndex(x=>x[0]==="sounds");const tile=["abc","🔤","الحروف","تعلّم الحروف ونطقها، أول خطوة"];if(i>=0)LEARN[i]=tile;else LEARN.unshift(tile)}
+if(typeof ICMAP!=="undefined")ICMAP.abc="sounds";
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
