@@ -4101,12 +4101,14 @@ async function liveStart(useBal){if(!liveAvailable()||LV.on)return;LV.useBal=!!u
     LV.src=LV.ac.createMediaStreamSource(stream);LV.node=new AudioWorkletNode(LV.ac,"pcm-cap");LV.src.connect(LV.node);
     lvConnect(tok,true)}
   catch(e){const code=(e&&(e.error||e.name))||"live_error";liveFallback(/NotAllowed|Permission/i.test(code)?"mic":code,e)}}
-function lvConnect(tok,full){const url=`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.token)}`;
+function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(tok.token)}`;
   const ws=new WebSocket(url);LV.ws=ws;
   ws.onopen=()=>{const sc=TUTOR.find(x=>x.id==="buddy")||TUTOR[0];
     const sys=tuRules(sc)+"\n"+lvStyle();
     const setup={model:"models/"+tok.model,generationConfig:{responseModalities:["AUDIO"]},systemInstruction:{parts:[{text:sys}]}};
-    if(full){setup.generationConfig.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}};setup.inputAudioTranscription={};setup.outputAudioTranscription={}}
+    if(step<=1){setup.generationConfig.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}};setup.inputAudioTranscription={};setup.outputAudioTranscription={}}
+    // faster turn-taking: notice the end of the learner's speech sooner
+    if(step===0)setup.realtimeInputConfig={automaticActivityDetection:{endOfSpeechSensitivity:"END_SENSITIVITY_HIGH",silenceDurationMs:450,prefixPaddingMs:120}};
     ws.send(JSON.stringify({setup}))};
   ws.onmessage=async ev=>{let m;try{m=JSON.parse(typeof ev.data==="string"?ev.data:await ev.data.text())}catch(e){return}
     if(m.setupComplete){LV.ready=true;LV.state="listening";LV.start=Date.now();lvUi();
@@ -4121,13 +4123,16 @@ function lvConnect(tok,full){const url=`wss://generativelanguage.googleapis.com/
     if(sc.inputTranscription&&sc.inputTranscription.text){LV.userCap+=sc.inputTranscription.text;lvCap()}
     if(sc.turnComplete||sc.generationComplete)lvSaveTurn()};
   ws.onclose=ev=>{if(!LV.on||LV.ws!==ws)return;const why=ev&&ev.reason?`ws ${ev.code}: ${ev.reason}`:`ws ${ev&&ev.code}`;LV.detail=why;
-    if(!LV.ready&&full){window.getLiveToken(LV.useBal?{use_balance:true}:undefined).then(t=>{if(LV.on&&t&&t.token){LV.sid=t.sid||LV.sid;LV.limitSec=Math.max(20,+t.seconds||LV.limitSec);lvConnect(t,false)}else liveFallback((t&&t.error)||"live_error",t)});return}
+    if(!LV.ready&&step<2){window.getLiveToken(LV.useBal?{use_balance:true}:undefined).then(t=>{if(LV.on&&t&&t.token){LV.sid=t.sid||LV.sid;LV.limitSec=Math.max(20,+t.seconds||LV.limitSec);lvConnect(t,step+1>=2?false:true,step+1)}else liveFallback((t&&t.error)||"live_error",t)});return}
     liveFallback(/RESOURCE_EXHAUSTED|quota|rate|limit|1011|1013/i.test(why)?"busy":LV.ready?"drop":"live_error")}}
 
 /* how Toki should speak on the live call: easy & slow mode for learners */
 const lvEasy=()=>LV.easy!=null?LV.easy:(S.lvEasy!=null?S.lvEasy:true);
 function lvStyle(){const L=LNAME_EN();
-  const base=`This is a live VOICE call with a LEARNER of ${L}, not a fluent speaker. You are their patient friend and teacher. Speak Arabic in a warm Palestinian/Levantine dialect.`;
+  const base=`This is a live VOICE call with a LEARNER of ${L}, not a fluent speaker. You are their patient friend and teacher. Speak Arabic in a warm Palestinian/Levantine dialect.
+TURN-TAKING:
+- Reply immediately. Start every reply with a very short natural reaction (like «آه!», «حلو!», «تمام»), then continue.
+- If the learner interrupts you, stop at once and listen. Answer what they said first. Then, if your previous point was not finished and is still useful, continue it naturally with a short bridge like «المهم، كنت عم بحكيلك…» and pick up exactly where you stopped. Never silently drop what you were saying.`;
   if(lvEasy())return base+`
 EASY MODE (very important):
 - Speak mostly in Arabic (about 80%).
