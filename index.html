@@ -4822,7 +4822,7 @@ function ctEl(){if(!CT.el){CT.el=new Audio();CT.el.preload="auto";CT.el.setAttri
 /* iPhone needs one tap to allow audio playing later */
 document.addEventListener("pointerdown",()=>{if(CT.unlocked||!CT.on())return;CT.unlocked=true;const a=ctEl();
   a.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";a.play().catch(()=>{})},{capture:true});
-async function ctHash(lang,text){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`v1|${lang}|Kore|${text}`));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function ctHash(lang,text){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`v2|${lang}|Kore|${text}`));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function ctUrl(text){const lang=LANG,k=lang+"|"+text;if(CT.cache[k])return CT.cache[k];if(CT.bad[k])return null;
   try{const pub=`${CFG.SUPABASE_URL}/storage/v1/object/public/tts/${lang}/${await ctHash(lang,text)}.wav`;
     const h=await fetch(pub,{method:"HEAD"}).catch(()=>null);if(h&&h.ok)return CT.cache[k]=pub;
@@ -4840,12 +4840,31 @@ const AR_CHARS=/[\u0600-\u06FF]/;
     a.src=url;a.playbackRate=o.slow?0.75:Math.min(1.1,Math.max(.7,S.rate||1));try{a.preservesPitch=true}catch(e){}
     const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{if(ok||done||my!==CT.seq)return;done=true;_speak(t,o)})})}}
 {const _stop=stopSpeak;stopSpeak=function(){CT.seq++;try{CT.el&&CT.el.pause()}catch(e){}_stop()}}
-/* admin helper: prepare all letter sounds in advance so everyone hears them instantly */
-async function ctPrewarm(){if(!CT.on())return;const items=[];abcData().groups.forEach(g=>g.L.forEach(it=>{(LANG==="zh"?[it[1]]:[abcName(it),it[2]]).forEach(x=>items.push(x))}));
-  let n=0;toast(`عم بجهّز ${items.length} صوت…`);for(const x of items){await ctUrl(x);n++;if(n%10===0)toast(`جهزت ${n} من ${items.length}`)}toast("✅ كل أصوات الحروف جاهزة")}
+/* admin helper: prepare all letter sounds in advance, with a live progress bar and an honest result */
+CT.pw=null;
+function ctItems(){const items=[];abcData().groups.forEach(g=>g.L.forEach(it=>{ctLetterTexts(it).forEach(x=>{if(!items.includes(x))items.push(x)})}));return items}
+async function ctPrewarm(){if(!CT.on()||(CT.pw&&CT.pw.running))return;const items=ctItems(),lang=LANG;
+  CT.pw={lang,total:items.length,ok:0,fail:0,running:true};Object.keys(CT.bad).forEach(k=>{if(k.startsWith(lang+"|"))delete CT.bad[k]});render();
+  for(const x of items){if(LANG!==lang)break;let u=await ctUrl(x);
+    if(!u){await new Promise(r=>setTimeout(r,5000));delete CT.bad[lang+"|"+x];u=await ctUrl(x)}
+    u?CT.pw.ok++:CT.pw.fail++;const el=document.getElementById("ctpw");if(el)el.innerHTML=ctPwHtml()}
+  CT.pw.running=false;render();
+  toast(CT.pw.fail?`⚠️ جهزت ${CT.pw.ok} من ${CT.pw.total}. اضغط مرة ثانية بعدين لتكمّل الباقي`:`✅ كل أصوات حروف ${LAR()} جاهزة (${CT.pw.total})`)}
+function ctPwHtml(){const p=CT.pw;if(!p||p.lang!==LANG)return `<b>جهّز أصوات كل الحروف (للأدمن)</b><small>بتتولّد مرة وحدة وبتصير فورية للكل</small>`;
+  const pct=Math.round(100*(p.ok+p.fail)/p.total);
+  return p.running?`<b>عم بجهّز… ${p.ok+p.fail} من ${p.total}</b><span class="qbar"><i style="width:${pct}%"></i></span><small>خليك بالموقع لحد ما يخلص (تقريباً ${Math.ceil((p.total-p.ok-p.fail)*3/60)} دقيقة)</small>`
+    :p.fail?`<b>⚠️ جاهز ${p.ok} من ${p.total}</b><small>${p.fail} ما زبطوا (غالباً حد Google اليومي). اضغط لتكمّل الباقي</small>`:`<b>✅ كل الأصوات جاهزة (${p.total})</b><small>المشتركين بيسمعوها فورية</small>`}
 {const _va=VIEWS.abc;VIEWS.abc=function(){let h=_va();if(!AB.g&&CT.on()&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")
-  h+=`<button class="plan-task" data-act="ctprewarm"><span class="pi">⚡</span><span class="pt"><b>جهّز أصوات كل الحروف (للأدمن)</b><small>بتتولّد مرة وحدة وبتصير فورية للكل</small></span><span class="pc">›</span></button>`;return h}}
+  h+=`<button class="plan-task" data-act="ctprewarm"><span class="pi">⚡</span><span class="pt" id="ctpw">${ctPwHtml()}</span><span class="pc">›</span></button>`;return h}}
 A.ctprewarm=()=>ctPrewarm();
+
+/* one natural clip per letter ("be… barco") instead of two separate sounds, and preload the whole group */
+const ctLetterText=it=>LANG==="zh"?it[1]:`${abcName(it)}… ${it[2]}`;
+function ctLetterTexts(it){return LANG==="zh"?[it[1]]:[ctLetterText(it),abcName(it),it[2]]}
+{const _as=abcSay;abcSay=it=>CT.on()?[{t:ctLetterText(it)}]:_as(it)}
+CT.pre={};
+async function ctPreload(texts){for(const t of texts){if(!CT.on())return;const u=await ctUrl(t);if(u&&!CT.pre[u]){const a=new Audio();a.preload="auto";a.src=u;CT.pre[u]=a}}}
+{const _open=A.abcopen;A.abcopen=d=>{_open(d);const g=abcData().groups.find(x=>x.id===d.id);if(g&&CT.on())ctPreload(g.L.map(ctLetterText).concat(g.L.map(abcName)))}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
