@@ -556,6 +556,37 @@ h1{font-weight:700;letter-spacing:-.01em}h2,h3{font-weight:600}
 .lc-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--margin);animation:pulse 1s infinite}
 body.chatmode #livecap{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .mic-tips{display:grid;gap:4px;margin:16px 0 4px;padding:12px 14px;border-radius:16px;background:var(--sky);font-size:.9rem}.mic-tips b{font-weight:600}
+
+/* ===== typing practice ===== */
+.ty-head{text-align:center;margin:14px 0 10px}.ty-ar{font-size:1.5rem;font-weight:600;color:var(--primary);margin:8px 0}
+.ty-wrap{position:relative;border:2px solid var(--line);border-radius:24px;background:var(--card);padding:22px 20px;min-height:140px;cursor:text}
+.ty-wrap:focus-within{border-color:var(--primary)}
+.ty-wrap.shake{animation:tshake .4s}
+.ty-text{font-size:clamp(26px,6.4vw,34px);line-height:1.7;font-weight:600;text-align:left;word-break:break-word;letter-spacing:.01em}
+.ty-text .g{color:var(--rule)}.ty-text .k{color:var(--ink)}.ty-text .x{color:var(--margin);text-decoration:underline wavy}
+.ty-text .sp{display:inline-block;width:.35em}.ty-text .sp.k{border-bottom:3px solid var(--good);margin-bottom:6px}
+.ty-text .cur{border-bottom:4px solid var(--primary);animation:blinkc 1s steps(1) infinite}
+@keyframes blinkc{50%{border-color:transparent}}
+.ty-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;background:none;font-size:16px;padding:0}
+/* ===== plan ===== */
+.plan-hero{display:flex;align-items:center;gap:14px;background:linear-gradient(140deg,#1E40AF,#2F6BFF);color:#fff;border-radius:24px;padding:16px;margin:6px 0 4px}
+.plan-hero small{display:block;opacity:.85;font-weight:600}.plan-hero b{display:block;font-size:1.35rem;font-weight:700}.plan-hero span{display:block;font-size:.9rem;opacity:.92}
+.plan-task{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:none;border-bottom:1.5px solid var(--line);background:none;padding:13px 2px;color:var(--ink)}
+.plan-task:last-child{border-bottom:none}
+.plan-task .pi{flex:none;width:44px;height:44px;border-radius:14px;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;font-size:1.25rem}
+.plan-task .pt{flex:1;min-width:0}.plan-task .pt b{display:block;font-weight:600}.plan-task .pt small{color:var(--soft);font-weight:500}
+.plan-task .pc{color:var(--rule);font-size:1.4rem;font-weight:700}
+.plan-task.done .pi{background:var(--good-bg);color:var(--good-d)}.plan-task.done .pt b{color:var(--soft);text-decoration:line-through}
+.plan-task.sm .pi{width:36px;height:36px;border-radius:11px;font-size:1rem}
+.week{border:1.5px solid var(--line);border-radius:20px;margin-bottom:10px;background:var(--card);overflow:hidden}
+.week.cur{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.week-h{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:none;background:none;padding:14px;color:var(--ink)}
+.week .wn{flex:none;width:36px;height:36px;border-radius:50%;background:var(--sky);display:grid;place-items:center;font-weight:700}
+.week.cur .wn{background:var(--primary);color:#fff}
+.week .wt{flex:1;min-width:0}.week .wt b{display:block;font-weight:600}.week .wt small{color:var(--soft);font-weight:500}
+.week-b{padding:0 14px 10px}
+.plan-strip{display:flex;align-items:center;gap:10px;width:100%;margin:18px 0 0;padding:14px 16px;border:none;border-radius:20px;background:var(--primary-soft);color:var(--primary);font-weight:600;text-align:start}
+.plan-strip b{flex:1}.plan-strip .pc{font-size:1.3rem}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -2423,6 +2454,87 @@ function bestMatch(target,alts){let best=null;for(const h of alts){const r=fuzzy
 {const _vs=vSpeaking;vSpeaking=function(){let h=_vs();
   const tip=`<div class="mic-tips"><b>نصايح لنتيجة أحسن</b><span>🎧 اسمع الجملة أول، بعدين اضغط الميكروفون.</span><span>📱 خلي الجهاز قريب من تمك، بمكان هادي.</span><span>🗣️ احكي بصوت واضح، ولا تستعجل. بيستنى لحد ما تخلص.</span>${(SK.fails||0)>=2?`<span>🔁 إذا ضل يغلط، جرّب تغيير اللهجة أو الصوت من <button class="linkbtn" data-act="go" data-r="me">الإعدادات</button>.</span>`:""}</div>`;
   return h.replace('<div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="sknext">',tip+'<div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-act="sknext">')};VIEWS.speaking=vSpeaking}
+/* ================== TYPING PRACTICE (اكتب الجملة) + PERSONAL PLAN ================== */
+let TY={mode:"sentence",item:null,typed:"",hints:0,done:false,shake:false};
+const tyTarget=()=>TY.item?TY.item.en:"";
+function newTY(){TY.item=TY.mode==="word"?pick(poolWords().filter(w=>/^[a-z][a-z' ]{2,14}$/i.test(w.en))):pick(poolSent());
+  TY.typed="";TY.hints=0;TY.done=false;AFTER=()=>{speak(TY.item.en);focusTY()}}
+function focusTY(){const i=$("#tyIn");if(i){i.focus({preventScroll:true});try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}}
+const tyNorm=s=>s.toLowerCase().replace(/[’‘]/g,"'");
+function tyRender(){const t=tyTarget(),ty=TY.typed;let out="",ok=0;
+  for(let i=0;i<t.length;i++){const c=t[i],typed=ty[i];
+    let cls=typed===undefined?"g":tyNorm(typed)===tyNorm(c)?"k":"x";
+    if(cls==="k")ok++;
+    if(c===" ")out+=`<span class="sp ${cls}"> </span>`;else out+=`<span class="${cls}${i===ty.length?" cur":""}">${esc(c)}</span>`}
+  return{html:out,ok}}
+function vTyping(){
+  if(!TY.item)newTY();
+  const t=tyTarget(),r=tyRender(),pct=Math.round(100*r.ok/t.length),w=TY.mode==="word"?TY.item:null;
+  return `<section class="panel">${topbar("أكمل الجملة","اسمع، وبعدين اكتبها بكيبورد جهازك — كل حرف صح بيتلون")}
+    ${seg("tymode",TY.mode,[["sentence","جمل"],["word","كلمات"]])}
+    <div class="ty-head">${w?picFrame(w.en,74):""}<div class="ty-ar">${esc(TY.item.ar)}</div>
+      <div class="row" style="justify-content:center">${sayBtn(t)}${slowBtn(t)}</div></div>
+    <div class="ty-wrap ${TY.shake?"shake":""}" data-act="tyfocus">
+      <div class="ty-text" dir="ltr">${r.html}</div>
+      <input id="tyIn" class="ty-input" data-keep type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="text" aria-label="اكتب هنا" ${TY.done?"disabled":""}>
+    </div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    ${TY.done?`<div class="fb good center"><b>ممتاز! كتبتها كاملة 👏</b></div>`:""}
+    <div class="row" style="justify-content:center;margin-top:14px">
+      ${TY.done?`<button class="btn big" data-act="tynext">التالي ←</button>`:`<button class="btn hl" data-act="tyhint">💡 حرف</button><button class="btn ghost" data-act="tyclear">امسح</button><button class="btn ghost" data-act="tynext">تخطّي</button>`}</div>
+    <p class="muted center" style="margin-top:10px;font-size:.88rem">اضغط على الجملة لتفتح الكيبورد ⌨️</p></section>`}
+function tyInput(v){const t=tyTarget();
+  if(v.length>t.length)v=v.slice(0,t.length);
+  const last=v.length-1;
+  if(v.length>TY.typed.length&&last>=0&&tyNorm(v[last])!==tyNorm(t[last])){TY.shake=true;sfx("bad");setTimeout(()=>{TY.shake=false;const el=document.querySelector(".ty-wrap");if(el)el.classList.remove("shake")},400)}
+  TY.typed=v;
+  const done=v.length===t.length&&[...t].every((c,i)=>tyNorm(v[i])===tyNorm(c));
+  if(done&&!TY.done){TY.done=true;const xp=Math.max(3,Math.min(12,Math.round(t.length/6)-TY.hints*2));addXP(xp);speak(t);S.st.typed=(S.st.typed||0)+1;save()}
+  else if(!done&&!TY.done&&v.length&&tyNorm(v[v.length-1])===tyNorm(t[v.length-1]))sfx("tap");
+  render();if(!TY.done)focusTY()}
+Object.assign(A,{
+  tymode:d=>{TY.mode=d.m;newTY();render()},
+  tynext:()=>{clearField("tyIn");newTY();render()},
+  tyclear:()=>{TY.typed="";clearField("tyIn");render();focusTY()},
+  tyhint:()=>{const t=tyTarget();if(TY.typed.length>=t.length)return;TY.hints++;TY.typed=t.slice(0,TY.typed.length+1);KEEP.tyIn=TY.typed;const i=$("#tyIn");if(i)i.value=TY.typed;sfx("tap");tyInput(TY.typed)},
+  tyfocus:()=>focusTY()});
+document.addEventListener("input",e=>{if(e.target.id==="tyIn")tyInput(e.target.value)});
+VIEWS.typing=vTyping;PARENT.typing="practice";
+PRACT.splice(4,0,["typing","⌨️","أكمل الجملة","اكتبها بكيبوردك، حرف حرف"]);
+IC.typing=IC.spelling;
+
+/* ---------- خطتي: personal weekly plan ---------- */
+function planItems(){const lv=userLv();return pathItems(lv==="B2"?"B2":lv)}
+function planState(){const per=S.planPer||3,items=planItems(),done=items.filter(x=>x.done).length;
+  const weeks=[];for(let i=0;i<items.length;i+=per*5)weeks.push(items.slice(i,i+per*5));
+  const left=items.length-done,days=Math.ceil(left/per),end=new Date(Date.now()+days*864e5);
+  return{per,items,done,weeks,left,days,end}}
+function vPlan(){const P=planState(),pct=P.items.length?Math.round(100*P.done/P.items.length):0,due=dueList().length;
+  const today=P.items.filter(x=>!x.done).slice(0,P.per);
+  const curWeek=Math.min(P.weeks.length,Math.floor(P.done/(P.per*5))+1);
+  return `<section class="panel">${topbar("خطتي","خطة شخصية على قد مستواك ووقتك")}
+    <div class="plan-hero">${ring(pct,86)}<div><small>مستوى ${userLv()} · ${LVNAME[userLv()]}</small><b>${P.done} من ${P.items.length} خطوة</b>
+      <span>${P.left?`بهالوتيرة بتخلّص المستوى خلال ${P.days} يوم (${P.end.toLocaleDateString("ar-EG",{day:"numeric",month:"long"})})`:"خلّصت المستوى كامل! 🎉"}</span></div></div>
+    <div class="set" style="margin-top:6px"><label for="planPer">كم خطوة باليوم؟</label><select id="planPer" data-set="planPer">${[2,3,5].map(n=>`<option value="${n}" ${P.per==n?"selected":""}>${n} خطوات · ${n===2?"خفيف":n===3?"متوازن":"مكثّف"}</option>`).join("")}</select></div>
+  </section>
+  <h2 class="sec">مهمات اليوم</h2>
+  <section class="panel">
+    ${due?`<button class="plan-task" data-act="go" data-r="review"><span class="pi">${ico("review",22)}</span><span class="pt"><b>راجع ${due} كلمة</b><small>مراجعة ذكية</small></span><span class="pc">›</span></button>`:""}
+    ${today.length?today.map(it=>`<button class="plan-task" data-act="openpath" data-t="${it.type}" data-id="${it.id}"><span class="pi">${it.icon}</span><span class="pt"><b>${esc(it.name)}</b><small>${it.kind}</small></span><span class="pc">›</span></button>`).join("")
+      :`<div class="center" style="padding:10px">${mascot("wow",80)}<p><b>خلّصت خطة اليوم 🎉</b></p><p class="muted">كمّل إذا بدك، أو ارتاح وارجع بكرة.</p></div>`}
+    <button class="plan-task" data-act="go" data-r="tutor"><span class="pi">${mascot("happy",24)}</span><span class="pt"><b>احكي مع توكي 3 رسائل</b><small>محادثة يومية</small></span><span class="pc">›</span></button>
+  </section>
+  <h2 class="sec">خطة الأسابيع</h2>
+  <section class="panel list">
+    ${P.weeks.map((wk,i)=>{const d=wk.filter(x=>x.done).length,open=S.planOpen===i+1;
+      return `<div class="week ${i+1===curWeek?"cur":""}"><button class="week-h" data-act="planweek" data-w="${i+1}"><span class="wn">${i+1}</span><span class="wt"><b>الأسبوع ${i+1}</b><small>${d} من ${wk.length} خطوة</small><span class="qbar"><i style="width:${Math.round(100*d/wk.length)}%"></i></span></span><span class="pc">${open?"⌃":"⌄"}</span></button>
+      ${open?`<div class="week-b">${wk.map(it=>`<button class="plan-task sm ${it.done?"done":""}" data-act="openpath" data-t="${it.type}" data-id="${it.id}"><span class="pi">${it.done?"✓":it.icon}</span><span class="pt"><b>${esc(it.name)}</b><small>${it.kind}</small></span></button>`).join("")}</div>`:""}</div>`}).join("")}
+  </section>`}
+VIEWS.plan=vPlan;PARENT.plan="learn";IC.plan=IC.path;
+A.planweek=d=>{S.planOpen=S.planOpen===+d.w?null:+d.w;save();render()};
+LEARN.splice(1,0,["plan","🗓️","خطتي","مهمات اليوم وخطة أسابيعك"]);
+{const _vh=vHome;vHome=function(){const P=planState(),t=P.items.filter(x=>!x.done).slice(0,P.per).length;
+  return _vh().replace('<h2 class="sec">مهمات اليوم</h2>',`<button class="plan-strip" data-act="go" data-r="plan"><span>${ico("path",22)}</span><b>خطتي اليوم: ${t?`${t} خطوات`:"خلّصتها ✓"}</b><span class="pc">›</span></button><h2 class="sec">مهمات اليوم</h2>`)};VIEWS.home=vHome}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
