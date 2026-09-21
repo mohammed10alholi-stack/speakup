@@ -4051,7 +4051,7 @@ Object.assign(A,{
   h=h.replace('<button class="c-mic ',`<button class="c-ml" data-act="tuml" title="لغة الميكروفون" aria-label="لغة الميكروفون">${TU.micLang==="ar"?"ع":LANGS[LANG].flag}</button><button class="c-mic `);
   return h};VIEWS.tutor=vTutor}
 /* ================== TOKI LIVE — real voice via Gemini Live (trial) ================== */
-const LV={on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",err:null,start:0,timer:null,maxMin:5,muted:false,ready:false};
+const LV_VER="v34";const LV={on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",err:null,start:0,timer:null,maxMin:5,muted:false,ready:false};
 const liveAvailable=()=>typeof window.getLiveToken==="function";
 const LV_WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){const c=i[0]&&i[0][0];if(c){this.b.push(new Float32Array(c));this.n+=c.length;if(this.n>=2048){const a=new Float32Array(this.n);let o=0;for(const x of this.b){a.set(x,o);o+=x.length}this.b=[];this.n=0;this.port.postMessage(a,[a.buffer])}}return true}}registerProcessor("pcm-cap",P);`;
 function lvB64(f,inRate){const ratio=inRate/16000,len=Math.floor(f.length/ratio),out=new Int16Array(len);
@@ -4105,13 +4105,13 @@ function lvCleanup(){clearInterval(LV.timer);lvStopPlay();try{LV.node&&(LV.node.
   try{LV.stream&&LV.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{LV.ac&&LV.ac.close()}catch(e){}try{LV.outAc&&LV.outAc.close()}catch(e){}
   LV.ws=null;LV.ac=null;LV.outAc=null;LV.stream=null;LV.node=null;LV.src=null}
 function liveStop(keepCall){const ws=LV.ws;LV.on=false;lvSaveTurn();lvCleanup();try{ws&&ws.close()}catch(e){}TU.live=false;LV.state="idle";
-  if(LV.err){if(LV.detail&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")showSheet(`<div class="arhelp"><h2>⚠️ ما زبط الاتصال</h2><p>${esc(LV.err)}</p><p class="muted" style="font-size:.85rem">تفاصيل للأدمن (ابعتها لإلي):</p><pre dir="ltr" style="white-space:pre-wrap;font-size:.8rem;background:var(--sky);padding:10px;border-radius:12px">${esc(LV.detail)}</pre></div>`);else toast(LV.err)}
+  if(LV.err){if(LV.detail&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")showSheet(`<div class="arhelp"><h2>⚠️ ما زبط الاتصال</h2><p>${esc(LV.err)}</p><p class="muted" style="font-size:.85rem">تفاصيل للأدمن (ابعتها لإلي):</p><pre dir="ltr" style="white-space:pre-wrap;font-size:.8rem;background:var(--sky);padding:10px;border-radius:12px">[${LV_VER}] ${esc(LV.detail)}</pre></div>`);else toast(LV.err)}
   LV.detail=null;render()}
 {const _vc=vCall;vCall=function(){if(!TU.live){let h=_vc();if(liveAvailable())h=h.replace('<div class="vc-lang">',`<button class="vc-live" data-act="livestart">⚡ جرّب صوت توكي الحقيقي <small>تجريبي</small></button><div class="vc-lang">`);return h}
   const st=LV.state==="speaking"?"speak":LV.state==="connecting"?"think":"listen";
   const status={connecting:"عم يتصل بتوكي…",listening:LV.muted?"الميكروفون مسكّر 🔇":"احكي براحتك… توكي سامعك، عربي أو "+LAR(),speaking:"توكي عم يحكي… احكي وقت ما بدك لتقاطعه"}[LV.state]||"";
   return `<div class="vcall ${st} live" id="vcall">
-    <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">تجريبي · ${LV.maxMin} د</span><span class="vc-time" id="vcTime">0:00</span></div>
+    <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">تجريبي · ${LV.maxMin} د · ${LV_VER}</span><span class="vc-time" id="vcTime">0:00</span></div>
     <div class="vc-mid"><div class="vc-orb"><span class="vc-ring"></span><span class="vc-ring r2"></span><span class="vc-core">${mascot(st==="speak"?"wow":st==="think"?"think":"happy",118)}</span></div>
       <div class="vc-status">${esc(status)}</div><div class="vc-cap" id="vcCap" dir="auto">${TU.cc?esc(LV.cap||LV.userCap):""}</div></div>
     <p class="vc-note">بتقدر تحكي عربي و${LAR()} بنفس الجملة، وتقاطعه وقت ما بدك 🎧</p>
