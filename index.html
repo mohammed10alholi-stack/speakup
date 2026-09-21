@@ -2582,6 +2582,86 @@ const PHRASES_TR=[
 {id:"emergency",name:"طوارئ",icon:"🚑",p:[["İmdat!","النجدة!"],["Ambulans çağırın!","اطلبوا إسعاف!"],["Polisi arayın!","اتصلوا بالشرطة!"],["Yangın var!","في حريق!"],["Doktora ihtiyacım var.","بحتاج دكتور."],["İyi misin?","إنت منيح؟"],["Dikkat et!","انتبه!"],["En yakın hastane nerede?","وين أقرب مستشفى؟"]]}
 ];
 const TUTOR_TR_START={free:"Merhaba! Ben Toki, Türkçe öğretmeninim. Bugün ne hakkında konuşmak istersin?",rest:"İyi akşamlar! Restoranımıza hoş geldiniz. Kaç kişisiniz?",doc:"Merhaba, buyurun oturun. Şikâyetiniz nedir?",job:"Günaydın, geldiğiniz için teşekkürler. Bize biraz kendinizden bahseder misiniz?",air:"İyi günler. Pasaportunuzu ve biletinizi görebilir miyim?",friend:"Selam! Ben Deniz, buraya yeni geldim. Nerelisin?",day:"Merhaba! Bugün günün nasıl geçti? Anlat bakalım.",debate:"Hadi biraz tartışalım! Sosyal medya gençler için faydalı mı, zararlı mı? Sen ne düşünüyorsun?",ask:"اسألني أي سؤال عن التركي: قاعدة، كلمة، فرق بين كلمتين، نطق… وبجاوبك بالعربي مع أمثلة."};
+/* ================== TURKISH CONTENT (phase 2): grammar, stories, dialogs, placement ================== */
+const LESSONS_TR=[
+{id:"tr_plural",lv:"A1",t:"الجمع <span class='en'>lar / ler</span> وانسجام الأصوات",x:`بالتركي بنضيف ${E("-ler")} أو ${E("-lar")} للجمع. إذا آخر حرف علّة بالكلمة (a, ı, o, u) بنضيف ${E("-lar")}، وإذا كان (e, i, ö, ü) بنضيف ${E("-ler")}. هاي القاعدة اسمها «انسجام الأصوات» وبتتكرر بكل التركي.`,
+ex:[["kitap → kitaplar","كتاب ← كتب"],["ev → evler","بيت ← بيوت"],["araba → arabalar","سيارة ← سيارات"],["öğrenci → öğrenciler","طالب ← طلاب"]],
+q:[["kedi___ (قطط)",["ler","lar","ım"],"ler"],["okul___ (مدارس)",["lar","ler","da"],"lar"],["çocuk___ (أولاد)",["lar","ler","lür"],"lar"],["göz___ (عيون)",["ler","lar","de"],"ler"]]},
+{id:"tr_be",lv:"A1",t:"«أنا/إنت/هو» مع الصفات <span class='en'>(y)ım / sın</span>",x:`ما في فعل «يكون» منفصل بالتركي. بنلصق نهاية بالكلمة: ${E("ben → -(y)ım")}، ${E("sen → -sın")}، ${E("o → (ما في شي)")}، ${E("biz → -(y)ız")}، ${E("siz → -sınız")}. الحرف بيتغير حسب انسجام الأصوات (ım/im/um/üm).`,
+ex:[["Ben öğrenciyim.","أنا طالب."],["Sen doktorsun.","إنت دكتور."],["O çok mutlu.","هو مبسوط كتير."],["Biz hazırız.","إحنا جاهزين."]],
+q:[["Ben öğretmen___.",["im","sin","iz"],"im"],["Sen yorgun___.",["sun","um","uz"],"sun"],["Biz Filistinli___.",["yiz","sin","yim"],"yiz"],["Siz hazır___?",["mısınız","mıyım","mı"],"mısınız"]]},
+{id:"tr_var",lv:"A1",t:"<span class='en'>var / yok / değil</span>",x:`${E("var")} = يوجد/عندي، ${E("yok")} = ما في/ما عندي، و${E("değil")} لنفي الصفات والأسماء (مش). مثال: ${E("Param yok")} = ما معي مصاري، ${E("Ben doktor değilim")} = أنا مش دكتور.`,
+ex:[["Evde kedi var.","في قطة بالبيت."],["Bugün dersim yok.","ما عندي درس اليوم."],["Bu kahve sıcak değil.","هالقهوة مش سخنة."],["Burada banka var mı?","في بنك هون؟"]],
+q:[["Masada kitap ___. (يوجد)",["var","yok","değil"],"var"],["Bugün dersim ___. (ما عندي)",["yok","var","değil"],"yok"],["Ben doktor ___. (مش)",["değilim","yokum","varım"],"değilim"],["Burada otobüs ___ mı? (في؟)",["var","yok","değil"],"var"]]},
+{id:"tr_loc",lv:"A1",t:"في / إلى / من <span class='en'>de / e / den</span>",x:`${E("-de/-da")} = في (evde: بالبيت)، ${E("-e/-a")} = إلى (okula: للمدرسة)، ${E("-den/-dan")} = من (Gazze'den: من غزة). بعد الحروف الصامتة القوية (ç, f, h, k, p, s, ş, t) بتصير ${E("-te/-ta, -ten/-tan")}.`,
+ex:[["Ben evdeyim.","أنا بالبيت."],["Okula gidiyorum.","رايح عالمدرسة."],["Gazze'den geliyorum.","جاي من غزة."],["Kitap masada.","الكتاب عالطاولة."]],
+q:[["Ben ev___ oturuyorum. (في)",["de","e","den"],"de"],["Okul___ gidiyorum. (إلى)",["a","da","dan"],"a"],["Gazze'___ geliyorum. (من)",["den","de","e"],"den"],["Kitap masa___. (على/في)",["da","a","dan"],"da"]]},
+{id:"tr_poss",lv:"A1",t:"الملكية <span class='en'>evim / evin / evi</span>",x:`للملكية بنضيف نهاية للاسم: ${E("-(ı)m")} = ـي (evim: بيتي)، ${E("-(ı)n")} = ـك (evin: بيتك)، ${E("-(s)ı")} = ـه (evi: بيته)، ${E("-(ı)mız")} = ـنا. وممكن نحط قبله ${E("benim, senin, onun, bizim")}.`,
+ex:[["benim evim","بيتي"],["senin araban","سيارتك"],["onun annesi","أمه"],["bizim okulumuz","مدرستنا"]],
+q:[["benim kitab___",["ım","ın","ı"],"ım"],["senin araba___",["n","m","sı"],"n"],["onun ev___",["i","im","in"],"i"],["bizim okul___",["umuz","unuz","u"],"umuz"]]},
+{id:"tr_present",lv:"A2",t:"المضارع المستمر <span class='en'>iyor</span>",x:`للي عم يصير هلأ أو عادةً: جذر الفعل + ${E("-iyor")} + نهاية الشخص. ${E("gel-iyor-um")} = عم بيجي/جاي، ${E("yap-ıyor-sun")} = عم تعمل. إذا الجذر بيخلص بحرف علّة بنحذفه: ${E("izle → izliyor")}.`,
+ex:[["Ben kitap okuyorum.","أنا عم أقرأ كتاب."],["Sen ne yapıyorsun?","شو عم تعمل؟"],["O televizyon izliyor.","هو عم يتفرج تلفزيون."],["Biz Türkçe öğreniyoruz.","إحنا عم نتعلم تركي."]],
+q:[["Ben şimdi kitap oku___.",["yorum","yorsun","yor"],"yorum"],["Sen ne yap___?",["ıyorsun","ıyorum","ıyor"],"ıyorsun"],["O televizyon izli___.",["yor","yorum","yorsun"],"yor"],["Biz Türkçe öğren___.",["iyoruz","iyorum","iyor"],"iyoruz"]]},
+{id:"tr_past",lv:"A2",t:"الماضي <span class='en'>di / dı / du / dü</span>",x:`للي صار وخلص: جذر الفعل + ${E("-di")} (حسب انسجام الأصوات) + نهاية الشخص: ${E("-m, -n, -, -k")}. بعد الحروف القوية بتصير ${E("-ti")}: ${E("gittim")} = رحت.`,
+ex:[["Dün markete gittim.","امبارح رحت عالسوق."],["Ne yaptın?","شو عملت؟"],["O geçen hafta geldi.","هو إجا الأسبوع الماضي."],["Biz yemek yedik.","إحنا أكلنا."]],
+q:[["Dün markete git___.",["tim","tin","ti"],"tim"],["Sen dün ne yap___?",["tın","tım","tı"],"tın"],["O geçen hafta gel___.",["di","dim","din"],"di"],["Biz yemek ye___.",["dik","din","di"],"dik"]]},
+{id:"tr_future",lv:"A2",t:"المستقبل <span class='en'>ecek / acak</span>",x:`للي رح يصير: جذر الفعل + ${E("-ecek/-acak")} + نهاية الشخص. ${E("gideceğim")} = رح أروح، ${E("yapacaksın")} = رح تعمل. قبل حرف علّة الـ k بتصير ğ: ${E("-eceğim")}.`,
+ex:[["Yarın okula gideceğim.","بكرة رح أروح عالمدرسة."],["Ne yapacaksın?","شو رح تعمل؟"],["O bize gelecek.","رح ييجي عنا."],["Tatile çıkacağız.","رح نطلع عطلة."]],
+q:[["Yarın okula gid___.",["eceğim","iyorum","dim"],"eceğim"],["Sen ne yap___?",["acaksın","acağım","acak"],"acaksın"],["O bize gel___.",["ecek","eceğim","di"],"ecek"],["Biz tatile çık___.",["acağız","acaksın","tık"],"acağız"]]},
+{id:"tr_neg",lv:"A2",t:"النفي <span class='en'>me / ma</span>",x:`للنفي بنحط ${E("-me/-ma")} بعد جذر الفعل مباشرة: ${E("gelmiyorum")} = مش جاي، ${E("gitmedim")} = ما رحت، ${E("yapmayacağım")} = مش رح أعمل.`,
+ex:[["Kahve içmiyorum.","ما بشرب قهوة."],["Dün okula gitmedim.","امبارح ما رحت عالمدرسة."],["O bugün gelmeyecek.","هو مش جاي اليوم."],["Anlamıyorum.","مش فاهم."]],
+q:[["Ben kahve iç___. (ما بشرب)",["miyorum","iyorum","medim"],"miyorum"],["Dün okula git___. (ما رحت)",["medim","tim","miyorum"],"medim"],["O bugün gel___. (مش رح ييجي)",["meyecek","ecek","di"],"meyecek"],["Seni anla___. (مش فاهمك)",["mıyorum","ıyorum","dım"],"mıyorum"]]},
+{id:"tr_q",lv:"A2",t:"السؤال <span class='en'>mi / mı / mu / mü</span>",x:`لنسأل سؤال جوابه «نعم/لا» بنضيف كلمة منفصلة ${E("mi")} بعد الكلمة اللي بنسأل عنها، وبتتغير حسب انسجام الأصوات: ${E("mı, mi, mu, mü")}. مثال: ${E("Yorgun musun?")} = إنت تعبان؟`,
+ex:[["Bu senin çantan mı?","هاي شنطتك؟"],["Yorgun musun?","إنت تعبان؟"],["Ev büyük mü?","البيت كبير؟"],["Öğrenci misin?","إنت طالب؟"]],
+q:[["Bu senin çantan ___?",["mı","mi","mu"],"mı"],["Yorgun ___sun?",["mu","mı","mi"],"mu"],["Ev büyük ___?",["mü","mu","mi"],"mü"],["Öğrenci ___sin?",["mi","mı","mu"],"mi"]]},
+{id:"tr_comp",lv:"A2",t:"المقارنة <span class='en'>daha / en</span>",x:`${E("daha")} = أكثر (للمقارنة)، و${E("en")} = الأكثر (التفضيل). والشي اللي بنقارن فيه بياخد ${E("-den/-dan")}: ${E("Ali'den daha uzun")} = أطول من علي.`,
+ex:[["İstanbul Ankara'dan daha büyük.","إسطنبول أكبر من أنقرة."],["Bu en güzel şehir.","هاي أحلى مدينة."],["Kardeşim benden daha uzun.","أخوي أطول مني."],["Sınıfın en iyi öğrencisi.","أحسن طالب بالصف."]],
+q:[["İstanbul Ankara'dan ___ büyük.",["daha","en","çok"],"daha"],["Bu ___ güzel şehir.",["en","daha","az"],"en"],["Kardeşim benden ___ uzun.",["daha","en","çok"],"daha"],["Sınıfın ___ iyi öğrencisi.",["en","daha","az"],"en"]]},
+{id:"tr_must",lv:"B1",t:"لازم <span class='en'>meli / lazım / gerek</span>",x:`${E("-meli/-malı")} للنصيحة واللزوم: ${E("gitmelisin")} = لازم تروح. أو المصدر + ملكية + ${E("lazım/gerek")}: ${E("gitmem lazım")} = لازم أروح.`,
+ex:[["Doktora gitmelisin.","لازم تروح عالدكتور."],["Daha çok su içmelisin.","لازم تشرب مي أكثر."],["Benim çalışmam lazım.","لازم أدرس."],["Erken yatmamız gerek.","لازم ننام بكير."]],
+q:[["Hastaysan doktora git___.",["melisin","tin","ecektin"],"melisin"],["Daha çok su iç___.",["melisin","miyorsun","ecek"],"melisin"],["Benim çalışmam ___.",["lazım","var","yok"],"lazım"],["Erken yatmamız ___.",["gerek","değil","mi"],"gerek"]]},
+{id:"tr_cond",lv:"B1",t:"الشرط <span class='en'>se / sa</span>",x:`«إذا» بالتركي نهاية بتنلصق بالفعل: ${E("-se/-sa")}. ${E("Yağmur yağarsa evde kalırız")} = إذا شتت بنضل بالبيت. ومع ${E("keşke")} للتمني: ${E("Keşke zamanım olsa")} = يا ريت عندي وقت.`,
+ex:[["Zamanım olursa gelirim.","إذا عندي وقت بجي."],["Çalışırsan başarırsın.","إذا درست بتنجح."],["Param olsa araba alırım.","لو معي مصاري بشتري سيارة."],["Keşke burada olsan.","يا ريتك هون."]],
+q:[["Zamanım ol___ gelirim.",["ursa","du","acak"],"ursa"],["Çalış___ başarırsın.",["ırsan","tın","ıyor"],"ırsan"],["Param ol___ araba alırım.",["sa","du","acak"],"sa"],["Erken kalk___ geç kalmazsın.",["arsan","tın","acak"],"arsan"]]},
+{id:"tr_can",lv:"B1",t:"القدرة <span class='en'>ebil / abil</span>",x:`«بقدر» = جذر الفعل + ${E("-ebil/-abil")} + الزمن: ${E("konuşabilirim")} = بقدر أحكي، ${E("yardım edebilir misin?")} = بتقدر تساعدني؟ والنفي ${E("-eme/-ama")}: ${E("gelemem")} = ما بقدر آجي.`,
+ex:[["Türkçe konuşabilirim.","بقدر أحكي تركي."],["Bana yardım edebilir misin?","بتقدر تساعدني؟"],["Yüzebilir misin?","بتعرف تسبح؟"],["Bugün gelemem.","ما بقدر آجي اليوم."]],
+q:[["Türkçe konuş___. (بقدر)",["abilirim","acağım","uyorum"],"abilirim"],["Bana yardım ed___ misin?",["ebilir","ecek","iyor"],"ebilir"],["Yüz___ misin?",["ebilir","ecek","dü"],"ebilir"],["Bugün gel___. (ما بقدر)",["emem","mem","medim"],"emem"]]},
+{id:"tr_since",lv:"B1",t:"منذ وقبل <span class='en'>dır / den beri / önce</span>",x:`${E("üç yıldır")} = صارلي ثلاث سنين (ولسا مستمر)، ${E("2020'den beri")} = من سنة 2020، و${E("iki gün önce")} = قبل يومين.`,
+ex:[["Üç yıldır burada yaşıyorum.","صارلي ثلاث سنين ساكن هون."],["Sabahtan beri bekliyorum.","عم استنى من الصبح."],["İki gün önce geldim.","إجيت قبل يومين."],["Uzun zamandır görüşmedik.","من زمان ما شفنا بعض."]],
+q:[["Üç yıl___ burada yaşıyorum.",["dır","dan","da"],"dır"],["Sabah___ beri bekliyorum.",["tan","ta","a"],"tan"],["İki gün ___ geldim.",["önce","sonra","beri"],"önce"],["2020'___ beri Türkçe öğreniyorum.",["den","de","e"],"den"]]}
+];
+const STORIES_TR=[
+{id:"trs1",lv:"A1",t:"Benim Günüm",ar:"يومي",en:["Benim adım Ali. Gazze'de yaşıyorum. Her sabah yedide kalkarım.","Kahvaltıda ekmek, peynir ve zeytin yerim. Annem çay yapar.","Sonra okula giderim. Okulum evime yakın. Öğretmenimi çok severim."],
+ tr:["اسمي علي. أعيش في غزة. كل صباح أصحو الساعة السابعة.","في الفطور آكل خبزاً وجبنة وزيتوناً. أمي تعمل الشاي.","ثم أذهب إلى المدرسة. مدرستي قريبة من بيتي. أحب معلمي كثيراً."],
+ q:[["Ali nerede yaşıyor?",["Gazze'de","İstanbul'da","Ankara'da"],"Gazze'de"],["Kahvaltıda ne yer?",["ekmek, peynir ve zeytin","pizza","çorba"],"ekmek, peynir ve zeytin"],["Okulu nerede?",["evine yakın","çok uzak","şehir merkezinde"],"evine yakın"]]},
+{id:"trs2",lv:"A1",t:"Pazarda",ar:"في السوق",en:["Bugün cumartesi. Ayşe ve annesi pazara gidiyor.","Pazarda domates, elma ve portakal alıyorlar. Elmalar çok güzel.","Ayşe \"Bu ne kadar?\" diye soruyor. Satıcı \"On lira\" diyor."],
+ tr:["اليوم السبت. عائشة وأمها رايحين على السوق.","في السوق بيشتروا بندورة وتفاح وبرتقال. التفاح حلو كتير.","عائشة بتسأل: «قديش هاد؟» والبياع بيقول: «عشر ليرات»."],
+ q:[["Bugün hangi gün?",["cumartesi","pazartesi","cuma"],"cumartesi"],["Ne alıyorlar?",["domates, elma ve portakal","ekmek ve süt","et ve pirinç"],"domates, elma ve portakal"],["Fiyat ne kadar?",["on lira","beş lira","yirmi lira"],"on lira"]]},
+{id:"trs3",lv:"A2",t:"İstanbul Gezisi",ar:"رحلة إسطنبول",en:["Geçen yaz ailemle İstanbul'a gittik. Uçakla gittik ve yolculuk iki saat sürdü.","Ayasofya'yı ve Galata Kulesi'ni ziyaret ettik. Boğaz'da tekneye bindik.","En çok simit ve çayı sevdim. Seneye yine gitmek istiyorum."],
+ tr:["الصيف الماضي رحت مع عيلتي على إسطنبول. رحنا بالطيارة والرحلة أخدت ساعتين.","زرنا آيا صوفيا وبرج غلطة. وركبنا قارب بالبوسفور.","أكثر إشي حبيته السميت والشاي. بدي أرجع السنة الجاية."],
+ q:[["İstanbul'a nasıl gittiler?",["uçakla","otobüsle","trenle"],"uçakla"],["Boğaz'da ne yaptılar?",["tekneye bindiler","yüzdüler","alışveriş yaptılar"],"tekneye bindiler"],["En çok neyi sevdi?",["simit ve çayı","pizzayı","kahveyi"],"simit ve çayı"]]},
+{id:"trs4",lv:"A2",t:"Doktorda",ar:"عند الدكتور",en:["Mehmet dün sabah hasta uyandı. Başı ağrıyordu ve ateşi vardı.","Annesiyle doktora gitti. Doktor \"Grip olmuşsun, dinlenmelisin\" dedi.","Mehmet üç gün evde kaldı, çok su içti ve ilacını aldı. Şimdi iyi."],
+ tr:["محمد صحي امبارح الصبح مريض. كان راسه بوجعه وعنده سخونة.","راح مع أمه عالدكتور. الدكتور قال: «معك إنفلونزا، لازم ترتاح».","محمد ضل بالبيت ثلاث أيام، شرب مي كتير وأخد دواه. هلأ منيح."],
+ q:[["Mehmet'in nesi vardı?",["baş ağrısı ve ateş","karın ağrısı","sadece öksürük"],"baş ağrısı ve ateş"],["Doktor ne dedi?",["dinlenmelisin","spor yapmalısın","okula gitmelisin"],"dinlenmelisin"],["Kaç gün evde kaldı?",["üç gün","bir hafta","bir gün"],"üç gün"]]},
+{id:"trs5",lv:"B1",t:"Yeni İş",ar:"الشغل الجديد",en:["Zeynep üniversiteden mezun olduktan sonra altı ay iş aradı. Çok başvuru yaptı ama cevap gelmedi.","Sonunda bir yazılım şirketinden mülakat daveti aldı. Çok heyecanlıydı ama iyi hazırlandı.","Mülakatta dürüst davrandı ve deneyimini anlattı. Bir hafta sonra işe kabul edildiğini öğrendi."],
+ tr:["زينب بعد ما تخرجت من الجامعة دورت على شغل ست شهور. قدمت طلبات كتير بس ما إجاها رد.","أخيراً إجتها دعوة لمقابلة من شركة برمجيات. كانت متحمسة كتير بس تحضرت منيح.","بالمقابلة كانت صادقة وحكت عن خبرتها. بعد أسبوع عرفت إنها انقبلت بالشغل."],
+ q:[["Zeynep kaç ay iş aradı?",["altı ay","bir yıl","iki ay"],"altı ay"],["Hangi şirketten davet aldı?",["yazılım şirketinden","bankadan","hastaneden"],"yazılım şirketinden"],["Ne zaman kabul edildiğini öğrendi?",["bir hafta sonra","ertesi gün","bir ay sonra"],"bir hafta sonra"]]}
+];
+const DIALOGS_TR=[
+{id:"trd1",lv:"A1",t:"تعارف",icon:"🤝",a:"Ali",b:"Elif",l:[["a","Merhaba! Benim adım Ali.","مرحبا! اسمي علي."],["b","Merhaba Ali, ben Elif. Memnun oldum.","مرحبا علي، أنا إليف. تشرفت."],["a","Ben de memnun oldum. Nerelisin?","وأنا كمان. من وين إنتِ؟"],["b","Ben Türküm, Ankara'dan. Sen nerelisin?","أنا تركية، من أنقرة. وإنت؟"],["a","Ben Filistinliyim. Türkçe öğreniyorum.","أنا فلسطيني. عم بتعلم تركي."],["b","Harika! Türkçen çok iyi.","رائع! تركيتك منيحة كتير."],["a","Teşekkür ederim!","شكراً!"]]},
+{id:"trd2",lv:"A1",t:"في الكافيه",icon:"☕",a:"Garson",b:"Müşteri",l:[["a","Hoş geldiniz! Ne alırsınız?","أهلاً! شو بتطلب؟"],["b","Bir çay lütfen.","شاي لو سمحت."],["a","Şekerli mi, şekersiz mi?","مع سكر ولا بدون؟"],["b","Az şekerli lütfen. Bir de simit.","سكر خفيف لو سمحت. وكمان سميت."],["a","Tamam. Başka bir şey?","تمام. إشي ثاني؟"],["b","Hayır, teşekkürler. Ne kadar?","لا شكراً. قديش؟"],["a","Toplam otuz lira.","المجموع ثلاثين ليرة."]]},
+{id:"trd3",lv:"A2",t:"السؤال عن الطريق",icon:"🗺️",a:"Turist",b:"Yerli",l:[["a","Affedersiniz, müze nerede?","عفواً، وين المتحف؟"],["b","Düz gidin, sonra sola dönün.","امشي دغري، بعدين لف شمال."],["a","Uzak mı?","بعيد؟"],["b","Hayır, yürüyerek on dakika.","لا، عشر دقايق مشي."],["a","Otobüs var mı?","في باص؟"],["b","Evet, köşedeki duraktan beş numaralı otobüse binin.","آه، اركب باص رقم خمسة من الموقف اللي عالزاوية."],["a","Çok teşekkür ederim!","شكراً كتير!"],["b","Rica ederim, iyi günler!","العفو، نهارك سعيد!"]]},
+{id:"trd4",lv:"A2",t:"في الفندق",icon:"🏨",a:"Resepsiyon",b:"Misafir",l:[["a","İyi akşamlar, rezervasyonunuz var mı?","مساء الخير، عندك حجز؟"],["b","Evet, üç gecelik bir oda ayırttım.","آه، حجزت غرفة لثلاث ليالي."],["a","Pasaportunuzu alabilir miyim?","ممكن جوازك؟"],["b","Tabii, buyurun. Kahvaltı dahil mi?","أكيد، تفضل. الفطور مشمول؟"],["a","Evet, kahvaltı yedi ile on arasında.","آه، الفطور من سبعة لعشرة."],["b","Wi-Fi şifresi nedir?","شو كلمة سر الواي فاي؟"],["a","Kartın üstünde yazıyor. Odanız iki yüz dört.","مكتوبة عالكرت. غرفتك 204."]]},
+{id:"trd5",lv:"B1",t:"مقابلة عمل",icon:"💼",a:"Müdür",b:"Aday",l:[["a","Bize biraz kendinizden bahseder misiniz?","بتحكيلنا شوي عن حالك؟"],["b","Tabii. Bilgisayar mühendisiyim ve üç yıllık deneyimim var.","أكيد. أنا مهندس كمبيوتر وعندي خبرة ثلاث سنين."],["a","Neden bu şirkette çalışmak istiyorsunuz?","ليش بدك تشتغل بهالشركة؟"],["b","Çünkü projeleriniz çok ilginç ve kendimi geliştirmek istiyorum.","لأنه مشاريعكم مثيرة وبدي أطور حالي."],["a","En büyük zayıf yönünüz nedir?","شو أكبر نقطة ضعف عندك؟"],["b","Bazen fazla detaycıyım ama bunu düzeltmeye çalışıyorum.","أحياناً بدقق زيادة، بس عم بحاول أصلحها."],["a","Teşekkürler, size en kısa zamanda döneceğiz.","شكراً، رح نرجعلك بأسرع وقت."]]}
+];
+const PLACE_TR=[
+["Ben öğrenci___.",["yim","sin","yiz"],"yim","A1"],["Kitap masa___.",["da","a","dan"],"da","A1"],["Okul___ gidiyorum.",["a","da","dan"],"a","A1"],["Çocuk___ parkta oynuyor.",["lar","ler","lür"],"lar","A1"],
+["ekmek",["خبز","ماء","حليب"],"خبز","A1","vocab"],["kırmızı",["أحمر","أزرق","أخضر"],"أحمر","A1","vocab"],["Merhaba, nasılsın?",["Merhaba, nasılsın?","Merhaba, neredesin?","Günaydın, nasılsın?"],"Merhaba, nasılsın?","A1","listen"],
+["Dün sinemaya git___.",["tim","iyorum","eceğim"],"tim","A2"],["Şu anda kitap oku___.",["yorum","dum","acağım"],"yorum","A2"],["İstanbul Ankara'dan ___ kalabalık.",["daha","en","çok"],"daha","A2"],["Yorgun ___sun?",["mu","mı","mi"],"mu","A2"],
+["havalimanı",["مطار","محطة","ميناء"],"مطار","A2","vocab"],["pahalı",["غالي","رخيص","جديد"],"غالي","A2","vocab"],["Hesabı alabilir miyim?",["Hesabı alabilir miyim?","Hesabı alabilir misin?","Kitabı alabilir miyim?"],"Hesabı alabilir miyim?","A2","listen"],
+["Hastaysan doktora git___.",["melisin","tin","ecektin"],"melisin","B1"],["Zamanım ol___ gelirim.",["ursa","du","acak"],"ursa","B1"],["Üç yıl___ burada yaşıyorum.",["dır","dan","da"],"dır","B1"],["Bana yardım ed___ misin?",["ebilir","ecek","iyor"],"ebilir","B1"],
+["deneyim",["خبرة","تجربة علمية","مقابلة"],"خبرة","B1","vocab"],["iklim",["مناخ","طقس اليوم","بيئة"],"مناخ","B1","vocab"],["Keşke daha çok boş zamanım olsa.",["Keşke daha çok boş zamanım olsa.","Keşke daha çok param olsa.","Keşke daha az işim olsa."],"Keşke daha çok boş zamanım olsa.","B1","listen"]
+];
 /* ================== TYPING PRACTICE (اكتب الجملة) + PERSONAL PLAN ================== */
 let TY={mode:"sentence",item:null,typed:"",hints:0,done:false,shake:false};
 const tyTarget=()=>TY.item?TY.item.en:"";
@@ -2677,17 +2757,17 @@ function saveMeta(){try{localStorage.setItem(baseKey()+"|meta",JSON.stringify(ME
 const foldTR=s=>s.replace(/ı/g,"i").replace(/İ/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").replace(/â/g,"a").replace(/î/g,"i").replace(/û/g,"u");
 
 /* ---------- content snapshots & swapping (arrays are swapped in place) ---------- */
-const EN_DATA={CATS:CATS.slice(),SENT:SENT.slice(),PHRASES:PHRASES.slice(),LESSONS:LESSONS.slice(),DIALOGS:DIALOGS.slice(),STORIES:STORIES.slice(),TUTOR:TUTOR.map(t=>Object.assign({},t)),QWERTY:QWERTY.slice(),DICT:Object.assign({},DICT)};
+const EN_DATA={PLACE:PLACE.slice(),CATS:CATS.slice(),SENT:SENT.slice(),PHRASES:PHRASES.slice(),LESSONS:LESSONS.slice(),DIALOGS:DIALOGS.slice(),STORIES:STORIES.slice(),TUTOR:TUTOR.map(t=>Object.assign({},t)),QWERTY:QWERTY.slice(),DICT:Object.assign({},DICT)};
 let TR_DATA=null;
 function buildTR(){if(TR_DATA)return TR_DATA;
   const cats=[];for(const c of EN_DATA.CATS){const m=TRW[c.id];if(!m)continue;const map={};m.split("|").forEach(p=>{const i=p.indexOf("=");map[p.slice(0,i)]=p.slice(i+1)});
     const w=c.w.filter(x=>map[x[0]]).map(x=>{const tr=map[x[0]];const e=emoOf(x[0]);if(e&&!EMO[tr.toLowerCase()])EMO[tr.toLowerCase()]=e;return [tr,x[1],""]});
     if(w.length)cats.push({id:c.id,lv:c.lv,name:c.name,icon:c.icon,w})}
   const tutor=EN_DATA.TUTOR.map(t=>Object.assign({},t,{start:TUTOR_TR_START[t.id]||t.start}));
-  TR_DATA={CATS:cats,SENT:SENT_TR,PHRASES:PHRASES_TR,LESSONS:[],DIALOGS:[],STORIES:[],TUTOR:tutor,QWERTY:["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]};return TR_DATA}
+  TR_DATA={PLACE:PLACE_TR,CATS:cats,SENT:SENT_TR,PHRASES:PHRASES_TR,LESSONS:LESSONS_TR,DIALOGS:DIALOGS_TR,STORIES:STORIES_TR,TUTOR:tutor,QWERTY:["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]};return TR_DATA}
 const swapArr=(a,b)=>{a.length=0;b.forEach(x=>a.push(x))};
 function applyContent(l){const D=l==="tr"?buildTR():EN_DATA;
-  swapArr(CATS,D.CATS);swapArr(SENT,D.SENT);swapArr(PHRASES,D.PHRASES);swapArr(LESSONS,D.LESSONS);swapArr(DIALOGS,D.DIALOGS);swapArr(STORIES,D.STORIES);swapArr(TUTOR,D.TUTOR);swapArr(QWERTY,D.QWERTY);
+  swapArr(PLACE,D.PLACE);swapArr(CATS,D.CATS);swapArr(SENT,D.SENT);swapArr(PHRASES,D.PHRASES);swapArr(LESSONS,D.LESSONS);swapArr(DIALOGS,D.DIALOGS);swapArr(STORIES,D.STORIES);swapArr(TUTOR,D.TUTOR);swapArr(QWERTY,D.QWERTY);
   ALL.length=0;CATS.forEach(c=>c.w.forEach(([en,ar,ex])=>ALL.push({en,ar,ex,cat:c.id,lv:c.lv,key:c.id+":"+en})));
   for(const k in WMAP)delete WMAP[k];for(const k in WKEY)delete WKEY[k];for(const k in DICT)delete DICT[k];
   ALL.forEach(w=>{const k=w.en.toLowerCase();WMAP[k]=w;WKEY[k]=w.key});
@@ -2728,7 +2808,7 @@ Rules:
 {const _we=wordEq;wordEq=function(a,b){if(LANG==="tr"){a=foldTR(a);b=foldTR(b)}return _we(a,b)}}
 
 /* ---------- hide English-only sections while learning Turkish ---------- */
-const EN_ONLY=new Set(["grammar","verbs","reading","dialogs","sounds","exam","placement"]);
+const EN_ONLY=new Set(["verbs","sounds"]);
 {const _tg=tileGrid;tileGrid=function(items){return _tg(LANG==="en"?items:items.filter(a=>!EN_ONLY.has(a[0])))}}
 {const _vm=vMe;vMe=function(){let h=_vm();if(LANG!=="en")h=h.replace(/<div class="set"><label for="setAcc">[\s\S]*?<\/select><\/div>/,"").replace(/<div class="set"><span>نطق الكلمات بصوت إنسان حقيقي<\/span>[\s\S]*?<\/div><\/div>/,"");
   return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="langsheet"><span class="lf">${LANGS[LANG].flag}</span><b>عم تتعلم ${LANGS[LANG].name}</b><span>غيّر اللغة ›</span></button><section class="rankcard">`)};VIEWS.me=vMe}
@@ -2737,13 +2817,14 @@ const EN_ONLY=new Set(["grammar","verbs","reading","dialogs","sounds","exam","pl
 function vLangPick(){return `<section class="result">${mascot("wow",120)}<h1>شو اللغة اللي بدك تتعلمها؟</h1><p class="muted">بتقدر تغيّرها، أو تتعلم أكثر من لغة، بأي وقت من زر العلم فوق.</p>
   <div class="langcards">${Object.entries(LANGS).map(([k,l])=>`<button class="langcard" data-act="pickLang" data-l="${k}"><span class="lflag">${l.flag}</span><b>${l.name}</b><small>${l.sub}</small></button>`).join("")}</div></section>`}
 function vLevelPick(){return `<section class="result">${mascot("happy",110)}<h1>كم بتعرف ${LANGS[LANG].name}؟</h1><p class="muted">اختار الأقرب إلك، وبنبني خطتك على أساسه. بتقدر تغيّره بعدين من الإعدادات.</p>
-  <div class="langcards">${[["A1","🌱","مبتدئ تماماً","أول مرة بتعلمها"],["A2","📗","بعرف شوية أساسيات","بعرف كلمات وجمل بسيطة"],["B1","🚀","عندي مستوى متوسط","بفهم وبحكي بمواقف عادية"]].map(([lv,ic,t,s])=>`<button class="langcard" data-act="pickLevel" data-lv="${lv}"><span class="lflag">${ic}</span><b>${t}</b><small>${s}</small></button>`).join("")}</div></section>`}
+  <div class="langcards">${[["A1","🌱","مبتدئ تماماً","أول مرة بتعلمها"],["A2","📗","بعرف شوية أساسيات","بعرف كلمات وجمل بسيطة"],["B1","🚀","عندي مستوى متوسط","بفهم وبحكي بمواقف عادية"]].map(([lv,ic,t,s])=>`<button class="langcard" data-act="pickLevel" data-lv="${lv}"><span class="lflag">${ic}</span><b>${t}</b><small>${s}</small></button>`).join("")}
+  <button class="langcard" data-act="plstart" style="border-style:dashed"><span class="lflag">🧭</span><b>مش متأكد؟ اعمل اختبار المستوى</b><small>21 سؤال، قواعد ومفردات واستماع</small></button></div></section>`}
 VIEWS.langpick=vLangPick;VIEWS.levelpick=vLevelPick;
 {const _r=render;render=function(){
   if(typeof S!=="undefined"&&S.done&&S.done.placed&&LANG==="en")META.picked=true;
   if(!META.picked&&route!=="langpick"&&!(typeof AUTH!=="undefined"&&!AUTH.user))route="langpick";
   else if(META.picked&&route==="langpick")route="home";
-  if(META.picked&&LANG!=="en"&&!S.done.placed&&route!=="levelpick")route="levelpick";
+  if(META.picked&&LANG!=="en"&&!S.done.placed&&!["levelpick","player","placement"].includes(route))route="levelpick";
   _r();if(route==="langpick"||route==="levelpick")document.body.classList.add("gated");
   const lb=document.getElementById("langbtn");if(lb)lb.textContent=LANGS[LANG].flag}}
 Object.assign(A,{
