@@ -598,6 +598,12 @@ body.guest .langbtn,body.gated .langbtn{display:none}
 .langcard.on{border-color:var(--primary);background:var(--primary-soft)}
 .lang-strip{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:14px;padding:12px 16px;border:1.5px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);text-align:start;box-shadow:var(--elev)}
 .lang-strip .lf{font-size:1.8rem}.lang-strip b{flex:1;font-weight:600}.lang-strip span:last-child{color:var(--primary);font-weight:600;font-size:.9rem}
+
+/* ===== chinese ===== */
+.py{color:var(--primary);font-size:.92rem;font-weight:500;text-align:inherit;margin-top:2px;letter-spacing:.01em}
+.guide + .py{text-align:center;font-size:1.1rem}
+.zh-big{font-size:2.2rem;font-weight:700;text-align:center;margin:6px 0;color:var(--ink)}
+.zh-big + .py{text-align:center}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -1440,7 +1446,7 @@ function dCheck(){const v=$("#dIn").value;if(!v.trim()){toast("اكتب إجاب
   render()}
 
 /* ================== SPELLING ================== */
-function newSP(){const pool=poolWords().filter(w=>/^\p{L}+$/u.test(w.en)&&w.en.length>=3&&w.en.length<=10);SP.item=pick(pool);
+function newSP(){const pool=poolWords().filter(w=>/^\p{L}+$/u.test(w.en)&&(LANG==="zh"?w.en.length>=2&&w.en.length<=5:w.en.length>=3&&w.en.length<=10));SP.item=pick(pool);
   let t;do{t=shuffle([...SP.item.en.toLowerCase()])}while(t.join("")===SP.item.en.toLowerCase());SP.tiles=t;SP.picked=[];SP.done=false;AFTER=()=>speak(SP.item.en)}
 function vSpelling(){
   if(!SP.item)newSP();const len=SP.tiles.length,built=SP.picked.map(i=>SP.tiles[i]).join(""),right=SP.done&&built===SP.item.en.toLowerCase();
@@ -1980,7 +1986,7 @@ const QUESTS=[["words","احفظ 5 كلمات جديدة",5,"📖","words"],["sp
   ["quiz","خلّص اختبار سريع",1,"🏁","quiz"],["chat","احكي مع توكي 3 رسائل",3,"💬","tutor"],["games","العب لعبتين",2,"🎮","games"],["dict","اكتب 3 إملاء صح",3,"🎧","dictation"],["lessons","خلّص درس قواعد",1,"📐","grammar"]];
 function qCounters(){return{words:knownCount(),speak:S.st.speak||0,review:S.st.review||0,quiz:S.st.quiz||0,chat:S.st.chat||0,games:S.st.games||0,dict:S.st.dict||0,lessons:LESSONS.filter(l=>S.done["g:"+l.id]).length}}
 function dailyState(){const t=dayStr(new Date());
-  if(!S.daily||S.daily.d!==t){let pool=QUESTS.filter(q=>(q[0]!=="chat"||AIstate==="ok")&&(LANG==="en"||q[0]!=="lessons"));const seed=t.split("-").join("")|0;
+  if(!S.daily||S.daily.d!==t){let pool=QUESTS.filter(q=>(q[0]!=="chat"||AIstate==="ok")&&(LANG!=="zh"||q[0]!=="dict"));const seed=t.split("-").join("")|0;
     const pickd=[];let i=seed;while(pickd.length<2&&pool.length){const q=pool.splice(i%pool.length,1)[0];pickd.push(q[0]);i=Math.floor(i/7)+3}
     S.daily={d:t,base:qCounters(),ids:pickd,claimed:false};save()}
   return S.daily}
@@ -2263,8 +2269,8 @@ function vGames(){
     <p class="center" style="margin:10px 0 4px">المعنى: <b>${esc(h.w.ar)}</b> · ${h.w.en.length} حروف</p>
     <div class="letters" dir="ltr">${shown}</div>
     ${win?`<div class="fb good center"><b>صح! 👏 +${Math.max(2,8-3*h.hints)} ⭐</b></div>`:lose?`<div class="fb bad center"><b>خلصت المحاولات. الكلمة: <span dir="ltr">${esc(h.w.en)}</span></b></div>`:""}
-    ${win||lose?`<div class="row" style="justify-content:center;margin-top:12px">${sayBtn(h.w.en)}<button class="btn" data-act="gstart" data-g="hang">كلمة ثانية</button></div>`
-    :`<div class="hint-row"><button class="btn hl" data-act="hhint" ${hintsLeft<=0?"disabled":""}>💡 تلميح (${hintsLeft})</button>${sayBtn(h.w.en,"🔊 اسمعها")}</div>
+    ${win||lose?`<div class="row" style="justify-content:center;margin-top:12px">${sayBtn(h.w.hz||h.w.en)}<button class="btn" data-act="gstart" data-g="hang">كلمة ثانية</button></div>`
+    :`<div class="hint-row"><button class="btn hl" data-act="hhint" ${hintsLeft<=0?"disabled":""}>💡 تلميح (${hintsLeft})</button>${sayBtn(h.w.hz||h.w.en,"🔊 اسمعها")}</div>
       <div class="qwerty" dir="ltr">${QWERTY.map(r=>`<div class="kr">${[...r].map(c=>`<button class="key ${h.g.has(c)?(word.includes(c)?"hit":"miss"):""}" data-act="hkey" data-c="${c}" ${h.g.has(c)?"disabled":""}>${c}</button>`).join("")}</div>`).join("")}</div>`}</section>`}
 function gStart(g){stopGame();S.st.games++;save();checkAch();GM.g=g;
   if(g==="match")GM.m=null;
@@ -2302,11 +2308,11 @@ Object.assign(A,{
     const card=document.querySelector(".guide .w");if(card){card.parentElement.classList.remove("flash-ok","flash-bad");void card.offsetWidth;card.parentElement.classList.add(ok?"flash-ok":"flash-bad")}},
   hkey:d=>{const h=GM.h,c=d.c;if(!h||h.g.has(c)||h.lives<=0)return;const word=lowerL(h.w.en);h.g.add(c);
     if(!word.includes(c)){h.lives--;sfx("bad")}else sfx("tap");
-    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.en);setTimeout(confetti,200)}
+    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.hz||h.w.en);setTimeout(confetti,200)}
     else if(h.lives<=0){quietMistake(h.w.en,h.w.ar,"ألعاب");save();sfx("bad")}render()},
   hhint:()=>{const h=GM.h;if(!h||h.hints>=2)return;const word=lowerL(h.w.en);const hidden=[...new Set(word)].filter(c=>!h.g.has(c));if(!hidden.length)return;
     const c=pick(hidden);h.hints++;h.g.add(c);h.hinted.add(c);sfx("tap");
-    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.en)}render()}
+    if([...word].every(x=>h.g.has(x))){addXP(Math.max(2,8-3*h.hints));speak(h.w.hz||h.w.en)}render()}
 });
 document.addEventListener("keydown",e=>{if(route!=="games"||GM.g!=="hang"||!GM.h||/INPUT|TEXTAREA/.test(e.target.tagName))return;const k=lowerL(e.key);if(/^\p{L}$/u.test(k)){e.preventDefault();A.hkey({c:k})}});
 /* ================== PRO POLISH: consistent SVG icon set ================== */
@@ -2427,7 +2433,7 @@ A.wcat=d=>{startCat(d.id);render();window.scrollTo(0,0);const c=CATS.find(x=>x.i
 {const _vg=vGames;vGames=function(){let h=_vg();
   if(GM.g==="match"&&!GM.m)h=h.replace('</div></section>',`<button class="sq" data-act="mstart" data-m="pics"><span class="ic">${ico("match",28)}</span><b>الصور</b><small>وصّل الصورة بكلمتها${(S.gbest||{}).m_pics?` · أفضل وقت ${fmtT(S.gbest.m_pics)}`:""}</small></button></div></section>`);
   if(GM.g==="match"&&GM.m&&GM.m.mode==="pics"){h=h.replace(/<button class="tile mt ([^"]*)" data-act="mtile" data-i="(\d+)"([^>]*)><\/button>/g,(all,cls,i,rest)=>{const t=GM.m.tiles[+i];return `<button class="tile mt pc ${cls}" data-act="mtile" data-i="${i}"${rest}>${pic(t.w.en,46)}</button>`}).replace("🧩 المعنى","🧩 الصور").replace("اختار كلمة، بعدين اختار معناها","اختار صورة، بعدين اختار كلمتها")}
-  if(GM.g==="hang"&&GM.h)h=h.replace('<p class="center" style="margin:10px 0 4px">المعنى:',`<div class="center" style="margin-top:6px">${picFrame(GM.h.w.en,76)}</div><p class="center" style="margin:10px 0 4px">المعنى:`);
+  if(GM.g==="hang"&&GM.h)h=h.replace('<p class="center" style="margin:10px 0 4px">المعنى:',`<div class="center" style="margin-top:6px">${picFrame(GM.h.w.hz||GM.h.w.en,76)}${GM.h.w.hz?`<div class="zh-big nopy">${GM.h.w.hz}</div>`:""}</div><p class="center" style="margin:10px 0 4px">المعنى:`);
   return h}}
 {const _vs=vSpelling;vSpelling=function(){const h=_vs();return SP.item?h.replace(`<div class="ar-big">${esc(SP.item.ar)}</div>`,`${picFrame(SP.item.en,90)}<div class="ar-big">${esc(SP.item.ar)}</div>`):h}}
 
@@ -3082,9 +3088,116 @@ const PLACE_FR=[
 ["Quand j'___ petit, je jouais dehors.",["étais","suis","serai"],"étais","B1"],["Si j'___ le temps, je viendrai.",["ai","aurai","avais eu"],"ai","B1"],["Je vois Paul. Je ___ vois.",["le","la","les"],"le","B1"],["Il ___ boire de l'eau.",["faut","doit","fait"],"faut","B1"],
 ["l'expérience",["خبرة","تجربة علمية","مقابلة"],"خبرة","B1","vocab"],["le climat",["مناخ","طقس اليوم","بيئة"],"مناخ","B1","vocab"],["J'aimerais avoir plus de temps libre.",["J'aimerais avoir plus de temps libre.","J'aimerais avoir plus d'argent.","J'aimerais avoir moins de travail."],"J'aimerais avoir plus de temps libre.","B1","listen"]
 ];
+/* ================== CHINESE CONTENT (hanzi + pinyin) ================== */
+const ZH_RAW={
+basics:"hello=你好:nǐ hǎo|goodbye=再见:zàijiàn|please=请:qǐng|thank you=谢谢:xièxie|sorry=对不起:duìbuqǐ|yes=是:shì|no=不:bù|welcome=欢迎:huānyíng|friend=朋友:péngyou|name=名字:míngzi|morning=早上:zǎoshang|night=晚上:wǎnshang",
+family:"father=爸爸:bàba|mother=妈妈:māma|brother=哥哥:gēge|sister=姐姐:jiějie|son=儿子:érzi|daughter=女儿:nǚ'ér|grandfather=爷爷:yéye|grandmother=奶奶:nǎinai|uncle=叔叔:shūshu|aunt=阿姨:āyí|family=家人:jiārén",
+food:"bread=面包:miànbāo|water=水:shuǐ|rice=米饭:mǐfàn|chicken=鸡肉:jīròu|apple=苹果:píngguǒ|milk=牛奶:niúnǎi|egg=鸡蛋:jīdàn|tea=茶:chá|sugar=糖:táng|salt=盐:yán|breakfast=早饭:zǎofàn|dinner=晚饭:wǎnfàn",
+home:"house=房子:fángzi|door=门:mén|window=窗户:chuānghu|kitchen=厨房:chúfáng|bedroom=卧室:wòshì|table=桌子:zhuōzi|chair=椅子:yǐzi|bed=床:chuáng|key=钥匙:yàoshi|wall=墙:qiáng|floor=地板:dìbǎn|roof=屋顶:wūdǐng",
+body:"head=头:tóu|hand=手:shǒu|eye=眼睛:yǎnjing|ear=耳朵:ěrduo|nose=鼻子:bízi|mouth=嘴:zuǐ|leg=腿:tuǐ|foot=脚:jiǎo|heart=心脏:xīnzàng|blood=血:xuè|tooth=牙:yá|back=背:bèi",
+colors:"red=红色:hóngsè|blue=蓝色:lánsè|green=绿色:lǜsè|yellow=黄色:huángsè|black=黑色:hēisè|white=白色:báisè|one=一:yī|two=二:èr|three=三:sān|ten=十:shí|hundred=百:bǎi|first=第一:dì yī",
+verbs:"go=去:qù|come=来:lái|eat=吃:chī|drink=喝:hē|write=写:xiě|read=读:dú|speak=说:shuō|listen=听:tīng|learn=学习:xuéxí|work=工作:gōngzuò|sleep=睡觉:shuìjiào|buy=买:mǎi",
+adj:"big=大:dà|small=小:xiǎo|happy=高兴:gāoxìng|sad=难过:nánguò|hot=热:rè|cold=冷:lěng|new=新:xīn|old=旧:jiù|easy=容易:róngyì|difficult=难:nán|fast=快:kuài|beautiful=漂亮:piàoliang",
+places:"school=学校:xuéxiào|hospital=医院:yīyuàn|market=市场:shìchǎng|street=街:jiē|city=城市:chéngshì|mosque=清真寺:qīngzhēnsì|pharmacy=药店:yàodiàn|bank=银行:yínháng|airport=机场:jīchǎng|beach=海滩:hǎitān|restaurant=饭馆:fànguǎn|library=图书馆:túshūguǎn",
+work:"teacher=老师:lǎoshī|student=学生:xuésheng|doctor=医生:yīshēng|nurse=护士:hùshi|engineer=工程师:gōngchéngshī|book=书:shū|pen=笔:bǐ|notebook=本子:běnzi|lesson=课:kè|exam=考试:kǎoshì|job=职业:zhíyè|meeting=会议:huìyì",
+time:"today=今天:jīntiān|tomorrow=明天:míngtiān|yesterday=昨天:zuótiān|week=星期:xīngqī|month=月:yuè|year=年:nián|hour=小时:xiǎoshí|minute=分钟:fēnzhōng|Friday=星期五:xīngqīwǔ|Saturday=星期六:xīngqīliù|always=总是:zǒngshì|never=从来不:cónglái bù",
+clothes:"shirt=衬衫:chènshān|trousers=裤子:kùzi|dress=裙子:qúnzi|shoes=鞋:xié|jacket=夹克:jiākè|hat=帽子:màozi|socks=袜子:wàzi|bag=包:bāo|coat=大衣:dàyī|scarf=围巾:wéijīn|watch=手表:shǒubiǎo|glasses=眼镜:yǎnjìng",
+animals:"cat=猫:māo|dog=狗:gǒu|bird=鸟:niǎo|horse=马:mǎ|cow=牛:niú|sheep=羊:yáng|fish=鱼:yú|camel=骆驼:luòtuo|lion=狮子:shīzi|donkey=驴:lǘ|rabbit=兔子:tùzi|bee=蜜蜂:mìfēng",
+weather:"sun=太阳:tàiyáng|rain=雨:yǔ|wind=风:fēng|cloud=云:yún|snow=雪:xuě|sunny=晴天:qíngtiān|rainy=下雨:xià yǔ|warm=暖和:nuǎnhuo|storm=暴风雨:bàofēngyǔ|summer=夏天:xiàtiān|winter=冬天:dōngtiān|weather=天气:tiānqì",
+transport:"car=汽车:qìchē|bus=公共汽车:gōnggòng qìchē|taxi=出租车:chūzūchē|bike=自行车:zìxíngchē|train=火车:huǒchē|plane=飞机:fēijī|ship=船:chuán|driver=司机:sījī|ticket=票:piào|road=路:lù|station=车站:chēzhàn|walk=走路:zǒulù",
+feelings:"tired=累:lèi|hungry=饿:è|thirsty=渴:kě|angry=生气:shēngqì|afraid=害怕:hàipà|bored=无聊:wúliáo|excited=激动:jīdòng|worried=担心:dānxīn|calm=冷静:lěngjìng|proud=骄傲:jiāo'ào|surprised=惊讶:jīngyà|lonely=孤独:gūdú",
+health:"pain=疼:téng|fever=发烧:fāshāo|medicine=药:yào|test=检查:jiǎnchá|result=结果:jiéguǒ|appointment=预约:yùyuē|sick=生病:shēngbìng|healthy=健康:jiànkāng|cough=咳嗽:késou|headache=头疼:tóuténg|laboratory=实验室:shíyànshì",
+shopping:"price=价格:jiàgé|cheap=便宜:piányi|expensive=贵:guì|money=钱:qián|pay=付钱:fù qián|size=尺寸:chǐcùn|discount=打折:dǎzhé|receipt=收据:shōujù|customer=顾客:gùkè|shop=商店:shāngdiàn|try on=试穿:shìchuān",
+travel:"passport=护照:hùzhào|hotel=酒店:jiǔdiàn|luggage=行李:xíngli|trip=旅行:lǚxíng|map=地图:dìtú|visit=参观:cānguān|abroad=国外:guówài|flight=航班:hángbān|tourist=游客:yóukè|reservation=预订:yùdìng|arrive=到达:dàodá",
+jobs:"manager=经理:jīnglǐ|worker=工人:gōngrén|lawyer=律师:lǜshī|farmer=农民:nóngmín|accountant=会计:kuàijì|programmer=程序员:chéngxùyuán|journalist=记者:jìzhě|police officer=警察:jǐngchá|salary=工资:gōngzī",
+nature:"sea=海:hǎi|tree=树:shù|flower=花:huā|mountain=山:shān|river=河:hé|desert=沙漠:shāmò|sky=天空:tiānkōng|moon=月亮:yuèliang|star=星星:xīngxing|stone=石头:shítou",
+tech:"phone=手机:shǒujī|computer=电脑:diànnǎo|internet=网络:wǎngluò|screen=屏幕:píngmù|password=密码:mìmǎ|message=信息:xìnxī|charger=充电器:chōngdiànqì|download=下载:xiàzài|app=应用:yìngyòng|email=电子邮件:diànzǐ yóujiàn|battery=电池:diànchí|website=网站:wǎngzhàn",
+hobbies:"football=足球:zúqiú|swim=游泳:yóuyǒng|draw=画画:huàhuà|music=音乐:yīnyuè|game=游戏:yóuxì|team=队:duì|win=赢:yíng|lose=输:shū|practice=练习:liànxí|hobby=爱好:àihào|run=跑步:pǎobù|cook=做饭:zuòfàn",
+kitchen:"plate=盘子:pánzi|cup=杯子:bēizi|spoon=勺子:sháozi|knife=刀:dāo|fork=叉子:chāzi|pot=锅:guō|oven=烤箱:kǎoxiāng|fridge=冰箱:bīngxiāng|recipe=菜谱:càipǔ",
+verbs2:"open=开:kāi|close=关:guān|start=开始:kāishǐ|finish=完成:wánchéng|help=帮助:bāngzhù|wait=等:děng|ask=问:wèn|answer=回答:huídá|find=找到:zhǎodào|forget=忘记:wàngjì|remember=记得:jìde|understand=明白:míngbai",
+adj2:"clean=干净:gānjìng|dirty=脏:zāng|full=满:mǎn|empty=空:kōng|heavy=重:zhòng|light=轻:qīng|strong=强:qiáng|weak=弱:ruò|quiet=安静:ānjìng|noisy=吵:chǎo|safe=安全:ānquán|dangerous=危险:wēixiǎn",
+routine:"wake up=醒来:xǐnglái|shower=洗澡:xǐzǎo|lunch=午饭:wǔfàn|watch TV=看电视:kàn diànshì|go to bed=上床睡觉:shàngchuáng shuìjiào|early=早:zǎo|late=晚:wǎn|usually=通常:tōngcháng",
+fruits:"banana=香蕉:xiāngjiāo|orange=橙子:chéngzi|grapes=葡萄:pútao|lemon=柠檬:níngméng|watermelon=西瓜:xīguā|tomato=西红柿:xīhóngshì|potato=土豆:tǔdòu|onion=洋葱:yángcōng|carrot=胡萝卜:húluóbo|cucumber=黄瓜:huánggua|vegetables=蔬菜:shūcài",
+city:"left=左边:zuǒbian|right=右边:yòubian|straight=一直:yìzhí|corner=拐角:guǎijiǎo|traffic lights=红绿灯:hónglǜdēng|bridge=桥:qiáo|square=广场:guǎngchǎng|far=远:yuǎn|near=近:jìn",
+numbers2:"four=四:sì|five=五:wǔ|six=六:liù|seven=七:qī|eight=八:bā|nine=九:jiǔ|eleven=十一:shíyī|twelve=十二:shí'èr|twenty=二十:èrshí|fifty=五十:wǔshí|thousand=千:qiān|second=第二:dì èr",
+calendar:"Monday=星期一:xīngqīyī|Tuesday=星期二:xīngqī'èr|Wednesday=星期三:xīngqīsān|Thursday=星期四:xīngqīsì|Sunday=星期天:xīngqītiān|January=一月:yīyuè|March=三月:sānyuè|June=六月:liùyuè|August=八月:bāyuè|December=十二月:shí'èryuè|weekend=周末:zhōumò|holiday=假期:jiàqī",
+classroom:"board=黑板:hēibǎn|pencil=铅笔:qiānbǐ|eraser=橡皮:xiàngpí|ruler=尺子:chǐzi|page=页:yè|question=问题:wèntí|word=词:cí|sentence=句子:jùzi|class=班:bān|classmate=同学:tóngxué|backpack=书包:shūbāo",
+drinks:"coffee=咖啡:kāfēi|juice=果汁:guǒzhī|meat=肉:ròu|cheese=奶酪:nǎilào|soup=汤:tāng|salad=沙拉:shālā|pizza=比萨饼:bǐsàbǐng|cake=蛋糕:dàngāo|honey=蜂蜜:fēngmì|ice cream=冰淇淋:bīngqílín",
+house2:"sofa=沙发:shāfā|lamp=灯:dēng|mirror=镜子:jìngzi|stairs=楼梯:lóutī|bathroom=浴室:yùshì|garden=花园:huāyuán|pillow=枕头:zhěntou|towel=毛巾:máojīn|soap=肥皂:féizào|clock=钟:zhōng",
+body2:"face=脸:liǎn|hair=头发:tóufa|arm=胳膊:gēbo|finger=手指:shǒuzhǐ|neck=脖子:bózi|knee=膝盖:xīgài|shoulder=肩膀:jiānbǎng|stomach=肚子:dùzi|skin=皮肤:pífū|brain=大脑:dànǎo|bone=骨头:gǔtou",
+sports:"basketball=篮球:lánqiú|tennis=网球:wǎngqiú|gym=健身房:jiànshēnfáng|player=运动员:yùndòngyuán|match=比赛:bǐsài|ball=球:qiú|stadium=体育场:tǐyùchǎng|exercise=锻炼:duànliàn",
+health2:"dentist=牙医:yáyī|ambulance=救护车:jiùhùchē|injection=打针:dǎzhēn|allergy=过敏:guòmǐn|pill=药片:yàopiàn|emergency=急诊:jízhěn|recover=康复:kāngfù",
+travel2:"suitcase=行李箱:xínglixiāng|visa=签证:qiānzhèng|delay=延误:yánwù|guide=导游:dǎoyóu|seat=座位:zuòwèi|passenger=乘客:chéngkè",
+places2:"post office=邮局:yóujú|bakery=面包店:miànbāodiàn|cinema=电影院:diànyǐngyuàn|park=公园:gōngyuán|zoo=动物园:dòngwùyuán|museum=博物馆:bówùguǎn|supermarket=超市:chāoshì|police station=派出所:pàichūsuǒ|factory=工厂:gōngchǎng|office=办公室:bàngōngshì",
+time2:"afternoon=下午:xiàwǔ|evening=傍晚:bàngwǎn|noon=中午:zhōngwǔ|midnight=半夜:bànyè|soon=马上:mǎshàng|later=以后:yǐhòu|already=已经:yǐjīng|often=经常:jīngcháng|sometimes=有时候:yǒushíhou",
+verbs4:"sit=坐:zuò|stand=站:zhàn|jump=跳:tiào|laugh=笑:xiào|cry=哭:kū|sing=唱歌:chànggē|dance=跳舞:tiàowǔ|play=玩:wán|push=推:tuī|pull=拉:lā|carry=拿:ná",
+verbs5:"send=发:fā|receive=收到:shōudào|bring=带:dài|give=给:gěi|tell=告诉:gàosu|say=说话:shuōhuà|call=打电话:dǎ diànhuà|meet=见面:jiànmiàn|choose=选择:xuǎnzé|invite=邀请:yāoqǐng",
+money:"save=存钱:cún qián|spend=花钱:huā qián|borrow=借:jiè|cash=现金:xiànjīn|bill=账单:zhàngdān|debt=债务:zhàiwù|tax=税:shuì|wallet=钱包:qiánbāo",
+business:"company=公司:gōngsī|contract=合同:hétong|experience=经验:jīngyàn|interview=面试:miànshì|employee=员工:yuángōng|project=项目:xiàngmù|report=报告:bàogào|skill=技能:jìnéng|colleague=同事:tóngshì",
+education:"university=大学:dàxué|research=研究:yánjiū|subject=科目:kēmù|homework=作业:zuòyè|knowledge=知识:zhīshi|scholarship=奖学金:jiǎngxuéjīn|graduate=毕业:bìyè|improve=提高:tígāo",
+society:"government=政府:zhèngfǔ|peace=和平:hépíng|news=新闻:xīnwén|problem=难题:nántí|solution=解决办法:jiějué bànfǎ|decision=决定:juédìng|opinion=意见:yìjiàn|future=未来:wèilái",
+feelings3:"confused=困惑:kùnhuò|disappointed=失望:shīwàng|nervous=紧张:jǐnzhāng|shy=害羞:hàixiū|brave=勇敢:yǒnggǎn|polite=有礼貌:yǒu lǐmào|friendly=友好:yǒuhǎo",
+abstract:"freedom=自由:zìyóu|success=成功:chénggōng|failure=失败:shībài|opportunity=机会:jīhuì|challenge=挑战:tiǎozhàn|respect=尊重:zūnzhòng|patience=耐心:nàixīn|honesty=诚实:chéngshí",
+verbs3:"explain=解释:jiěshì|suggest=建议:jiànyì|agree=同意:tóngyì|believe=相信:xiāngxìn|prefer=更喜欢:gèng xǐhuan|allow=允许:yǔnxǔ|avoid=避免:bìmiǎn|achieve=实现:shíxiàn",
+environment:"pollution=污染:wūrǎn|recycle=回收:huíshōu|climate=气候:qìhòu|energy=能源:néngyuán|protect=保护:bǎohù|temperature=温度:wēndù|environment=环境:huánjìng"
+};
+const ZHW={},PY_ZH={};
+for(const k in ZH_RAW)ZHW[k]=ZH_RAW[k].split("|").map(p=>{const i=p.indexOf("="),rest=p.slice(i+1),j=rest.indexOf(":"),hz=rest.slice(0,j);PY_ZH[hz]=rest.slice(j+1);return p.slice(0,i)+"="+hz}).join("|");
+const zs=(arr,lv)=>arr.map(([en,ar])=>({en,ar,lv}));
+const SENT_ZH=[].concat(
+zs([["你好！","مرحبا!"],["你好吗？","كيف حالك؟"],["我叫艾哈迈德。","اسمي أحمد."],["我是巴勒斯坦人。","أنا فلسطيني."],["这是我的家人。","هاي عيلتي."],["我想喝茶。","بدي أشرب شاي."],["请给我水。","مي لو سمحت."],["非常感谢！","شكراً كتير!"],["医院在哪儿？","وين المستشفى؟"],["这个多少钱？","قديش هاد؟"],["我在学中文。","عم بتعلم صيني."],["我是学生。","أنا طالب."],["我爸爸是医生。","أبي دكتور."],["猫在桌子下面。","القطة تحت الطاولة."],["今天很热。","اليوم حر كتير."],["明天见！","بنشوفك بكرة!"],["我不明白。","مش فاهم."],["请说慢一点。","احكي أبطأ لو سمحت."],["现在几点？","كم الساعة هلأ؟"],["我饿了。","أنا جوعان."],["我有两个哥哥。","عندي أخوين أكبر مني."],["书在桌子上。","الكتاب على الطاولة."],["你喜欢喝咖啡吗？","بتحب تشرب قهوة؟"],["晚安！","تصبح على خير!"],["你叫什么名字？","شو اسمك؟"],["你住在哪儿？","وين ساكن؟"]],"A1"),
+zs([["昨天我去了市场。","امبارح رحت عالسوق."],["妈妈在做晚饭。","أمي عم تطبخ العشا."],["明天我们要去北京。","بكرة رايحين على بكين."],["这个酒店很贵。","هالفندق غالي كتير."],["你能帮我吗？","بتقدر تساعدني؟"],["我头疼。","راسي بوجعني."],["你应该去看医生。","لازم تروح عالدكتور."],["请结账。","الحساب لو سمحت."],["可以用卡付钱吗？","بقدر أدفع بالبطاقة؟"],["机场离这儿远吗？","المطار بعيد عن هون؟"],["我每天七点起床。","كل يوم بصحى الساعة سبعة."],["我姐姐比我大。","أختي أكبر مني."],["周末你做什么？","شو بتعمل بنهاية الأسبوع؟"],["火车几点出发？","إمتى بيطلع القطار؟"],["我很喜欢中文。","بحب الصيني كتير."],["我的钥匙丢了。","مفاتيحي ضاعت."],["我会说一点儿中文。","بعرف أحكي شوية صيني."],["这部电影很好看。","هالفيلم حلو كتير."]],"A2"),
+zs([["我在这里住了三年了。","صارلي ثلاث سنين ساكن هون."],["如果下雨，我们就待在家里。","إذا شتت بنضل بالبيت."],["我从来没吃过日本菜。","عمري ما أكلت أكل ياباني."],["我在考虑换工作。","عم بفكر أغير شغلي."],["会议取消了。","الاجتماع انلغى."],["虽然下雨，我们还是出去了。","رغم المطر طلعنا."],["如果你每天练习，就会进步很快。","إذا تدربت كل يوم بتتحسن بسرعة."],["我们得在星期五以前完成报告。","لازم نخلص التقرير قبل الجمعة."],["多喝水很重要。","مهم تشرب مي كتير."],["我同意你的看法。","أنا متفق معك."]],"B1"));
+const zp=(id,name,icon,arr)=>({id,name,icon,p:arr});
+const PHRASES_ZH=[
+zp("greet","تعارف وتحيات","🤝",[["很高兴认识你。","تشرفت بمعرفتك."],["你好吗？","كيفك؟"],["我很好，谢谢。你呢？","منيح شكراً، وإنت؟"],["你是哪国人？","من أي بلد إنت؟"],["我是巴勒斯坦人。","أنا فلسطيني."],["一会儿见！","بنشوفك بعد شوي!"],["祝你今天愉快！","نهارك سعيد!"],["好久不见！","من زمان ما شفتك!"]]),
+zp("shop","في المحل","🛒",[["这个多少钱？","قديش سعر هاد؟"],["我可以看看吗？","بقدر أشوف؟"],["有小一点的吗？","في أصغر؟"],["我只是看看，谢谢。","بس بتفرج، شكراً."],["可以刷卡吗？","بقدر أدفع بالبطاقة؟"],["太贵了！","غالي كتير!"],["能便宜一点吗？","بتنزّل السعر شوي؟"],["我要这个。","بدي هاد."]]),
+zp("restaurant","في المطعم","🍽️",[["两位。","لشخصين."],["请给我菜单。","المنيو لو سمحت."],["你推荐什么？","شو بتنصحني؟"],["我要鸡肉。","بدي دجاج."],["不要辣的。","بدون حار."],["买单！","الحساب!"],["很好吃！","طيب كتير!"],["打包。","سفري."]]),
+zp("doctor","عند الطبيب","🩺",[["我不舒服。","مش حاسس حالي منيح."],["这里疼。","هون بوجعني."],["我从昨天开始发烧。","عندي سخونة من امبارح."],["我要吃药吗？","لازم آخد دوا؟"],["一天吃几次？","كم مرة باليوم؟"],["严重吗？","خطير؟"],["我对青霉素过敏。","عندي حساسية من البنسلين."],["结果什么时候出来？","إمتى بتطلع النتيجة؟"]]),
+zp("travel","السفر والتنقل","🧳",[["公共汽车站在哪儿？","وين موقف الباص؟"],["去市中心怎么走？","كيف بوصل لوسط البلد؟"],["我想订一个房间。","بدي أحجز غرفة."],["包括早饭吗？","الفطور مشمول؟"],["飞机几点起飞？","إمتى بتطلع الطيارة؟"],["能在地图上指给我看吗？","بتفرجيني عالخريطة؟"],["离这儿远吗？","بعيد عن هون؟"],["我迷路了。","أنا ضايع."]]),
+zp("polite","عبارات لبقة","🙏",[["你能帮我吗？","بتقدر تساعدني؟"],["不好意思。","عفواً / آسف."],["没关系。","ولا يهمك."],["不客气。","العفو."],["别担心。","لا تقلق."],["打扰一下。","عن إذنك."],["太谢谢你了！","شكراً جزيلاً!"],["当然！","أكيد!"]]),
+zp("class","في الصف","🏫",[["请再说一遍。","أعدها لو سمحت."],["这个词是什么意思？","شو معنى هالكلمة؟"],["这个字怎么写？","كيف بينكتب هالحرف؟"],["用中文怎么说？","كيف بتنقال بالصيني؟"],["我没听懂。","ما فهمت."],["请说慢一点。","احكي أبطأ لو سمحت."],["我可以问一个问题吗？","بقدر أسأل سؤال؟"],["我做完了。","خلصت."]]),
+zp("emergency","طوارئ","🚑",[["救命！","النجدة!"],["快叫救护车！","اطلبوا إسعاف بسرعة!"],["快报警！","اتصلوا بالشرطة!"],["着火了！","في حريق!"],["我需要医生。","بحتاج دكتور."],["你没事吧？","إنت منيح؟"],["小心！","انتبه!"],["最近的医院在哪儿？","وين أقرب مستشفى؟"]])];
+const TUTOR_ZH_START={free:"你好！我是Toki，你的中文老师。今天你想聊什么？",rest:"晚上好！欢迎光临。请问几位？",doc:"你好，请坐。你哪里不舒服？",job:"早上好，谢谢你来面试。请简单介绍一下你自己。",air:"你好，请出示你的护照和机票。",friend:"你好！我叫小明，我是新来的。你是哪国人？",day:"你好！你今天过得怎么样？",debate:"我们来讨论一下！社交媒体对年轻人好还是不好？你怎么看？",ask:"اسألني أي سؤال عن الصيني: قاعدة، كلمة، نغمات، فرق بين كلمتين… وبجاوبك بالعربي مع أمثلة."};
+const ZL=(id,lv,t,x,ex,q)=>({id,lv,t,x,ex,q});
+const LESSONS_ZH=[
+ZL("zh_tones","A1","النغمات الأربع",`كل مقطع صيني إله نغمة بتغيّر معناه: ${E("mā")} مستوية، ${E("má")} طالعة، ${E("mǎ")} نازلة وطالعة، ${E("mà")} نازلة. نفس الصوت بنغمة مختلفة = كلمة ثانية!`,[["妈 mā","أم"],["麻 má","قنّب"],["马 mǎ","حصان"],["骂 mà","يوبّخ"]],[["«حصان» بالصيني: ___",["马 mǎ","妈 mā","骂 mà"],"马 mǎ"],["«أم» بالصيني: ___",["妈 mā","马 mǎ","骂 mà"],"妈 mā"],["«شكراً» = ___",["谢谢 xièxie","再见 zàijiàn","你好 nǐ hǎo"],"谢谢 xièxie"],["«مرحبا» = ___",["你好 nǐ hǎo","谢谢 xièxie","对不起 duìbuqǐ"],"你好 nǐ hǎo"]]),
+ZL("zh_shi","A1","فعل الكون 是",`${E("是 shì")} = يكون، وبيربط اسمين: ${E("我是学生")} = أنا طالب. ما بيتغيّر أبداً مع الضمير، وما في تصريف بالصيني.`,[["我是学生。","أنا طالب."],["他是老师。","هو أستاذ."],["你是中国人吗？","إنت صيني؟"],["我不是医生。","أنا مش دكتور."]],[["我___学生。",["是","在","有"],"是"],["他___老师。",["是","很","的"],"是"],["你___中国人吗？",["是","在","了"],"是"],["我不___医生。",["是","在","有"],"是"]]),
+ZL("zh_bu","A1","النفي 不 والسؤال 吗",`${E("不 bù")} قبل الفعل أو الصفة للنفي: ${E("我不喝咖啡")}. ولنسأل «نعم/لا» بنضيف ${E("吗 ma")} بآخر الجملة: ${E("你好吗？")}.`,[["我不是老师。","أنا مش أستاذ."],["你是学生吗？","إنت طالب؟"],["他不喜欢咖啡。","هو ما بيحب القهوة."],["你喝茶吗？","بتشرب شاي؟"]],[["我___是老师。",["不","没","吗"],"不"],["你是学生___？",["吗","不","的"],"吗"],["他___喜欢咖啡。",["不","吗","了"],"不"],["你喝茶___？",["吗","的","不"],"吗"]]),
+ZL("zh_de","A1","الملكية 的",`${E("的 de")} بين المالك والشي: ${E("我的书")} = كتابي، ${E("妈妈的包")} = شنطة أمي.`,[["这是我的书。","هاد كتابي."],["他的妈妈是医生。","أمه دكتورة."],["你的名字是什么？","شو اسمك؟"],["这是谁的包？","لمين هالشنطة؟"]],[["这是我___书。",["的","是","了"],"的"],["他___妈妈是医生。",["的","是","在"],"的"],["你___名字是什么？",["的","吗","了"],"的"],["这是谁___包？",["的","是","吗"],"的"]]),
+ZL("zh_you","A1","有 = عنده / في",`${E("有 yǒu")} = عنده أو يوجد، والنفي ${E("没有 méiyǒu")} (مش ${E("不有")}!).`,[["我有两个哥哥。","عندي أخوين."],["桌子上有一本书。","في كتاب عالطاولة."],["我没有钱。","ما معي مصاري."],["你有手机吗？","عندك موبايل؟"]],[["我___两个哥哥。",["有","是","在"],"有"],["桌子上___一本书。",["有","是","的"],"有"],["我没___钱。",["有","是","在"],"有"],["你___手机吗？",["有","是","在"],"有"]]),
+ZL("zh_mw","A2","كلمات العد 个 / 本 / 杯",`بين الرقم والاسم لازم كلمة عد: ${E("个")} العامة (${E("一个人")})، ${E("本")} للكتب (${E("一本书")})، ${E("杯")} للكاسات (${E("一杯茶")}).`,[["一个人","شخص واحد"],["两本书","كتابين"],["一杯茶","كاسة شاي"],["三个学生","ثلاث طلاب"]],[["一___人",["个","本","杯"],"个"],["两___书",["本","个","杯"],"本"],["一___茶",["杯","本","个"],"杯"],["三___学生",["个","杯","本"],"个"]]),
+ZL("zh_zai","A2","在 = في / عم",`${E("在 zài")} للمكان: ${E("我在家")} = أنا بالبيت. وقبل الفعل بتعني «عم»: ${E("妈妈在做饭")} = أمي عم تطبخ.`,[["我在家。","أنا بالبيت."],["他在学校学习。","هو بيدرس بالمدرسة."],["妈妈在做饭。","أمي عم تطبخ."],["书在桌子上。","الكتاب عالطاولة."]],[["我___家。",["在","是","有"],"在"],["他___学校学习。",["在","有","是"],"在"],["妈妈___做饭。",["在","是","的"],"在"],["书___桌子上。",["在","有","是"],"在"]]),
+ZL("zh_le","A2","الماضي 了",`ما في تصريف بالصيني. لنقول إنه الشي صار بنضيف ${E("了 le")} بعد الفعل أو بآخر الجملة: ${E("我吃了饭")} = أكلت.`,[["我昨天去了市场。","امبارح رحت عالسوق."],["他已经走了。","هو راح خلص."],["你吃饭了吗？","أكلت؟"],["我买了一本书。","اشتريت كتاب."]],[["我昨天去___市场。",["了","的","吗"],"了"],["他已经走___。",["了","的","在"],"了"],["你吃饭___吗？",["了","的","在"],"了"],["我买___一本书。",["了","的","是"],"了"]]),
+ZL("zh_hui","A2","会 / 能 / 想",`${E("会")} = بعرف (مهارة): ${E("我会说中文")}. ${E("能")} = بقدر: ${E("你能帮我吗？")}. ${E("想")} = بدي: ${E("我想喝咖啡")}.`,[["我会说中文。","بعرف أحكي صيني."],["你能帮我吗？","بتقدر تساعدني؟"],["我想喝咖啡。","بدي أشرب قهوة."],["他不会游泳。","هو ما بيعرف يسبح."]],[["我___说中文。(بعرف)",["会","是","在"],"会"],["你___帮我吗？(بتقدر)",["能","是","的"],"能"],["我___喝咖啡。(بدي)",["想","是","在"],"想"],["他不___游泳。",["会","是","的"],"会"]]),
+ZL("zh_bi","A2","المقارنة 比",`${E("A 比 B + صفة")}: ${E("我姐姐比我大")} = أختي أكبر مني. ما بنحط ${E("很")} بعد ${E("比")}.`,[["我姐姐比我大。","أختي أكبر مني."],["今天比昨天冷。","اليوم أبرد من امبارح."],["他跑得比我快。","هو بيركض أسرع مني."],["这个比那个贵。","هاد أغلى من هداك."]],[["我姐姐___我大。",["比","跟","和"],"比"],["今天比昨天___。",["冷","很冷","冷了"],"冷"],["他跑得___我快。",["比","和","的"],"比"],["这个比那个___。",["贵","很贵","太贵了"],"贵"]]),
+ZL("zh_guo","B1","التجربة 过",`${E("过 guo")} بعد الفعل = جرّبت الشي قبل هيك: ${E("我去过中国")} = رحت على الصين (مرة). والنفي ${E("没…过")}: ${E("我没吃过")} = عمري ما أكلت.`,[["我去过中国。","رحت على الصين قبل."],["你吃过北京烤鸭吗？","أكلت بط بكين قبل؟"],["我从来没看过这个电影。","عمري ما شفت هالفيلم."],["他来过这儿两次。","إجا لهون مرتين."]],[["我去___中国。",["过","了","的"],"过"],["你吃___北京烤鸭吗？",["过","在","的"],"过"],["我从来没看___这个电影。",["过","了","在"],"过"],["他来___这儿两次。",["过","的","在"],"过"]]),
+ZL("zh_ruguo","B1","الشرط 如果…就",`${E("如果 A，就 B")} = إذا A، بيصير B: ${E("如果下雨，我们就不去了")} = إذا شتت ما رح نروح.`,[["如果下雨，我们就不去了。","إذا شتت ما رح نروح."],["如果你有时间，就来找我。","إذا عندك وقت تعال لعندي."],["如果你每天练习，就会进步。","إذا تدربت كل يوم بتتحسن."],["如果明天不忙，我就去看你。","إذا بكرة مش مشغول بجي أشوفك."]],[["___下雨，我们就不去了。",["如果","因为","但是"],"如果"],["如果你有时间，___来找我。",["就","才","都"],"就"],["___你每天练习，就会进步。",["如果","虽然","所以"],"如果"],["如果明天不忙，我___去看你。",["就","也","才"],"就"]]),
+ZL("zh_yinwei","B1","السبب والاستدراك 因为 / 所以 / 但是",`${E("因为 A，所以 B")} = لأنه A، عشان هيك B. و${E("虽然 A，但是 B")} = رغم A، بس B.`,[["因为下雨，所以我没去。","لأنه شتت ما رحت."],["因为很累，所以我早睡了。","لأني تعبان نمت بكير."],["虽然很难，但是我很喜欢。","رغم إنها صعبة بس بحبها."],["他没来，因为他生病了。","ما إجا لأنه مريض."]],[["___下雨，所以我没去。",["因为","如果","虽然"],"因为"],["因为很累，___我早睡了。",["所以","但是","就"],"所以"],["虽然很难，___我很喜欢。",["但是","所以","因为"],"但是"],["他没来，___他生病了。",["因为","所以","如果"],"因为"]])];
+const STORIES_ZH=[
+{id:"zhs1",lv:"A1",t:"我的一天",ar:"يومي",en:["我叫奥马尔。我和家人住在加沙。我每天七点起床。","早饭我吃面包、奶酪和橄榄。妈妈做茶。","然后我去学校。我的学校离家很近。我很喜欢我的老师。"],tr:["اسمي عمر. ساكن مع عيلتي بغزة. كل يوم بصحى الساعة سبعة.","عالفطور بوكل خبز وجبنة وزيتون. أمي بتعمل شاي.","بعدين بروح عالمدرسة. مدرستي قريبة من البيت. بحب أستاذي كتير."],
+ q:[["奥马尔住在哪儿？",["加沙","北京","上海"],"加沙"],["他早饭吃什么？",["面包、奶酪和橄榄","比萨饼","汤"],"面包、奶酪和橄榄"],["学校远吗？",["很近","很远","不知道"],"很近"]]},
+{id:"zhs2",lv:"A1",t:"在市场",ar:"في السوق",en:["今天是星期六。安娜和妈妈去市场。","她们买了西红柿、苹果和橙子。苹果很漂亮。","安娜问：“这个多少钱？”卖东西的人说：“十块。”"],tr:["اليوم السبت. آنا وأمها رايحين عالسوق.","اشتروا بندورة وتفاح وبرتقال. التفاح حلو كتير.","آنا سألت: «قديش هاد؟» البياع قال: «عشرة يوان»."],
+ q:[["今天星期几？",["星期六","星期一","星期五"],"星期六"],["她们买了什么？",["西红柿、苹果和橙子","面包和牛奶","肉和米饭"],"西红柿、苹果和橙子"],["多少钱？",["十块","五块","二十块"],"十块"]]},
+{id:"zhs3",lv:"A2",t:"北京之旅",ar:"رحلة إلى بكين",en:["去年夏天，我和家人去了北京。我们坐飞机去的。","我们参观了长城和故宫，还吃了北京烤鸭。","我最喜欢长城。明年我还想再去。"],tr:["الصيف الماضي رحت مع عيلتي على بكين. رحنا بالطيارة.","زرنا سور الصين العظيم والمدينة المحرمة، وأكلنا بط بكين.","أكثر إشي حبيته السور العظيم. السنة الجاية بدي أرجع."],
+ q:[["他们怎么去北京？",["坐飞机","坐火车","开车"],"坐飞机"],["他们吃了什么？",["北京烤鸭","比萨饼","汤"],"北京烤鸭"],["他最喜欢什么？",["长城","故宫","天气"],"长城"]]},
+{id:"zhs4",lv:"B1",t:"新工作",ar:"الشغل الجديد",en:["大学毕业以后，莉娜找了六个月的工作。她发了很多简历，但是没有人回复。","终于，一家软件公司请她去面试。她很紧张，但是准备得很好。","面试的时候，她很诚实，还介绍了自己的经验。一个星期以后，她得到了这份工作。"],tr:["بعد التخرج، لينا دورت على شغل ست شهور. بعتت سير ذاتية كتير بس ما حدا رد.","أخيراً شركة برمجيات عزمتها على مقابلة. كانت متوترة بس تحضرت منيح.","بالمقابلة كانت صادقة وحكت عن خبرتها. بعد أسبوع أخدت الشغل."],
+ q:[["莉娜找了多长时间的工作？",["六个月","一年","两个月"],"六个月"],["哪家公司请她面试？",["软件公司","银行","医院"],"软件公司"],["她什么时候得到了工作？",["一个星期以后","第二天","一个月以后"],"一个星期以后"]]}];
+const DIALOGS_ZH=[
+{id:"zhd1",lv:"A1",t:"تعارف",icon:"🤝",a:"小明",b:"丽丽",l:[["a","你好！我叫小明。","مرحبا! اسمي شياو مينغ."],["b","你好，小明！我叫丽丽。很高兴认识你。","أهلاً شياو مينغ! أنا لي لي. تشرفت."],["a","我也很高兴认识你。你是哪国人？","وأنا كمان. من أي بلد إنتِ؟"],["b","我是中国人。你呢？","أنا صينية. وإنت؟"],["a","我是巴勒斯坦人。我在学中文。","أنا فلسطيني. عم بتعلم صيني."],["b","太好了！你的中文很好。","رائع! صينيك منيح كتير."],["a","谢谢！","شكراً!"]]},
+{id:"zhd2",lv:"A1",t:"في الكافيه",icon:"☕",a:"服务员",b:"顾客",l:[["a","你好！你想喝什么？","أهلاً! شو بدك تشرب؟"],["b","我要一杯咖啡。","بدي كاسة قهوة."],["a","要加牛奶吗？","بدك حليب؟"],["b","要，谢谢。还要一块蛋糕。","آه شكراً. وكمان قطعة كيك."],["a","好的。在这儿吃还是带走？","تمام. هون ولا سفري؟"],["b","在这儿吃。一共多少钱？","هون. قديش المجموع؟"],["a","一共三十五块。","المجموع خمسة وثلاثين يوان."]]},
+{id:"zhd3",lv:"A2",t:"السؤال عن الطريق",icon:"🗺️",a:"游客",b:"路人",l:[["a","请问，博物馆在哪儿？","لو سمحت، وين المتحف؟"],["b","一直往前走，然后往左拐。","امشي دغري، بعدين لف شمال."],["a","远吗？","بعيد؟"],["b","不远，走路十分钟。","لا، عشر دقايق مشي."],["a","有公共汽车吗？","في باص؟"],["b","有，五路车在拐角那儿停。","آه، باص خمسة بيوقف عالزاوية."],["a","非常感谢！","شكراً كتير!"],["b","不客气！","العفو!"]]},
+{id:"zhd4",lv:"B1",t:"مقابلة عمل",icon:"💼",a:"经理",b:"应聘者",l:[["a","请简单介绍一下你自己。","عرّف عن حالك باختصار لو سمحت."],["b","好的。我是电脑工程师，有三年的工作经验。","تمام. أنا مهندس كمبيوتر وعندي خبرة ثلاث سنين."],["a","你为什么想来我们公司工作？","ليش بدك تشتغل بشركتنا؟"],["b","因为你们的项目很有意思，我也想继续学习。","لأنه مشاريعكم مثيرة وبدي أكمّل أتعلم."],["a","你最大的缺点是什么？","شو أكبر عيب فيك؟"],["b","有时候我太追求完美，但是我在努力改进。","أحياناً بدقق زيادة، بس عم بحاول أتحسن."],["a","谢谢你。我们会尽快联系你。","شكراً. رح نتواصل معك بأسرع وقت."]]}];
+const PLACE_ZH=[
+["我___学生。",["是","在","有"],"是","A1"],["你是学生___？",["吗","不","的"],"吗","A1"],["这是我___书。",["的","是","了"],"的","A1"],["我___两个哥哥。",["有","是","在"],"有","A1"],
+["水",["ماء","خبز","حليب"],"ماء","A1","vocab"],["红色",["أحمر","أزرق","أخضر"],"أحمر","A1","vocab"],["你好吗？",["你好吗？","你好！","你是谁？"],"你好吗？","A1","listen"],
+["两___书",["本","个","杯"],"本","A2"],["我昨天去___市场。",["了","的","吗"],"了","A2"],["我姐姐___我大。",["比","跟","和"],"比","A2"],["我___说中文。",["会","是","在"],"会","A2"],
+["机场",["مطار","محطة","ميناء"],"مطار","A2","vocab"],["贵",["غالي","رخيص","جديد"],"غالي","A2","vocab"],["这个多少钱？",["这个多少钱？","这个是什么？","那个多少钱？"],"这个多少钱？","A2","listen"],
+["我去___中国。",["过","了","的"],"过","B1"],["___下雨，我们就不去了。",["如果","因为","但是"],"如果","B1"],["因为很累，___我早睡了。",["所以","但是","就"],"所以","B1"],["他没来，___他生病了。",["因为","所以","如果"],"因为","B1"],
+["经验",["خبرة","تجربة علمية","مقابلة"],"خبرة","B1","vocab"],["气候",["مناخ","طقس اليوم","بيئة"],"مناخ","B1","vocab"],["我同意你的看法。",["我同意你的看法。","我不同意你的看法。","我同意他的看法。"],"我同意你的看法。","B1","listen"]];
 /* ================== TYPING PRACTICE (اكتب الجملة) + PERSONAL PLAN ================== */
 let TY={mode:"sentence",item:null,typed:"",hints:0,done:false,shake:false};
-const tyTarget=()=>TY.item?TY.item.en:"";
+function tyTarget(){return TY.item?(LANG==="zh"?zhPlain(TY.item.en,true):TY.item.en):""}
 function newTY(){TY.item=TY.mode==="word"?pick(poolWords().filter(w=>/^\p{L}[\p{L}' ]{2,16}$/u.test(w.en))):pick(poolSent());
   TY.typed="";TY.hints=0;TY.done=false;AFTER=()=>{speak(TY.item.en);focusTY()}}
 function focusTY(){const i=$("#tyIn");if(i){i.focus({preventScroll:true});try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}}
@@ -3100,8 +3213,8 @@ function vTyping(){
   const t=tyTarget(),r=tyRender(),pct=Math.round(100*r.ok/t.length),w=TY.mode==="word"?TY.item:null;
   return `<section class="panel">${topbar("أكمل الجملة","اسمع، وبعدين اكتبها بكيبورد جهازك — كل حرف صح بيتلون")}
     ${seg("tymode",TY.mode,[["sentence","جمل"],["word","كلمات"]])}
-    <div class="ty-head">${w?picFrame(w.en,74):""}<div class="ty-ar">${esc(TY.item.ar)}</div>
-      <div class="row" style="justify-content:center">${sayBtn(t)}${slowBtn(t)}</div></div>
+    <div class="ty-head">${w?picFrame(w.en,74):""}${LANG==="zh"?`<div class="zh-big">${esc(TY.item.en)}</div>`:""}<div class="ty-ar">${esc(TY.item.ar)}</div>
+      <div class="row" style="justify-content:center">${sayBtn(TY.item.en)}${slowBtn(TY.item.en)}</div></div>
     <div class="ty-wrap ${TY.shake?"shake":""}" data-act="tyfocus">
       <div class="ty-text" dir="ltr">${r.html}</div>
       <input id="tyIn" class="ty-input" data-keep type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="text" aria-label="اكتب هنا" ${TY.done?"disabled":""}>
@@ -3117,7 +3230,7 @@ function tyInput(v){const t=tyTarget();
   if(v.length>TY.typed.length&&last>=0&&tyNorm(v[last])!==tyNorm(t[last])){TY.shake=true;sfx("bad");setTimeout(()=>{TY.shake=false;const el=document.querySelector(".ty-wrap");if(el)el.classList.remove("shake")},400)}
   TY.typed=v;
   const done=v.length===t.length&&[...t].every((c,i)=>tyNorm(v[i])===tyNorm(c));
-  if(done&&!TY.done){TY.done=true;const xp=Math.max(3,Math.min(12,Math.round(t.length/6)-TY.hints*2));addXP(xp);speak(t);S.st.typed=(S.st.typed||0)+1;save()}
+  if(done&&!TY.done){TY.done=true;const xp=Math.max(3,Math.min(12,Math.round(t.length/6)-TY.hints*2));addXP(xp);speak(TY.item.en);S.st.typed=(S.st.typed||0)+1;save()}
   else if(!done&&!TY.done&&v.length&&tyNorm(v[v.length-1])===tyNorm(t[v.length-1]))sfx("tap");
   render();if(!TY.done)focusTY()}
 Object.assign(A,{
@@ -3168,12 +3281,14 @@ const LANGS={en:{name:"الإنجليزي",flag:"🇬🇧",tts:"en-US",en:"Engli
              tr:{name:"التركي",flag:"🇹🇷",tts:"tr-TR",en:"Turkish",sub:"750 كلمة، 15 درس قواعد، قصص، محادثات، امتحانات وتوكي"},
              es:{name:"الإسباني",flag:"🇪🇸",tts:"es-ES",en:"Spanish",sub:"750 كلمة، 14 درس قواعد، قصص، محادثات، امتحانات وتوكي"},
              de:{name:"الألماني",flag:"🇩🇪",tts:"de-DE",en:"German",sub:"750 كلمة، 14 درس قواعد، قصص، محادثات، امتحانات وتوكي"},
-             fr:{name:"الفرنسي",flag:"🇫🇷",tts:"fr-FR",en:"French",sub:"جديد: 750 كلمة، 14 درس قواعد، قصص، محادثات، امتحانات وتوكي"}};
-const LAR=()=>({en:"الإنجليزي",tr:"التركي",es:"الإسباني",de:"الألماني",fr:"الفرنسي"})[LANG],LBI=()=>({en:"بالإنجليزي",tr:"بالتركي",es:"بالإسباني",de:"بالألماني",fr:"بالفرنسي"})[LANG],LADJ=()=>({en:"الإنجليزية",tr:"التركية",es:"الإسبانية",de:"الألمانية",fr:"الفرنسية"})[LANG],LNOUN=()=>({en:"إنجليزي",tr:"تركي",es:"إسباني",de:"ألماني",fr:"فرنسي"})[LANG];
+             fr:{name:"الفرنسي",flag:"🇫🇷",tts:"fr-FR",en:"French",sub:"750 كلمة، 14 درس قواعد، قصص، محادثات، امتحانات وتوكي"},
+             zh:{name:"الصيني",flag:"🇨🇳",tts:"zh-CN",en:"Chinese",sub:"جديد: 500+ كلمة بالبينيين، 13 درس، قصص، محادثات، امتحانات وتوكي"}};
+const LAR=()=>({en:"الإنجليزي",tr:"التركي",es:"الإسباني",de:"الألماني",fr:"الفرنسي",zh:"الصيني"})[LANG],LBI=()=>({en:"بالإنجليزي",tr:"بالتركي",es:"بالإسباني",de:"بالألماني",fr:"بالفرنسي",zh:"بالصيني"})[LANG],LADJ=()=>({en:"الإنجليزية",tr:"التركية",es:"الإسبانية",de:"الألمانية",fr:"الفرنسية",zh:"الصينية"})[LANG],LNOUN=()=>({en:"إنجليزي",tr:"تركي",es:"إسباني",de:"ألماني",fr:"فرنسي",zh:"صيني"})[LANG];
 const LDATA={tr:()=>({W:TRW,SENT:SENT_TR,PHRASES:PHRASES_TR,LESSONS:LESSONS_TR,DIALOGS:DIALOGS_TR,STORIES:STORIES_TR,PLACE:PLACE_TR,START:TUTOR_TR_START,QWERTY:["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]}),
              es:()=>({W:ESW,SENT:SENT_ES,PHRASES:PHRASES_ES,LESSONS:LESSONS_ES,DIALOGS:DIALOGS_ES,STORIES:STORIES_ES,PLACE:PLACE_ES,START:TUTOR_ES_START,QWERTY:["qwertyuiop","asdfghjklñ","zxcvbnm"]}),
              de:()=>({W:DEW,SENT:SENT_DE,PHRASES:PHRASES_DE,LESSONS:LESSONS_DE,DIALOGS:DIALOGS_DE,STORIES:STORIES_DE,PLACE:PLACE_DE,START:TUTOR_DE_START,QWERTY:["qwertzuiopü","asdfghjklöä","yxcvbnmß"]}),
-             fr:()=>({W:FRW,SENT:SENT_FR,PHRASES:PHRASES_FR,LESSONS:LESSONS_FR,DIALOGS:DIALOGS_FR,STORIES:STORIES_FR,PLACE:PLACE_FR,START:TUTOR_FR_START,QWERTY:["azertyuiop","qsdfghjklm","wxcvbn","éèêàçùâîôû"]})};
+             fr:()=>({W:FRW,SENT:SENT_FR,PHRASES:PHRASES_FR,LESSONS:LESSONS_FR,DIALOGS:DIALOGS_FR,STORIES:STORIES_FR,PLACE:PLACE_FR,START:TUTOR_FR_START,QWERTY:["azertyuiop","qsdfghjklm","wxcvbn","éèêàçùâîôû"]}),
+             zh:()=>({W:ZHW,SENT:SENT_ZH,PHRASES:PHRASES_ZH,LESSONS:LESSONS_ZH,DIALOGS:DIALOGS_ZH,STORIES:STORIES_ZH,PLACE:PLACE_ZH,START:TUTOR_ZH_START,QWERTY:["qwertyuiop","asdfghjkl","zxcvbnm"]})};
 let LANG="en";
 const LNAME_EN=()=>LANGS[LANG].en;
 let META={cur:"en",picked:false};
@@ -3185,7 +3300,8 @@ function saveMeta(){try{localStorage.setItem(baseKey()+"|meta",JSON.stringify(ME
 const foldES=s=>s.normalize("NFD").replace(/[\u0300-\u0302\u0308\u0301]/g,"").normalize("NFC").replace(/ñ/g,"n").replace(/¿/g,"?").replace(/¡/g,"!");
 const foldDE=s=>s.replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"s").replace(/Ä/g,"A").replace(/Ö/g,"O").replace(/Ü/g,"U").replace(/[„“”]/g,'"');
 const foldFR=s=>s.replace(/œ/g,"o").replace(/Œ/g,"O").normalize("NFD").replace(/[\u0300-\u036f]/g,"").normalize("NFC").replace(/[«»]/g,'"');
-const foldLang=s=>LANG==="tr"?foldTR(s):LANG==="es"?foldES(s):LANG==="de"?foldDE(s):LANG==="fr"?foldFR(s):s;
+const foldZH=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").normalize("NFC").replace(/ü/g,"u").replace(/v/g,"u");
+const foldLang=s=>LANG==="tr"?foldTR(s):LANG==="es"?foldES(s):LANG==="de"?foldDE(s):LANG==="fr"?foldFR(s):LANG==="zh"?foldZH(s):s;
 const foldTR=s=>s.replace(/ı/g,"i").replace(/İ/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").replace(/â/g,"a").replace(/î/g,"i").replace(/û/g,"u");
 
 /* ---------- content snapshots & swapping (arrays are swapped in place) ---------- */
@@ -3219,17 +3335,20 @@ function switchLang(l,o){o=o||{};if(!LANGS[l])return;
   if(!o.silent){route="home";header();render();window.scrollTo(0,0);if(typeof syncNow==="function")syncNow();toast(`${LANGS[l].flag} صرت تتعلم ${LANGS[l].name}`)}}
 
 /* ---------- language-aware text helpers (override core ones) ---------- */
+const NUM_ZH={"0":"零","1":"一","2":"二","3":"三","4":"四","5":"五","6":"六","7":"七","8":"八","9":"九","10":"十"};
 const NUM_FR={"0":"zéro","1":"un","2":"deux","3":"trois","4":"quatre","5":"cinq","6":"six","7":"sept","8":"huit","9":"neuf","10":"dix","11":"onze","12":"douze","20":"vingt","50":"cinquante","100":"cent"};
 const NUM_DE={"0":"null","1":"eins","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun","10":"zehn","11":"elf","12":"zwölf","20":"zwanzig","50":"fünfzig","100":"hundert"};
 const NUM_ES={"0":"cero","1":"uno","2":"dos","3":"tres","4":"cuatro","5":"cinco","6":"seis","7":"siete","8":"ocho","9":"nueve","10":"diez","11":"once","12":"doce","20":"veinte","50":"cincuenta","100":"cien"};
 const NUM_TR={"0":"sıfır","1":"bir","2":"iki","3":"üç","4":"dört","5":"beş","6":"altı","7":"yedi","8":"sekiz","9":"dokuz","10":"on","11":"on bir","12":"on iki","20":"yirmi","50":"elli","100":"yüz"};
-function norm(s){const n=LANG==="tr"?NUM_TR:LANG==="es"?NUM_ES:LANG==="de"?NUM_DE:LANG==="fr"?NUM_FR:NUM;const low=LANG==="tr"?String(s).toLocaleLowerCase("tr-TR"):String(s).toLowerCase();
+function norm(s){if(LANG==="zh"){return String(s).replace(/[0-9]/g,d=>NUM_ZH[d]).replace(/[^\p{Script=Han}\p{L}\p{N}]/gu," ").replace(/(\p{Script=Han})/gu," $1 ").replace(/\s+/g," ").trim().toLowerCase()}
+  const n=LANG==="tr"?NUM_TR:LANG==="es"?NUM_ES:LANG==="de"?NUM_DE:LANG==="fr"?NUM_FR:NUM;const low=LANG==="tr"?String(s).toLocaleLowerCase("tr-TR"):String(s).toLowerCase();
   let r=low.replace(/[’‘`]/g,"'").replace(/[^\p{L}\p{N}' ]/gu," ").replace(/\s+/g," ").trim().split(" ").map(w=>n[w]||w).join(" ");return foldLang(r)}
 function voiceScore(v){const n=v.name,l=v.lang.replace("_","-"),pre=S.accent.slice(0,2);let s=0;
   if(l===S.accent)s+=50;else if(l.toLowerCase().startsWith(pre))s+=12;else return -999;
   if(/natural|neural/i.test(n))s+=45;if(/online/i.test(n))s+=20;if(/google/i.test(n))s+=30;if(/premium|enhanced/i.test(n))s+=35;
   if(LANG==="en"&&/samantha|ava|allison|susan|zoe|aria|jenny|guy|libby|sonia|ryan|daniel|serena|karen|moira|tessa|nicky|evan|joelle|nathan|michelle|christopher|emma|brian/i.test(n))s+=18;
   if(LANG==="tr"&&/yelda|emel|ahmet|filiz|seda|tolga|cem/i.test(n))s+=18;
+  if(LANG==="zh"&&/tingting|ting-ting|xiaoxiao|yunxi|huihui|kangkang|yaoyao|meijia|lili|xiaoyi|yunyang/i.test(n))s+=18;
   if(LANG==="fr"&&/thomas|amelie|amélie|audrey|aurelie|aurélie|marie|julie|paul|henri|denise|eloise|éloise|remy|rémy|vivienne|celeste/i.test(n))s+=18;
   if(LANG==="de"&&/anna|markus|petra|yannick|helena|katja|conrad|hedda|stefan|vicki|seraphina|florian|amala/i.test(n))s+=18;
   if(LANG==="es"&&/monica|mónica|jorge|paulina|lucia|lucía|elvira|alvaro|álvaro|helena|laura|pablo|dalia|marisol/i.test(n))s+=18;
@@ -3246,8 +3365,8 @@ Rules:
 {const _we=wordEq;wordEq=function(a,b){if(LANG!=="en"){a=foldLang(a);b=foldLang(b)}return _we(a,b)}}
 
 /* ---------- hide English-only sections while learning Turkish ---------- */
-const EN_ONLY=new Set(["verbs","sounds"]);
-{const _tg=tileGrid;tileGrid=function(items){return _tg(LANG==="en"?items:items.filter(a=>!EN_ONLY.has(a[0])))}}
+const EN_ONLY=new Set(["verbs","sounds"]),ZH_HIDE=new Set(["verbs","sounds","dictation","writing"]);
+{const _tg=tileGrid;tileGrid=function(items){return _tg(LANG==="en"?items:items.filter(a=>!(LANG==="zh"?ZH_HIDE:EN_ONLY).has(a[0])))}}
 {const _vm=vMe;vMe=function(){let h=_vm();if(LANG!=="en")h=h.replace(/<div class="set"><label for="setAcc">[\s\S]*?<\/select><\/div>/,"").replace(/<div class="set"><span>نطق الكلمات بصوت إنسان حقيقي<\/span>[\s\S]*?<\/div><\/div>/,"");
   return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="langsheet"><span class="lf">${LANGS[LANG].flag}</span><b>عم تتعلم ${LANGS[LANG].name}</b><span>غيّر اللغة ›</span></button><section class="rankcard">`)};VIEWS.me=vMe}
 
@@ -3275,6 +3394,45 @@ Object.assign(A,{
 /* ---------- initial language (artifact / local) ---------- */
 loadMeta();
 if(META.cur&&META.cur!=="en"&&LANGS[META.cur]&&!(typeof window.APP_CONFIG!=="undefined")){applyContent(META.cur);LANG=META.cur;KEY=langKey(LANG);S=loadState(LANG)}
+/* ================== CHINESE SUPPORT: pinyin, typing/hangman via pinyin, speech ================== */
+const PP_URL="https://cdn.jsdelivr.net/npm/pinyin-pro@3.29.4/dist/index.js";
+let ppLoading=false;
+function loadPinyin(){if(window.pinyinPro||ppLoading)return;ppLoading=true;const s=document.createElement("script");s.src=PP_URL;s.onload=()=>{if(LANG==="zh")render()};s.onerror=()=>{ppLoading=false};document.head.appendChild(s)}
+function pyOf(hz,plain){hz=String(hz);if(PY_ZH[hz])return plain?foldZH(PY_ZH[hz]).replace(/'/g," "):PY_ZH[hz];
+  if(window.pinyinPro){try{return pinyinPro.pinyin(hz,{toneType:plain?"none":"symbol",nonZh:"consecutive"}).replace(/\s+([。，？！、：；“”])/g,"$1").replace(/[。]/g,".").replace(/[，、]/g,",").replace(/？/g,"?").replace(/！/g,"!").replace(/：/g,":").replace(/[“”]/g,'"')}catch(e){}}return ""}
+function zhPlain(hz,forTyping){const p=pyOf(hz,true);if(!p)return "";return foldZH(p).toLowerCase().replace(/[^a-z ]/g," ").replace(/\s+/g," ").trim()}
+/* pinyin annotations under Chinese text */
+function annotatePinyin(){if(LANG!=="zh")return;if(!window.pinyinPro)loadPinyin();
+  document.querySelectorAll(".guide .w,.exitem .en,.bub .en,.story p.en,.lesson-ex .e b,.ply-sent,.zh-big,.phr-en,.card-en").forEach(el=>{
+    if(el.dataset.py||el.classList.contains("nopy"))return;const t=el.textContent.trim();if(!/\p{Script=Han}/u.test(t))return;const p=pyOf(t);if(!p)return;el.dataset.py=1;
+    el.insertAdjacentHTML("afterend",`<div class="py" dir="ltr">${esc(p)}</div>`)})}
+function fillIPA(){document.querySelectorAll("[data-ipa]").forEach(el=>{if(el.dataset.done)return;
+  if(LANG==="zh"){const p=pyOf(el.dataset.ipa);if(p){el.dataset.done=1;el.textContent=p;el.classList.add("show")}else loadPinyin();return}
+  if(LANG!=="en")return;el.dataset.done=1;wordInfo(el.dataset.ipa).then(i=>{if(i&&i.ipa){el.textContent=i.ipa;el.classList.add("show")}})})}
+{const _r=render;render=function(){_r();if(LANG==="zh"){annotatePinyin();fillIPA()}}}
+/* speak: never read pinyin/latin aloud in Chinese */
+{const _sp=speak;speak=function(t,o){if(LANG==="zh")t=String(t).replace(/\([^)]*\)/g," ").replace(/[A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüÜ'’]+/g," ").replace(/\s+/g," ").trim()||String(t);return _sp(t,o)}}
+/* typing: pinyin; sentence needs pinyin library, otherwise fall back to words */
+{const _n=newTY;newTY=function(){if(LANG==="zh"){if(!window.pinyinPro)loadPinyin();
+    const want=TY.mode==="sentence"&&window.pinyinPro;TY.item=want?pick(poolSent()):pick(poolWords().filter(w=>PY_ZH[w.en]));
+    TY.typed="";TY.hints=0;TY.done=false;AFTER=()=>{speak(TY.item.en);focusTY()};return}
+  _n()}}
+/* hangman on pinyin letters */
+{const _gs=gStart;gStart=function(g){_gs(g);if(g==="hang"&&LANG==="zh"){const pool=poolWords().filter(w=>PY_ZH[w.en]&&/^[a-z]{3,12}$/.test(zhPlain(w.en).replace(/ /g,"")));
+    const w=pick(pool.length?pool:poolWords().filter(w=>PY_ZH[w.en]));GM.h={w:{en:zhPlain(w.en).replace(/ /g,""),ar:w.ar,hz:w.en},g:new Set(),lives:6,hints:0,hinted:new Set()};render()}}}
+/* tutor: add pinyin after Chinese sentences */
+{const _tr=tuRules;tuRules=function(sc){let r=_tr(sc);if(LANG==="zh"&&sc.role!=="EXPLAIN")r=r.replace(/Reply ONLY in natural, simple Chinese/,"Reply ONLY in natural, simple Simplified Chinese, and after each Chinese sentence add its pinyin with tone marks in parentheses,");return r}}
+if(LANG==="zh")loadPinyin();
+{const _sl=switchLang;switchLang=function(l,o){_sl(l,o);if(l==="zh")loadPinyin()}}
+/* speech matching character by character for Chinese */
+{const _bm=bestMatch;bestMatch=function(target,alts){if(LANG!=="zh")return _bm(target,alts);
+  const isH=c=>/\p{Script=Han}/u.test(c),tc=[...target].filter(isH);let best=null;
+  for(const h of alts){const hc=[...String(h).replace(/[0-9]/g,d=>NUM_ZH[d])].filter(isH),n=tc.length,m=hc.length,dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+    for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=tc[i]===hc[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+    const r=new Array(n).fill(false);let i=0,j=0;while(i<n&&j<m){if(tc[i]===hc[j]){r[i]=true;i++;j++}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++}
+    let k=0;const html=[...target].map(c=>isH(c)?`<span class="${r[k++]?"ok":"miss"}">${esc(c)}</span>`:esc(c)).join("");
+    const pct=n?Math.round(100*r.filter(Boolean).length/n):0;if(!best||pct>best.pct)best={pct,html,heard:h}}
+  return best}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -3377,7 +3535,7 @@ function vAuth(){
       <div class="say-hi"><span class="en">Hi! I'm Toki</span> 👋 أنا معلمك</div><div>${mascot("happy",150)}</div>
       <h1>تعلّم الإنجليزي وإنت بتحكيه</h1>
       <p>محادثة صوتية مع معلم ذكي، ومسار على قد مستواك، وكلمات وقواعد وقصص وألعاب، كله بالعربي وبمكان واحد.</p>
-      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷🇪🇸🇩🇪🇫🇷 جديد: تعلّم التركي والإسباني والألماني والفرنسي كمان!</p>
+      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷🇪🇸🇩🇪🇫🇷🇨🇳 جديد: تعلّم التركي والإسباني والألماني والفرنسي والصيني كمان!</p>
       <div class="row" style="justify-content:center"><button class="btn hl big" data-act="landgo" data-m="signup">ابدأ مجاناً</button><button class="btn ghost big" data-act="landgo" data-m="login">عندي حساب</button></div>
       ${installBtn()}
     </div></section>
