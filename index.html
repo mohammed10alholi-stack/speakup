@@ -4854,7 +4854,7 @@ async function ctUrl(text){const lang=LANG,k=lang+"|"+text;if(CT.cache[k])return
   try{const pub=`${CFG.SUPABASE_URL}/storage/v1/object/public/tts/${lang}/${await ctHash(lang,text)}.wav`;
     const h=await fetch(pub,{method:"HEAD"}).catch(()=>null);if(h&&h.ok)return CT.cache[k]=pub;
     const r=await Promise.race([window.liveApi("tts",{text,lang}),new Promise(res=>setTimeout(()=>res({error:"timeout"}),9000))]);
-    if(r&&r.url)return CT.cache[k]=r.url;if(r&&r.error&&r.error!=="timeout")CT.bad[k]=1}catch(e){}
+    if(r&&r.url)return CT.cache[k]=r.url;if(r&&r.error){CT.lastErr=(r.detail||r.error);if(r.error!=="timeout")CT.bad[k]=1}}catch(e){CT.lastErr=String(e)}
   return null}
 const AR_CHARS=/[\u0600-\u06FF]/;
 {const _speak=speak;speak=function(t,o={}){
@@ -4872,15 +4872,19 @@ CT.pw=null;
 function ctItems(){const items=[];abcData().groups.forEach(g=>g.L.forEach(it=>{ctLetterTexts(it).forEach(x=>{if(!items.includes(x))items.push(x)})}));return items}
 async function ctPrewarm(){if(!CT.on()||(CT.pw&&CT.pw.running))return;const items=ctItems(),lang=LANG;
   CT.pw={lang,total:items.length,ok:0,fail:0,running:true};Object.keys(CT.bad).forEach(k=>{if(k.startsWith(lang+"|"))delete CT.bad[k]});render();
+  let streak=0;CT.lastErr="";
   for(const x of items){if(LANG!==lang)break;let u=await ctUrl(x);
-    if(!u){await new Promise(r=>setTimeout(r,5000));delete CT.bad[lang+"|"+x];u=await ctUrl(x)}
-    u?CT.pw.ok++:CT.pw.fail++;const el=document.getElementById("ctpw");if(el)el.innerHTML=ctPwHtml()}
+    if(!u){await new Promise(r=>setTimeout(r,6000));delete CT.bad[lang+"|"+x];u=await ctUrl(x)}
+    if(u){CT.pw.ok++;streak=0}else{CT.pw.fail++;streak++}
+    const el=document.getElementById("ctpw");if(el)el.innerHTML=ctPwHtml();
+    if(streak>=3){CT.pw.stopped=true;CT.pw.err=CT.lastErr||"";CT.pw.fail=items.length-CT.pw.ok;break}
+    await new Promise(r=>setTimeout(r,1500))}
   CT.pw.running=false;render();
   toast(CT.pw.fail?`⚠️ جهزت ${CT.pw.ok} من ${CT.pw.total}. اضغط مرة ثانية بعدين لتكمّل الباقي`:`✅ كل أصوات حروف ${LAR()} جاهزة (${CT.pw.total})`)}
 function ctPwHtml(){const p=CT.pw;if(!p||p.lang!==LANG)return `<b>جهّز أصوات كل الحروف (للأدمن)</b><small>بتتولّد مرة وحدة وبتصير فورية للكل</small>`;
   const pct=Math.round(100*(p.ok+p.fail)/p.total);
   return p.running?`<b>عم بجهّز… ${p.ok+p.fail} من ${p.total}</b><span class="qbar"><i style="width:${pct}%"></i></span><small>خليك بالموقع لحد ما يخلص (تقريباً ${Math.ceil((p.total-p.ok-p.fail)*3/60)} دقيقة)</small>`
-    :p.fail?`<b>⚠️ جاهز ${p.ok} من ${p.total}</b><small>${p.fail} ما زبطوا (غالباً حد Google اليومي). اضغط لتكمّل الباقي</small>`:`<b>✅ كل الأصوات جاهزة (${p.total})</b><small>المشتركين بيسمعوها فورية</small>`}
+    :p.fail?`<b>⚠️ جاهز ${p.ok} من ${p.total}</b><small>${p.stopped?"وقفت لأنه Google رفض 3 مرات ورا بعض.":""} ${/quota|exhaust|429|rate/i.test(p.err||"")?"السبب: خلص حد Google المجاني لليوم.":""} اضغط لتكمّل الباقي بعدين</small>${p.err?`<small dir="ltr" style="text-align:left;opacity:.8">${esc(String(p.err).slice(0,160))}</small>`:""}`:`<b>✅ كل الأصوات جاهزة (${p.total})</b><small>المشتركين بيسمعوها فورية</small>`}
 {const _va=VIEWS.abc;VIEWS.abc=function(){let h=_va();if(!AB.g&&CT.on()&&typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin")
   h+=`<button class="plan-task" data-act="ctprewarm"><span class="pi">⚡</span><span class="pt" id="ctpw">${ctPwHtml()}</span><span class="pc">›</span></button>`;return h}}
 A.ctprewarm=()=>ctPrewarm();
