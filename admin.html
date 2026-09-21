@@ -60,6 +60,8 @@ async function load(){
   const [c,g,an]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings"),sb.rpc("admin_analytics",{days:ST.anDays})]);
   ST.an=an.error?{error:an.error.message}:an.data;
   try{const lu=await sb.rpc("admin_live_usage");ST.live=lu.error?{error:lu.error.message}:lu.data}catch(e){ST.live={error:String(e)}}
+  try{let q=sb.from("minute_orders").select("*, profiles(full_name,email,phone)").order("created_at",{ascending:false}).limit(100);if((ST.mfilter||"pending")!=="all")q=q.eq("status",ST.mfilter||"pending");
+    const [mo,mp]=await Promise.all([q,sb.from("minute_packs").select("*").order("sort")]);ST.min=mo.error||mp.error?{error:(mo.error||mp.error).message}:{orders:mo.data||[],packs:mp.data||[]}}catch(e){ST.min={error:String(e)}}
   const er=s.error||r.error||u.error||p.error||c.error||g.error;
   ST.err=er?"تعذّر تحميل بعض البيانات: "+er.message+(/coupons|app_settings|admin_get_settings/.test(er.message||"")?" — شغّل ملف upgrade-v2.sql":""):null;
   ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];ST.coupons=c.data||[];ST.settings=g.data||{};render()}
@@ -73,9 +75,9 @@ function vMain(){const s=ST.stats||{};
     <div><b>${s.pending??"—"}</b><span>طلبات بانتظارك</span></div><div><b>${s.active??"—"}</b><span>مشترك فعّال</span></div>
     <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
     <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
-  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
+  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["min","⚡ الدقائق"+(ST.live&&ST.live.pending_orders?` (${ST.live.pending_orders})`:"")],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
     <button data-a="reload">🔄 تحديث</button><button data-a="backup">⬇️ نسخة احتياطية</button></div>
-  ${ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
+  ${ST.tab==="min"?vMin():ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
 function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
   ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.reqs.map(r=>`<tr><td>${fmt(r.created_at)}</td><td>${esc(r.profiles?.full_name||"")}<br><span class="muted en">${esc(r.profiles?.email||"")}</span><br><span class="muted en">${esc(r.profiles?.phone||"")}</span></td>
@@ -116,6 +118,23 @@ function vCoupons(){return `<div class="panel"><p class="muted">الكود بي�
   ${ST.coupons.length?`<div class="scroll"><table><thead><tr><th>الكود</th><th>الخصم</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.coupons.map(c=>`<tr><td class="en"><b>${esc(c.code)}</b></td><td>${c.percent}%</td><td>${c.used_count}${c.max_uses?" / "+c.max_uses:""}</td><td>${c.expires_at?fmt(c.expires_at):"—"}</td>
     <td><span class="chip ${c.active?"ok":"no"}">${c.active?"فعّال":"موقّف"}</span></td><td><div class="row"><button class="btn ghost sm" data-a="togglecoupon" data-v="${esc(c.code)}">${c.active?"إيقاف":"تفعيل"}</button><button class="btn bad sm" data-a="delcoupon" data-v="${esc(c.code)}">حذف</button></div></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في أكواد لسا.</p>`}</div>`}
+function vMin(){const m=ST.min||{},u=ST.live||{},mf=ST.mfilter||"pending";
+  if(m.error)return `<div class="panel"><p style="color:#b45309">⚠️ لازم تشغّل ملف <b class="en">upgrade-v7.sql</b> بـ Supabase عشان يشتغل رصيد الدقائق.</p><p class="muted en" style="font-size:.8rem">${esc(m.error)}</p></div>`;
+  return `<div class="panel"><div class="row" style="gap:18px;flex-wrap:wrap">
+      <div><b style="font-size:1.4rem">${u.pending_orders??0}</b> <small class="muted">طلب شحن معلّق</small></div>
+      <div><b style="font-size:1.4rem">${+(u.sales_month||0)} ${cur}</b> <small class="muted">مبيعات دقائق هالشهر</small></div>
+      <div><b style="font-size:1.4rem">${u.paid_min_month??0}</b> <small class="muted">دقيقة مدفوعة انستهلكت هالشهر</small></div></div></div>
+  <div class="panel"><h3>طلبات الشحن</h3><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${mf===k?"":"ghost"} sm" data-a="mfilter" data-v="${k}">${l}</button>`).join("")}</div>
+  ${(m.orders||[]).length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الباقة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
+  ${m.orders.map(o=>`<tr><td>${fmt(o.created_at)}</td><td>${esc(o.profiles?.full_name||"")}<br><span class="muted en">${esc(o.profiles?.email||"")}</span></td><td>${o.minutes} دقيقة<br><b>${+o.amount} ${cur}</b></td><td>${esc(METHOD(o.method))}</td><td class="en">${esc(o.reference||"—")}</td>
+    <td>${o.proof_path?`<button class="btn ghost sm" data-a="proof" data-v="${esc(o.proof_path)}">عرض</button>`:"—"}</td>
+    <td><span class="chip ${o.status==="approved"?"ok":o.status==="rejected"?"no":"wait"}">${{pending:"معلّق",approved:"انضاف",rejected:"مرفوض"}[o.status]}</span>${o.admin_note?`<br><small class="muted">${esc(o.admin_note)}</small>`:""}</td>
+    <td>${o.status==="pending"?`<div class="row"><button class="btn good sm" data-a="minapprove" data-v="${o.id}" ${ST.busy?"disabled":""}>قبول وإضافة</button><button class="btn bad sm" data-a="minreject" data-v="${o.id}">رفض</button></div>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في طلبات هون.</p>`}</div>
+  <div class="panel"><h3>📦 باقات الدقائق</h3><div class="scroll"><table><thead><tr><th>الاسم</th><th>الدقائق</th><th>السعر (${cur})</th><th>مفعّلة</th><th></th></tr></thead><tbody>
+  ${(m.packs||[]).map(p=>`<tr><td><input class="in" id="kn_${p.id}" value="${esc(p.name)}"></td><td><input class="in" id="km_${p.id}" type="number" min="1" value="${p.minutes}" style="width:90px"></td><td><input class="in" id="kp_${p.id}" type="number" min="0" step="0.5" value="${+p.price}" style="width:100px"></td><td><input type="checkbox" id="ka_${p.id}" ${p.active?"checked":""}></td><td><button class="btn sm" data-a="savepack" data-v="${p.id}">حفظ</button></td></tr>`).join("")}
+  <tr><td><input class="in" id="nk_name" placeholder="اسم الباقة"></td><td><input class="in" id="nk_min" type="number" min="1" value="300" style="width:90px"></td><td><input class="in" id="nk_price" type="number" min="0" value="70" style="width:100px"></td><td></td><td><button class="btn good sm" data-a="addpack">إضافة</button></td></tr></tbody></table></div></div>
+  <div class="panel"><h3>🎁 إهداء دقائق لمشترك</h3><p class="muted">اكتب إيميل المشترك وعدد الدقائق (بالسالب بتنقص من رصيده).</p>
+  <div class="row" style="gap:8px;flex-wrap:wrap"><input class="in en" id="g_email" placeholder="email@example.com" style="min-width:220px"><input class="in" id="g_min" type="number" value="10" style="width:90px"><span>دقيقة</span><button class="btn good" data-a="giftmin">إهداء</button></div></div>`}
 function vLive(){const g=ST.settings||{},u=ST.live||{},mode=g.live_voice||"admins";
   return `<div class="panel"><h3>⚡ صوت توكي الحقيقي</h3><p class="muted">مكالمة بصوت طبيعي بتفهم عربي وإنجليزي مخلوطين. إذا الخط تعبّى أو خلصت دقايق المشترك، بيرجع لحاله للصوت العادي.</p>
   ${u.error?`<p class="muted" style="color:#b45309">⚠️ لازم تشغّل ملف <b class="en">upgrade-v6.sql</b> بـ Supabase عشان يشتغل العداد.</p>`:`<div class="row" style="gap:16px;flex-wrap:wrap;margin:8px 0 14px">
@@ -173,6 +192,14 @@ const act={
     const {error}=await sb.from("coupons").insert({code,percent:pct,max_uses:mx?+mx:null,expires_at:ex?new Date(ex+"T23:59:59").toISOString():null});ST.msg=error?null:"انضاف الكود ✅";ST.err=error?(/duplicate/.test(error.message)?"الكود موجود من قبل":error.message):null;load()},
   togglecoupon:async v=>{const c=ST.coupons.find(x=>x.code===v);const {error}=await sb.from("coupons").update({active:!c.active}).eq("code",v);ST.msg=error?null:"تم ✅";ST.err=error?error.message:null;load()},
   delcoupon:async v=>{if(!confirm("حذف الكود "+v+"؟"))return;const {error}=await sb.from("coupons").delete().eq("code",v);ST.msg=error?null:"انحذف";ST.err=error?error.message:null;load()},
+  mfilter:v=>{ST.mfilter=v;load()},
+  minapprove:async v=>{if(!confirm("تأكدت من وصول المبلغ؟ رح تنضاف الدقائق لرصيده."))return;ST.busy=true;render();const {error}=await sb.rpc("approve_minutes",{oid:+v});ST.busy=false;ST.msg=error?null:"انضافت الدقائق ✅";ST.err=error?error.message:null;load()},
+  minreject:async v=>{const note=prompt("سبب الرفض (بيظهر للمستخدم):","ما وصلنا التحويل");if(note===null)return;const {error}=await sb.rpc("reject_minutes",{oid:+v,note});ST.msg=error?null:"تم الرفض";ST.err=error?error.message:null;load()},
+  savepack:async v=>{const {error}=await sb.from("minute_packs").update({name:$("#kn_"+v).value.trim(),minutes:Math.max(1,+$("#km_"+v).value||1),price:Math.max(0,+$("#kp_"+v).value||0),active:$("#ka_"+v).checked}).eq("id",+v);ST.msg=error?null:"انحفظت الباقة ✅";ST.err=error?error.message:null;load()},
+  addpack:async()=>{const name=$("#nk_name").value.trim();if(!name){alert("اكتب اسم الباقة");return}const {error}=await sb.from("minute_packs").insert({name,minutes:Math.max(1,+$("#nk_min").value||1),price:Math.max(0,+$("#nk_price").value||0),sort:99});ST.msg=error?null:"انضافت الباقة ✅";ST.err=error?error.message:null;load()},
+  giftmin:async()=>{const em=$("#g_email").value.trim().toLowerCase(),mins=Math.round(+$("#g_min").value||0);if(!em||!mins){alert("اكتب الإيميل وعدد الدقائق");return}
+    const {data:u}=await sb.from("profiles").select("id,email").ilike("email",em).maybeSingle();if(!u){ST.err="ما لقيت مستخدم بهالإيميل";ST.msg=null;render();return}
+    const {data,error}=await sb.rpc("admin_gift_minutes",{u:u.id,mins});ST.msg=error?null:`تم ✅ رصيد ${u.email} صار ${Math.floor((data||0)/60)} دقيقة`;ST.err=error?error.message:null;render()},
   savelive:async()=>{const a=await sb.rpc("admin_set_setting",{k:"live_voice",v:$("#s_live").value});const b=await sb.rpc("admin_set_setting",{k:"live_daily_min",v:String(Math.max(1,Math.min(120,+$("#s_livemin").value||5)))});
     const er=a.error||b.error;ST.msg=er?null:"انحفظ ✅";ST.err=er?("ما انحفظ: "+er.message+(/bad_key/.test(er.message)?" — شغّل upgrade-v6.sql":"")):null;await load()},
   savetrial:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"trial_days",v:String(Math.max(0,+$("#s_trial").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?error.message:null;load()},

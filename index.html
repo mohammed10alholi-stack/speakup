@@ -675,6 +675,10 @@ body.incall #livecap{left:50%!important;right:auto!important;transform:translate
 .vc-badge{font-size:.75rem;padding:3px 10px;border-radius:999px;background:rgba(255,201,64,.2);color:#FFE08A;font-weight:600}
 .vcall.live{background:radial-gradient(120% 80% at 50% 0%,#4C1D95 0%,#0B1022 70%)}
 .vc-note{font-size:.85rem;opacity:.8;text-align:center;max-width:420px}
+
+.vc-live.alt{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.35);box-shadow:none}
+.minbal{display:flex;align-items:center;gap:14px;background:linear-gradient(140deg,#4C1D95,#2F6BFF);color:#fff;border-radius:22px;padding:14px 16px;margin-top:6px}
+.minbal small{display:block;opacity:.85;font-weight:600}.minbal b{display:block;font-size:1.6rem;font-weight:700}.minbal span{display:block;font-size:.85rem;opacity:.9}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -4052,7 +4056,7 @@ Object.assign(A,{
   return h};VIEWS.tutor=vTutor}
 /* ================== TOKI LIVE — real voice via Gemini Live (daily minutes + auto-fallback) ================== */
 const LV_VER="v35";
-const LV={on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",detail:null,start:0,timer:null,muted:false,ready:false,sid:null,limitSec:300,status:null,statusAt:0,stLoading:false};
+const LV={useBal:false,source:"free",on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",detail:null,start:0,timer:null,muted:false,ready:false,sid:null,limitSec:300,status:null,statusAt:0,stLoading:false};
 const liveAvailable=()=>typeof window.getLiveToken==="function";
 const lvIsAdmin=()=>typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin";
 const LV_WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){const c=i[0]&&i[0][0];if(c){this.b.push(new Float32Array(c));this.n+=c.length;if(this.n>=2048){const a=new Float32Array(this.n);let o=0;for(const x of this.b){a.set(x,o);o+=x.length}this.b=[];this.n=0;this.port.postMessage(a,[a.buffer])}}return true}}registerProcessor("pcm-cap",P);`;
@@ -4067,16 +4071,16 @@ function lvPlay(b64){if(!LV.outAc)return;const bin=atob(b64),n=bin.length>>1;if(
 function lvStopPlay(){LV.sources.forEach(s=>{try{s.stop()}catch(e){}});LV.sources=[];LV.playT=0}
 /* how many real-voice minutes are left today */
 async function liveStatus(force){if(!window.liveApi||LV.stLoading)return;if(!force&&LV.status&&Date.now()-LV.statusAt<60000)return;
-  LV.stLoading=true;try{const r=await window.liveApi("live_status");LV.status=r&&!r.error?r:{enabled:false,remaining_sec:0};LV.statusAt=Date.now()}catch(e){}LV.stLoading=false;
+  LV.stLoading=true;try{const r=await window.liveApi("live_status");LV.status=r&&!r.error?r:{enabled:false,remaining_sec:0};LV.statusAt=Date.now();if(r&&r.balance_sec!=null&&typeof AUTH!=="undefined"&&AUTH.profile)AUTH.profile.live_balance_sec=r.balance_sec}catch(e){}LV.stLoading=false;
   if(route==="tutor"&&TU.voice&&!TU.live)render()}
-async function liveStart(){if(!liveAvailable()||LV.on)return;
+async function liveStart(useBal){if(!liveAvailable()||LV.on)return;LV.useBal=!!useBal;
   tqReset();TU.speaking=false;if(recOn&&rec)try{rec.abort()}catch(e){}
   LV.on=true;TU.live=true;LV.detail=null;LV.state="connecting";LV.cap="";LV.userCap="";LV.muted=false;LV.ready=false;LV.sid=null;LV.start=0;
   try{LV.ac=new (window.AudioContext||window.webkitAudioContext)();LV.outAc=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});LV.ac.resume();LV.outAc.resume()}catch(e){}
   render();
-  try{const [tok,stream]=await Promise.all([window.getLiveToken(),navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})]);
+  try{const [tok,stream]=await Promise.all([window.getLiveToken(LV.useBal?{use_balance:true}:undefined),navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})]);
     LV.stream=stream;if(!LV.on){lvCleanup();return}if(!tok||!tok.token)throw tok||{error:"live_error"};
-    LV.sid=tok.sid||null;LV.limitSec=Math.max(20,+tok.seconds||300);
+    LV.sid=tok.sid||null;LV.limitSec=Math.max(20,+tok.seconds||300);LV.source=tok.source||"free";
     await LV.ac.audioWorklet.addModule(URL.createObjectURL(new Blob([LV_WORKLET],{type:"application/javascript"})));
     LV.src=LV.ac.createMediaStreamSource(stream);LV.node=new AudioWorkletNode(LV.ac,"pcm-cap");LV.src.connect(LV.node);
     lvConnect(tok,true)}
@@ -4101,7 +4105,7 @@ function lvConnect(tok,full){const url=`wss://generativelanguage.googleapis.com/
     if(sc.inputTranscription&&sc.inputTranscription.text){LV.userCap+=sc.inputTranscription.text;lvCap()}
     if(sc.turnComplete||sc.generationComplete)lvSaveTurn()};
   ws.onclose=ev=>{if(!LV.on||LV.ws!==ws)return;const why=ev&&ev.reason?`ws ${ev.code}: ${ev.reason}`:`ws ${ev&&ev.code}`;LV.detail=why;
-    if(!LV.ready&&full){window.getLiveToken().then(t=>{if(LV.on&&t&&t.token){LV.sid=t.sid||LV.sid;LV.limitSec=Math.max(20,+t.seconds||LV.limitSec);lvConnect(t,false)}else liveFallback((t&&t.error)||"live_error",t)});return}
+    if(!LV.ready&&full){window.getLiveToken(LV.useBal?{use_balance:true}:undefined).then(t=>{if(LV.on&&t&&t.token){LV.sid=t.sid||LV.sid;LV.limitSec=Math.max(20,+t.seconds||LV.limitSec);lvConnect(t,false)}else liveFallback((t&&t.error)||"live_error",t)});return}
     liveFallback(/RESOURCE_EXHAUSTED|quota|rate|limit|1011|1013/i.test(why)?"busy":LV.ready?"drop":"live_error")}}
 function lvSaveTurn(){const u=LV.userCap.trim(),a=LV.cap.trim();if(!u&&!a)return;const msgs=TU.msgs.buddy||(TU.msgs.buddy=[{role:"assistant",content:(TUTOR.find(x=>x.id==="buddy")||{}).start||""}]);
   if(u)msgs.push({role:"user",content:u});if(a)msgs.push({role:"assistant",content:a});LV.userCap="";LV.cap="";S.st.chat=(S.st.chat||0)+1;save()}
@@ -4116,7 +4120,7 @@ function liveStop(){const ws=LV.ws,used=LV.ready&&LV.start?Math.round((Date.now(
   if(sid&&window.liveApi)window.liveApi("live_end",{sid,used}).then(()=>liveStatus(true));else liveStatus(true)}
 /* anything goes wrong → keep the call going with the regular free voice */
 function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.detail=String(e.detail);const detail=LV.detail;
-  const msg={quota:"خلصت دقايق الصوت الحقيقي لليوم، كمّلنا بالصوت العادي 💙",live_quota:"خلصت دقايق الصوت الحقيقي لليوم، كمّلنا بالصوت العادي 💙",
+  const msg={quota:LV.source==="balance"?"خلص وقت هالمكالمة من رصيدك، كمّلنا بالصوت العادي 💙 (بتقدر تكمّل من زر ⚡)":"خلصت دقايقك المجانية لليوم، كمّلنا بالصوت العادي 💙",live_quota:"خلصت دقايق الصوت الحقيقي لليوم، كمّلنا بالصوت العادي 💙",
     busy:"الخط مشغول هلأ، كمّلنا بالصوت العادي 💙",live_busy:"الخط مشغول هلأ، كمّلنا بالصوت العادي 💙",drop:"انقطع الصوت الحقيقي، كمّلنا بالصوت العادي 💙",
     live_disabled:"الصوت الحقيقي مش متاح هلأ، كمّلنا بالصوت العادي 💙",mic:"لازم تسمح للموقع يستخدم الميكروفون 🎙️",rate_limited:"خلصت محاولات اليوم، كمّلنا بالصوت العادي 💙"}[reason]||"ما زبط الصوت الحقيقي هلأ، كمّلنا بالصوت العادي 💙";
   liveStop();TU.voice=true;render();toast(msg);
@@ -4124,12 +4128,15 @@ function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.det
   LV.detail=null;if(reason!=="mic")setTimeout(()=>{if(TU.voice&&!TU.live&&route==="tutor")voiceListen()},900)}
 {const _vc=vCall;vCall=function(){if(!TU.live){let h=_vc();if(liveAvailable()){liveStatus();const st=LV.status;
     if(st&&st.enabled){const left=Math.floor((st.remaining_sec||0)/60);
-      h=h.replace('<div class="vc-lang">',(st.remaining_sec||0)>=20?`<button class="vc-live" data-act="livestart">⚡ صوت توكي الحقيقي <small>باقيلك ${left>=1?left+" د":"أقل من دقيقة"} اليوم</small></button><div class="vc-lang">`:`<p class="vc-note">⏳ خلصت دقايق الصوت الحقيقي لليوم، بترجع بكرة 💙</p><div class="vc-lang">`)}}
+      const bal=Math.floor((st.balance_sec||0)/60),canTop=typeof VIEWS!=="undefined"&&VIEWS.minutes;
+      h=h.replace('<div class="vc-lang">',((st.remaining_sec||0)>=20?`<button class="vc-live" data-act="livestart">⚡ صوت توكي الحقيقي <small>باقيلك ${left>=1?left+" د":"أقل من دقيقة"} مجاناً اليوم</small></button>`
+        :(st.balance_sec||0)>=20?`<button class="vc-live" data-act="livestart" data-bal="1">⚡ كمّل بالصوت الحقيقي من رصيدك <small>معك ${bal>=1?bal+" د":"أقل من دقيقة"}</small></button>`
+        :`<p class="vc-note">⏳ خلصت دقايقك المجانية لليوم${canTop?"، وبتقدر تشحن دقايق إضافية":"، بترجع بكرة 💙"}</p>${canTop?`<button class="vc-live alt" data-act="lvtopup">💳 اشحن دقايق صوت حقيقي</button>`:""}`)+'<div class="vc-lang">')}}
     return h}
   const st=LV.state==="speaking"?"speak":LV.state==="connecting"?"think":"listen";
   const status={connecting:"عم يتصل بتوكي…",listening:LV.muted?"الميكروفون مسكّر 🔇":"احكي براحتك… توكي سامعك، عربي أو "+LAR(),speaking:"توكي عم يحكي… احكي وقت ما بدك لتقاطعه"}[LV.state]||"";
   return `<div class="vcall ${st} live" id="vcall">
-    <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">الوقت الباقي</span><span class="vc-time" id="vcTime">${Math.floor(LV.limitSec/60)}:${String(LV.limitSec%60).padStart(2,"0")}</span></div>
+    <div class="vc-top"><span class="vc-t">⚡ توكي الحقيقي · ${LANGS[LANG].flag}</span><span class="vc-badge">${LV.source==="balance"?"من رصيدك":"مجاني اليوم"}</span><span class="vc-time" id="vcTime">${Math.floor(LV.limitSec/60)}:${String(LV.limitSec%60).padStart(2,"0")}</span></div>
     <div class="vc-mid"><div class="vc-orb"><span class="vc-ring"></span><span class="vc-ring r2"></span><span class="vc-core">${mascot(st==="speak"?"wow":st==="think"?"think":"happy",118)}</span></div>
       <div class="vc-status">${esc(status)}</div><div class="vc-cap" id="vcCap" dir="auto">${TU.cc?esc(LV.cap||LV.userCap):""}</div></div>
     <p class="vc-note">بتقدر تحكي عربي و${LAR()} بنفس الجملة، وتقاطعه وقت ما بدك 🎧</p>
@@ -4137,7 +4144,7 @@ function liveFallback(reason,e){if(!LV.on&&!TU.live)return;if(e&&e.detail)LV.det
       <button class="vc-b end" data-act="tuvoice"><span>✕</span><small>إنهاء</small></button>
       <button class="vc-b" data-act="lvmute" aria-pressed="${LV.muted}"><span>${LV.muted?"🔇":"🎙️"}</span><small>${LV.muted?"افتح المايك":"سكّر المايك"}</small></button></div></div>`}}
 {const _tv=A.tuvoice;A.tuvoice=()=>{if(TU.live){liveStop();TU.voice=false;render();return}_tv()}}
-Object.assign(A,{livestart:()=>liveStart(),lvmute:()=>{LV.muted=!LV.muted;render()}});
+Object.assign(A,{lvtopup:()=>{if(TU.voice)A.tuvoice();go("minutes")},livestart:d=>liveStart(!!(d&&d.bal)),lvmute:()=>{LV.muted=!LV.muted;render()}});
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -4160,7 +4167,7 @@ async function callAI(system,messages,signal){
 window.liveApi=async(action,extra)=>{const {data:{session}}=await sb.auth.getSession();if(!session)return{error:"not_granted"};
   try{const r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify(Object.assign({action},extra||{}))});
     const d=await r.json().catch(()=>({}));return r.ok?d:Object.assign({error:d.error||"live_error"},d)}catch(e){return{error:"live_error"}}};
-window.getLiveToken=()=>window.liveApi("live_token");
+window.getLiveToken=x=>window.liveApi("live_token",x);
 const aiShim=async(input,opts={})=>{let system,messages;
   if(typeof input==="string")messages=[{role:"user",content:input}];else{system=input[0].content;messages=input.slice(1)}
   const text=await callAI(system,messages,opts.signal);if(!text)throw{code:"empty_completion"};opts.onText&&opts.onText({text,delta:text});return{text,truncated:false}};
@@ -4421,6 +4428,50 @@ function vInvite(){if(!INV){INV={loading:true};sb.rpc("my_referral_info").then((
       <button class="btn ghost" data-act="invshare" data-t="${esc(msg)}" data-l="${esc(link)}">مشاركة</button></div></section>`}
 VIEWS.invite=vInvite;PARENT.invite="me";
 A.invshare=async d=>{try{if(navigator.share){await navigator.share({text:d.t,url:d.l});return}}catch(e){if(e&&e.name==="AbortError")return}A.copy2({t:d.l})};
+
+/* ---------- رصيد دقائق صوت توكي الحقيقي ---------- */
+const MIN={packs:null,orders:[],pack:null,method:null,busy:false,err:null,msg:null,bal:0};
+async function loadMin(){if(!AUTH.user)return;
+  const [p,o,b]=await Promise.all([sb.from("minute_packs").select("*").eq("active",true).order("sort"),
+    sb.from("minute_orders").select("*").eq("user_id",AUTH.user.id).order("created_at",{ascending:false}).limit(10),
+    sb.from("profiles").select("live_balance_sec").eq("id",AUTH.user.id).maybeSingle()]);
+  MIN.packs=p.data||[];MIN.orders=o.data||[];MIN.bal=(b.data&&b.data.live_balance_sec)||0;if(AUTH.profile)AUTH.profile.live_balance_sec=MIN.bal;
+  if(!MIN.pack&&MIN.packs[0])MIN.pack=MIN.packs[0].id;if(!MIN.method)MIN.method=CFG.PAYMENT_METHODS[0].id;if(route==="minutes")render()}
+function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p>سجّل دخول أول.</p></section>`;
+  if(MIN.packs===null){loadMin();return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p class="muted">جاري التحميل…</p></section>`}
+  const pack=MIN.packs.find(x=>x.id===MIN.pack),meth=CFG.PAYMENT_METHODS.find(x=>x.id===MIN.method),pending=MIN.orders.find(o=>o.status==="pending");
+  const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت شحن دقائق صوت توكي (${pack?pack.name:""}) على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
+  return `<section class="panel">${topbar("⚡ دقائق صوت توكي الحقيقي","احكي مع توكي بصوت طبيعي أكثر من دقايقك المجانية")}
+    <div class="minbal">${mascot("happy",70)}<div><small>رصيدك</small><b>${Math.floor(MIN.bal/60)} دقيقة</b><span>بتنخصم بس لما تخلص دقايقك المجانية اليومية، وعلى الوقت اللي حكيته فعلاً.</span></div></div></section>
+  <section class="panel"><h2>1. اختار الباقة</h2>
+    ${MIN.packs.length?`<div class="plans">${MIN.packs.map(x=>`<button class="plan" data-act="minpack" data-id="${x.id}" aria-pressed="${x.id===MIN.pack}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${x.minutes} دقيقة</small></button>`).join("")}</div>`:`<p class="muted">ما في باقات متاحة هلأ.</p>`}</section>
+  <section class="panel"><h2>2. حوّل المبلغ${pack?` (${+pack.price} ${CFG.CURRENCY})`:""}</h2>
+    <div class="row" style="margin-bottom:10px">${CFG.PAYMENT_METHODS.map(x=>`<button class="chipbtn" data-act="minmeth" data-id="${x.id}" aria-pressed="${x.id===MIN.method}">${x.icon} ${esc(x.name)}</button>`).join("")}</div>
+    ${meth?`<div class="paybox">${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}</section>
+  <section class="panel"><h2>3. أرسل تأكيد التحويل</h2>
+    ${pending?`<div class="fb" style="background:var(--sky)">⏳ عندك طلب شحن قيد المراجعة. الدقايق بتنضاف ${esc(CFG.ACTIVATION_TIME)}.</div>`:""}
+    <label class="fld"><span>رقم الحوالة / المرجع</span><input id="minRef" data-keep dir="ltr" autocomplete="off"></label>
+    <label class="fld"><span>صورة الإيصال (اختياري، لحد 5 ميغا)</span><input id="minFile" type="file" accept="image/*,application/pdf"></label>
+    ${MIN.err?`<div class="fb bad">${esc(MIN.err)}</div>`:""}${MIN.msg?`<div class="fb good">${esc(MIN.msg)}</div>`:""}
+    <div class="row" style="margin-top:12px"><button class="btn hl" data-act="minsend" ${MIN.busy?"disabled":""}>${MIN.busy?"عم يرسل…":"أرسل طلب الشحن"}</button><a class="btn ghost" href="${wa}" target="_blank" rel="noopener">💬 واتساب</a></div></section>
+  ${MIN.orders.length?`<section class="panel"><div class="spread"><h2>طلبات الشحن</h2><button class="say" data-act="minreload">🔄 تحديث</button></div>
+    ${MIN.orders.map(o=>`<div class="lesson-ex"><div class="e"><span style="color:var(--ink)">${{pending:"⏳ قيد المراجعة",approved:"✅ انضافت",rejected:"❌ مرفوض"}[o.status]} — ${o.minutes} دقيقة · ${+o.amount} ${CFG.CURRENCY}</span><span>${fmtDate(o.created_at)}${o.admin_note?" — "+esc(o.admin_note):""}</span></div></div>`).join("")}</section>`:""}`}
+async function minSend(){const ref=val("minRef"),fi=$("#minFile"),f=fi&&fi.files&&fi.files[0];MIN.err=null;MIN.msg=null;
+  if(!MIN.pack||!MIN.method){MIN.err="اختار الباقة وطريقة الدفع.";render();return}
+  if(!ref&&!f){MIN.err="اكتب رقم الحوالة أو ارفع صورة الإيصال.";render();return}
+  if(f&&f.size>5e6){MIN.err="حجم الصورة أكبر من 5 ميغا.";render();return}
+  MIN.busy=true;render();
+  try{let path=null;
+    if(f){const ext=((f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""))||"jpg";path=`${AUTH.user.id}/min-${Date.now()}.${ext}`;
+      const {error}=await sb.storage.from("proofs").upload(path,f,{contentType:f.type||undefined});if(error)throw error}
+    const {error}=await sb.rpc("request_minutes",{pack:MIN.pack,meth:MIN.method,ref:ref||"",proof:path});if(error)throw error;
+    clearField("minRef");const mf=$("#minFile");if(mf)mf.value="";MIN.msg="وصلنا طلبك ✅ الدقايق بتنضاف لرصيدك "+CFG.ACTIVATION_TIME+".";await loadMin()}
+  catch(e){MIN.err=/too_many_pending/.test(e.message||"")?"عندك 3 طلبات معلّقة، استنى لحد ما نراجعها.":/bad_pack/.test(e.message||"")?"هالباقة مش متاحة هلأ.":"ما قدرنا نرسل الطلب: "+(e.message||"")}
+  MIN.busy=false;render()}
+VIEWS.minutes=vMinutes;PARENT.minutes="me";
+Object.assign(A,{minpack:d=>{MIN.pack=+d.id;render()},minmeth:d=>{MIN.method=d.id;render()},minsend:minSend,minreload:()=>{MIN.packs=null;render()}});
+{const _vm3=VIEWS.me;VIEWS.me=function(){let h=_vm3();if(!AUTH.user)return h;const m=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60);
+  return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">⚡</span><b>دقائق صوت توكي الحقيقي: ${m} د</b><span>اشحن ›</span></button><section class="rankcard">`)}}
 
 /* ---------- التشغيل ---------- */
 applyTheme();render();
