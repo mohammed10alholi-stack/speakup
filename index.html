@@ -1411,7 +1411,7 @@ function vDialogs(){
   return `<section class="panel">${head}
     <div class="row" style="margin-top:12px"><span class="muted">دورك:</span>${seg("drole2",DG.me,[["a",esc(d.a)],["b",esc(d.b)]])}</div>
     <div class="chat">${d.l.slice(0,DG.step).map(l=>`<div class="bub ${l[0]} ${l[0]===DG.me?"me":""}"><small>${esc(nm(l[0]))}</small><div class="en">${esc(l[1])}</div></div>`).join("")}
-      ${mine?`<div class="bub ${cur[0]} me turn"><small>دورك — قول ${LANG==="en"?"بالإنجليزي":"بالتركي"}:</small><div>${esc(cur[2])}</div>${DG.rev||DG.res?`<div class="en" style="margin-top:6px">${DG.res?DG.res.html:esc(cur[1])}</div>`:""}</div>`
+      ${mine?`<div class="bub ${cur[0]} me turn"><small>دورك — قول ${LBI()}:</small><div>${esc(cur[2])}</div>${DG.rev||DG.res?`<div class="en" style="margin-top:6px">${DG.res?DG.res.html:esc(cur[1])}</div>`:""}</div>`
       :`<div class="bub ${cur[0]} now"><small>${esc(nm(cur[0]))}</small><div class="en">${esc(cur[1])}</div>${DG.tr?`<div class="trn">${esc(cur[2])}</div>`:""}</div>`}
     </div>
     ${DG.err?`<div class="fb bad">${DG.err}</div>`:""}
@@ -1477,7 +1477,7 @@ function vWriting(){
     <div class="slots">${WR.picked.map((i,k)=>`<button class="slot" data-act="wrback" data-k="${k}">${esc(WR.tiles[i])}</button>`).join("")||'<span class="muted">اضغط الكلمات تحت بالترتيب</span>'}</div>
     <div class="tiles">${WR.tiles.map((w,i)=>`<button class="tile ${WR.picked.includes(i)?"used":""}" data-act="wrtile" data-i="${i}" ${WR.picked.includes(i)||WR.res?"disabled":""}>${esc(w)}</button>`).join("")}</div>${fb}
     <div class="row" style="justify-content:center;margin-top:12px">${WR.res?`${sayBtn(WR.item.en)}<button class="btn" data-act="wrnext">جملة جديدة</button>`:`<button class="btn" data-act="wrcheck" ${WR.picked.length<WR.tiles.length?"disabled":""}>تحقّق</button><button class="btn ghost" data-act="wrclear">امسح</button><button class="btn ghost" data-act="wrnext">تخطّي</button>`}</div></section>`;
-  if(WR.mode==="translate")return `<section class="panel">${head}<p class="muted" style="margin-top:10px">اكتب الجملة ${LANG==="en"?"بالإنجليزي":"بالتركي"} من عندك.</p>
+  if(WR.mode==="translate")return `<section class="panel">${head}<p class="muted" style="margin-top:10px">اكتب الجملة ${LBI()} من عندك.</p>
     <div class="ar-big">${esc(WR.item.ar)}</div>
     <textarea class="answer" id="wrIn" data-keep spellcheck="false" placeholder="Write in English…" ${WR.res?"disabled":""}></textarea>${fb}
     <div class="row" style="margin-top:12px">${WR.res?`${sayBtn(WR.item.en)}<button class="btn" data-act="wrnext">جملة جديدة</button>`:`<button class="btn" data-act="wrcheck">تحقّق</button><button class="btn ghost" data-act="wrnext">تخطّي</button>`}</div></section>`;
@@ -1555,7 +1555,7 @@ function vQuiz(){
     <div class="row" style="justify-content:center"><button class="btn" data-act="qstart">اختبار جديد</button><button class="btn ghost" data-act="go" data-r="review">راجع أخطائي</button></div></section>`;
   const q=Q.qs[Q.i];let prompt,label;
   if(q.type==="en2ar"){prompt=`<div class="guide"><span class="w">${esc(q.w.en)}</span></div>`;label="شو معنى الكلمة؟"}
-  else if(q.type==="ar2en"){prompt=`<div class="ar-big">${esc(q.w.ar)}</div>`;label=`اختار الكلمة ${LANG==="en"?"الإنجليزية":"التركية"} الصح`}
+  else if(q.type==="ar2en"){prompt=`<div class="ar-big">${esc(q.w.ar)}</div>`;label=`اختار الكلمة ${LADJ()} الصح`}
   else{prompt=`<div class="center" style="margin:16px 0"><button class="play-big" data-act="say" data-t="${esc(q.w.en)}" aria-label="تشغيل">▶</button></div>`;label="اسمع واختار الكلمة";if(Q.picked===null)AFTER=()=>speak(q.w.en)}
   return `<section class="panel">${head}<div class="spread"><b>سؤال ${Q.i+1} من 10</b><span class="muted">✓ ${Q.score}</span></div><div class="progress"><i style="width:${10*Q.i}%"></i></div>
     <p class="muted" style="margin-top:10px">${label}</p>${prompt}
@@ -1804,7 +1804,7 @@ function vExam(){
       <div style="margin-top:12px"><button class="btn ghost" data-act="exback">كل الامتحانات</button></div></section>`}
   const q=EX.qs[EX.i];
   if(q.t==="listen"&&EX.picked===null)AFTER=()=>speak(q.p);
-  const label={en2ar:"شو معنى الكلمة؟",ar2en:`اختار الكلمة ${LANG==="en"?"الإنجليزية":"التركية"}`,gram:"اختار الإجابة الصح",listen:"اسمع واختار الجملة اللي سمعتها"}[q.t];
+  const label={en2ar:"شو معنى الكلمة؟",ar2en:`اختار الكلمة ${LADJ()}`,gram:"اختار الإجابة الصح",listen:"اسمع واختار الجملة اللي سمعتها"}[q.t];
   const prompt=q.t==="en2ar"?`<div class="guide s"><span class="w">${esc(q.p)}</span></div>`:q.t==="ar2en"?`<div class="ar-big">${esc(q.p)}</div>`:q.t==="gram"?`<p class="en" style="text-align:left;font-size:1.25rem;margin:12px 0">${esc(q.p)}</p>`:`<div class="center" style="margin:12px 0"><button class="play-big" data-act="say" data-t="${esc(q.p)}" aria-label="تشغيل">▶</button></div>`;
   return `<section class="panel"><div class="spread"><b>🎓 امتحان ${lvChip(EX.lv)}</b><span class="muted">${EX.i+1} / ${EX.qs.length}</span></div>
     <div class="progress"><i style="width:${100*EX.i/EX.qs.length}%"></i></div><p class="muted" style="margin-top:10px">${label}</p>${prompt}
@@ -2081,9 +2081,9 @@ Object.assign(A,{
   setsound:d=>{S.sound=d.m==="on";save();render();if(S.sound)sfx("ok")},
   setvibe:d=>{S.vibe=d.m==="on";save();render();if(S.vibe&&navigator.vibrate)navigator.vibrate(30)},
   leaguehide:()=>{S.hideLeague=!S.hideLeague;save();if(typeof syncNow==="function")syncNow().then(()=>{LG.rows=null;render()})},
-  shareprog:async()=>{const cv=await drawShare();shareImage(cv,"speakup-progress.png",`أنا بتعلّم ${LANG==="en"?"إنجليزي":"تركي"} على SpeakUp 🚀 سلسلتي ${S.streak} يوم و${S.xp} نقطة!`)},
+  shareprog:async()=>{const cv=await drawShare();shareImage(cv,"speakup-progress.png",`أنا بتعلّم ${LNOUN()} على SpeakUp 🚀 سلسلتي ${S.streak} يوم و${S.xp} نقطة!`)},
   sharecert:async d=>{const url=await drawCert(d.lv);if(!url)return;const img=new Image();await new Promise(r=>{img.onload=r;img.src=url});const cv=document.createElement("canvas");cv.width=img.width;cv.height=img.height;cv.getContext("2d").drawImage(img,0,0);
-    shareImage(cv,`certificate-${d.lv}.png`,`نجحت بمستوى ${d.lv} ${LANG==="en"?"بالإنجليزي":"بالتركي"} على SpeakUp 🎓`)},
+    shareImage(cv,`certificate-${d.lv}.png`,`نجحت بمستوى ${d.lv} ${LBI()} على SpeakUp 🎓`)},
   copy2:d=>{try{navigator.clipboard.writeText(d.t);toast("انتسخ ✅")}catch(e){toast(d.t)}}
 });
 {const _cs=certShow;certShow=async function(lv){await _cs(lv);const row=document.querySelector("#sheet .row");if(row)row.insertAdjacentHTML("beforeend",`<button class="btn good" data-act="sharecert" data-lv="${lv}">📤 شارك</button>`)}}
@@ -2159,7 +2159,7 @@ function vQuiz(){const head=topbar("اختبار سريع","10 أسئلة من �
   return `<section class="panel">${head}<div class="center">${mascot("happy",110)}<p>أعلى نتيجة إلك: <b>${S.best}/10</b></p><button class="btn hl big" data-act="qstart">ابدأ الاختبار</button></div></section>`}
 A.qstart=()=>{const Qz=makeQuiz();
   startPlayer({back:"quiz",qs:Qz.qs.map(q=>q.type==="en2ar"?{label:"شو معنى الكلمة؟",prompt:wordPrompt(q.w.en),opts:q.opts.map(o=>o.ar),a:q.w.ar,en:q.w.en}
-      :q.type==="ar2en"?{label:`اختار الكلمة ${LANG==="en"?"الإنجليزية":"التركية"}`,prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+      :q.type==="ar2en"?{label:`اختار الكلمة ${LADJ()}`,prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
       :{label:"اسمع واختار الكلمة",prompt:listenPrompt(q.w.en),opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,say:q.w.en,en:q.w.en}),
     onAnswer:(q,ok)=>{if(ok)addXP(2);else{const w=ALL.find(x=>x.en===q.en);addMistake(q.en,w?w.ar:"","اختبار")}},
     onFinish:P=>{if(P.score>S.best)S.best=P.score;S.st.quiz=(S.st.quiz||0)+1;save();checkAch();
@@ -2167,7 +2167,7 @@ A.qstart=()=>{const Qz=makeQuiz();
 
 /* ---------- level exam via player ---------- */
 A.exopen=d=>{EX={lv:d.lv,qs:examQs(d.lv),i:0,score:0,picked:null};
-  startPlayer({back:"exam",qs:EX.qs.map(q=>({label:{en2ar:"شو معنى الكلمة؟",ar2en:`اختار الكلمة ${LANG==="en"?"الإنجليزية":"التركية"}`,gram:"املا الفراغ",listen:"اسمع واختار الجملة"}[q.t]+" · امتحان "+EX.lv,
+  startPlayer({back:"exam",qs:EX.qs.map(q=>({label:{en2ar:"شو معنى الكلمة؟",ar2en:`اختار الكلمة ${LADJ()}`,gram:"املا الفراغ",listen:"اسمع واختار الجملة"}[q.t]+" · امتحان "+EX.lv,
       prompt:q.t==="en2ar"?wordPrompt(q.p):q.t==="ar2en"?`<div class="ar-big">${esc(q.p)}</div>`:q.t==="gram"?sentPrompt(q.p):listenPrompt(q.p),opts:q.opts,a:q.a,ltr:q.t!=="en2ar",say:q.t==="listen"?q.p:null,raw:q})),
     onAnswer:(q,ok)=>{const r=q.raw;if(ok){sfx("ok")}else addMistake(r.t==="gram"?r.p.replace("___",r.a):r.t==="en2ar"?r.p:r.a,r.t==="en2ar"?r.a:"امتحان "+EX.lv,"امتحان")},
     onFinish:P=>{EX.score=P.score;EX.i=EX.qs.length;examFinish();route="exam";render();window.scrollTo(0,0)}})};
@@ -2207,7 +2207,7 @@ function vTutor(){
       <b>${TU.speaking?"توكي عم يحكي…":TU.on?"دورك، احكي هلأ 🎙️":TU.busy?"عم يفكر…":"اضغط الميكروفون واحكي"}</b>
       <div class="row" style="justify-content:center"><button class="c-mic big ${TU.on?"on":""}" data-act="tumic" aria-label="احكي">🎙️</button><button class="btn ghost" data-act="tuvoice">إنهاء المكالمة</button></div></div>`
     :`<div class="composer2">${SR&&TU.sc!=="ask"?`<button class="c-mic ${TU.on?"on":""}" data-act="tumic" aria-label="احكي" ${dis}>🎙️</button>`:""}
-      <textarea id="tuIn" data-keep rows="1" dir="auto" placeholder="${TU.sc==="ask"?"اكتب سؤالك…":`اكتب ${LANG==="en"?"بالإنجليزي":"بالتركي"}…`}" ${dis}></textarea>
+      <textarea id="tuIn" data-keep rows="1" dir="auto" placeholder="${TU.sc==="ask"?"اكتب سؤالك…":`اكتب ${LBI()}…`}" ${dis}></textarea>
       <button class="c-send" data-act="${TU.busy?"aistop":"tusend"}" aria-label="${TU.busy?"إيقاف":"إرسال"}" ${dis}>${TU.busy?"■":SEND_ICON}</button></div>`}
   </div>`}
 function tuGrow(){const t=$("#tuIn");if(!t)return;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px"}
@@ -2232,7 +2232,7 @@ function vGames(){
   /* ---- match ---- */
   if(GM.g==="match"){const m=GM.m;
     if(!m)return `<section class="panel"><div class="gm-head">${back}<h2>🧩 توصيل الكلمات</h2></div><p class="muted">اختار الوضع. في 3 جولات، كل جولة 6 أزواج، وكل ما كنت أسرع بأخطاء أقل بتاخد نجوم أكثر.</p>
-      <div class="sqgrid"><button class="sq" data-act="mstart" data-m="meaning"><span class="ic">🔤</span><b>المعنى</b><small>وصّل الكلمة ${LANG==="en"?"الإنجليزية":"التركية"} بمعناها العربي${B.m_meaning?` · أفضل وقت ${fmtT(B.m_meaning)}`:""}</small></button>
+      <div class="sqgrid"><button class="sq" data-act="mstart" data-m="meaning"><span class="ic">🔤</span><b>المعنى</b><small>وصّل الكلمة ${LADJ()} بمعناها العربي${B.m_meaning?` · أفضل وقت ${fmtT(B.m_meaning)}`:""}</small></button>
       <button class="sq" data-act="mstart" data-m="listen"><span class="ic">🎧</span><b>الاستماع</b><small>اسمع 🔊 ووصّلها بكتابتها${B.m_listen?` · أفضل وقت ${fmtT(B.m_listen)}`:""}</small></button></div></section>`;
     if(m.done){const st=m.stars;return `<section class="result">${mascot(st===3?"wow":st===2?"happy":"smile",120)}<h1>${["","منيح!","ممتاز!","أسطوري!"][st]}</h1>
       <div class="stars">${[1,2,3].map(i=>`<span class="${i<=st?"on":""}">★</span>`).join("")}</div>
@@ -2273,7 +2273,7 @@ function gStart(g){stopGame();S.st.games++;save();checkAch();GM.g=g;
       if(left<=0){stopGame();s.over=true;const B=S.gbest=S.gbest||{};if(s.score>(B.speed||0)){B.speed=s.score;s.newBest=true}
         s.log.filter(x=>!x.ok).forEach(x=>quietMistake(x.w.en,x.w.ar,"تحدي السرعة"));save();if(s.score)addXP(Math.min(12,s.score));sfx("win");if(s.newBest)confetti();render()}
       else{if(el)el.textContent=left;if(bar)bar.style.width=(100*left/60)+"%";const tc=el&&el.parentElement;if(tc)tc.classList.toggle("low",left<=10)}},250)}
-  if(g==="hang"){GM.h={w:pick(poolWords().filter(w=>/^\p{L}+$/u.test(w.en)&&w.en.length>=4)),g:new Set(),lives:6,hints:0,hinted:new Set()}}
+  if(g==="hang"){GM.h={w:pick(poolWords().filter(w=>(LANG==="es"?/^[a-zñ]+$/i:/^\p{L}+$/u).test(w.en)&&w.en.length>=4)),g:new Set(),lives:6,hints:0,hinted:new Set()}}
   render()}
 function nextSpeed(){const w=pick(poolWords());const ok=Math.random()<.5;GM.s.w=w;GM.s.ok=ok;GM.s.shown=ok?w.ar:pick(ALL.filter(x=>x.ar!==w.ar)).ar}
 function mRound(){const m=GM.m,used=new Set(m.words.map(w=>w.en));
@@ -2412,9 +2412,9 @@ A.wcat=d=>{startCat(d.id);render();window.scrollTo(0,0);const c=CATS.find(x=>x.i
 /* ---------- pictures in quiz + match game ---------- */
 {const _mq=makeQuiz;makeQuiz=function(){const Q0=_mq();Q0.qs.forEach(q=>{if(emoOf(q.w.en)&&q.type!=="listen"&&Math.random()<.45)q.type="pic"});return Q0}}
 {A.qstart=()=>{const Qz=makeQuiz();
-  startPlayer({back:"quiz",qs:Qz.qs.map(q=>q.type==="pic"?{label:`شو اسم هاد ${LANG==="en"?"بالإنجليزي":"بالتركي"}؟`,prompt:`<div class="center">${picFrame(q.w.en,120)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+  startPlayer({back:"quiz",qs:Qz.qs.map(q=>q.type==="pic"?{label:`شو اسم هاد ${LBI()}؟`,prompt:`<div class="center">${picFrame(q.w.en,120)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
       :q.type==="en2ar"?{label:"شو معنى الكلمة؟",prompt:wordPrompt(q.w.en),opts:q.opts.map(o=>o.ar),a:q.w.ar,en:q.w.en}
-      :q.type==="ar2en"?{label:`اختار الكلمة ${LANG==="en"?"الإنجليزية":"التركية"}`,prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
+      :q.type==="ar2en"?{label:`اختار الكلمة ${LADJ()}`,prompt:`<div class="ar-big">${esc(q.w.ar)}</div>`,opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,en:q.w.en}
       :{label:"اسمع واختار الكلمة",prompt:listenPrompt(q.w.en),opts:q.opts.map(o=>o.en),a:q.w.en,ltr:true,say:q.w.en,en:q.w.en}),
     onAnswer:(q,ok)=>{if(ok)addXP(2);else{const w=ALL.find(x=>x.en===q.en);addMistake(q.en,w?w.ar:"","اختبار")}},
     onFinish:P=>{if(P.score>S.best)S.best=P.score;S.st.quiz=(S.st.quiz||0)+1;save();checkAch();
@@ -2662,13 +2662,153 @@ const PLACE_TR=[
 ["Hastaysan doktora git___.",["melisin","tin","ecektin"],"melisin","B1"],["Zamanım ol___ gelirim.",["ursa","du","acak"],"ursa","B1"],["Üç yıl___ burada yaşıyorum.",["dır","dan","da"],"dır","B1"],["Bana yardım ed___ misin?",["ebilir","ecek","iyor"],"ebilir","B1"],
 ["deneyim",["خبرة","تجربة علمية","مقابلة"],"خبرة","B1","vocab"],["iklim",["مناخ","طقس اليوم","بيئة"],"مناخ","B1","vocab"],["Keşke daha çok boş zamanım olsa.",["Keşke daha çok boş zamanım olsa.","Keşke daha çok param olsa.","Keşke daha az işim olsa."],"Keşke daha çok boş zamanım olsa.","B1","listen"]
 ];
+/* ================== SPANISH CONTENT ================== */
+const ESW={
+basics:"hello=hola|goodbye=adiós|please=por favor|thank you=gracias|sorry=lo siento|yes=sí|no=no|welcome=bienvenido|friend=el amigo|name=el nombre|morning=la mañana|night=la noche",
+family:"father=el padre|mother=la madre|brother=el hermano|sister=la hermana|son=el hijo|daughter=la hija|grandfather=el abuelo|grandmother=la abuela|uncle=el tío|aunt=la tía|cousin=el primo|family=la familia",
+food:"bread=el pan|water=el agua|rice=el arroz|chicken=el pollo|apple=la manzana|milk=la leche|egg=el huevo|tea=el té|sugar=el azúcar|salt=la sal|breakfast=el desayuno|dinner=la cena",
+home:"house=la casa|door=la puerta|window=la ventana|kitchen=la cocina|bedroom=el dormitorio|table=la mesa|chair=la silla|bed=la cama|key=la llave|wall=la pared|floor=el suelo|roof=el tejado",
+body:"head=la cabeza|hand=la mano|eye=el ojo|ear=la oreja|nose=la nariz|mouth=la boca|leg=la pierna|foot=el pie|heart=el corazón|blood=la sangre|tooth=el diente|back=la espalda",
+colors:"red=rojo|blue=azul|green=verde|yellow=amarillo|black=negro|white=blanco|one=uno|two=dos|three=tres|ten=diez|hundred=cien|first=primero",
+verbs:"go=ir|come=venir|eat=comer|drink=beber|write=escribir|read=leer|speak=hablar|listen=escuchar|learn=aprender|work=trabajar|sleep=dormir|buy=comprar",
+adj:"big=grande|small=pequeño|happy=feliz|sad=triste|hot=caliente|cold=frío|new=nuevo|old=viejo|easy=fácil|difficult=difícil|fast=rápido|beautiful=bonito",
+places:"school=la escuela|hospital=el hospital|market=el mercado|street=la calle|city=la ciudad|mosque=la mezquita|pharmacy=la farmacia|bank=el banco|airport=el aeropuerto|beach=la playa|restaurant=el restaurante|library=la biblioteca",
+work:"teacher=el profesor|student=el estudiante|doctor=el médico|nurse=la enfermera|engineer=el ingeniero|book=el libro|pen=el bolígrafo|notebook=el cuaderno|lesson=la lección|exam=el examen|job=el trabajo|meeting=la reunión",
+time:"today=hoy|tomorrow=mañana|yesterday=ayer|week=la semana|month=el mes|year=el año|hour=la hora|minute=el minuto|Friday=el viernes|Saturday=el sábado|always=siempre|never=nunca",
+clothes:"shirt=la camisa|trousers=los pantalones|dress=el vestido|shoes=los zapatos|jacket=la chaqueta|hat=el sombrero|socks=los calcetines|bag=el bolso|coat=el abrigo|scarf=la bufanda|watch=el reloj|glasses=las gafas",
+animals:"cat=el gato|dog=el perro|bird=el pájaro|horse=el caballo|cow=la vaca|sheep=la oveja|fish=el pez|camel=el camello|lion=el león|donkey=el burro|rabbit=el conejo|bee=la abeja",
+weather:"sun=el sol|rain=la lluvia|wind=el viento|cloud=la nube|snow=la nieve|sunny=soleado|rainy=lluvioso|warm=templado|storm=la tormenta|summer=el verano|winter=el invierno|weather=el tiempo",
+transport:"car=el coche|bus=el autobús|taxi=el taxi|bike=la bicicleta|train=el tren|plane=el avión|ship=el barco|driver=el conductor|ticket=el billete|road=la carretera|station=la estación|walk=caminar",
+feelings:"tired=cansado|hungry=hambriento|thirsty=sediento|angry=enfadado|afraid=asustado|bored=aburrido|excited=emocionado|worried=preocupado|calm=tranquilo|proud=orgulloso|surprised=sorprendido|lonely=solo",
+health:"pain=el dolor|fever=la fiebre|medicine=la medicina|test=la prueba|sample=la muestra|result=el resultado|appointment=la cita|sick=enfermo|healthy=sano|cough=la tos|headache=el dolor de cabeza|laboratory=el laboratorio",
+shopping:"price=el precio|cheap=barato|expensive=caro|money=el dinero|pay=pagar|change=el cambio|size=la talla|discount=el descuento|receipt=el recibo|customer=el cliente|shop=la tienda|try on=probarse",
+travel:"passport=el pasaporte|hotel=el hotel|luggage=el equipaje|trip=el viaje|map=el mapa|visit=visitar|abroad=el extranjero|border=la frontera|flight=el vuelo|tourist=el turista|reservation=la reserva|arrive=llegar",
+jobs:"manager=el gerente|worker=el trabajador|lawyer=el abogado|farmer=el agricultor|pharmacist=el farmacéutico|accountant=el contable|mechanic=el mecánico|programmer=el programador|journalist=el periodista|police officer=el policía|carpenter=el carpintero|salary=el sueldo",
+nature:"sea=el mar|tree=el árbol|flower=la flor|mountain=la montaña|river=el río|desert=el desierto|sky=el cielo|moon=la luna|star=la estrella|land=la tierra|field=el campo|stone=la piedra",
+tech:"phone=el teléfono|computer=el ordenador|internet=internet|screen=la pantalla|password=la contraseña|message=el mensaje|charger=el cargador|download=descargar|app=la aplicación|email=el correo electrónico|battery=la batería|website=la página web",
+hobbies:"football=el fútbol|swim=nadar|draw=dibujar|music=la música|game=el juego|team=el equipo|win=ganar|lose=perder|practice=practicar|hobby=el pasatiempo|run=correr|cook=cocinar",
+kitchen:"plate=el plato|cup=la taza|spoon=la cuchara|knife=el cuchillo|fork=el tenedor|pot=la olla|oven=el horno|fridge=la nevera|boil=hervir|fry=freír|cut=cortar|recipe=la receta",
+verbs2:"open=abrir|close=cerrar|start=empezar|finish=terminar|help=ayudar|wait=esperar|ask=preguntar|answer=responder|find=encontrar|forget=olvidar|remember=recordar|understand=entender",
+adj2:"clean=limpio|dirty=sucio|full=lleno|empty=vacío|heavy=pesado|light=ligero|strong=fuerte|weak=débil|quiet=silencioso|noisy=ruidoso|safe=seguro|dangerous=peligroso",
+business:"company=la empresa|contract=el contrato|deadline=la fecha límite|experience=la experiencia|interview=la entrevista|employee=el empleado|profit=el beneficio|project=el proyecto|report=el informe|skill=la habilidad|responsibility=la responsabilidad|colleague=el compañero de trabajo",
+education:"university=la universidad|degree=el título|research=la investigación|subject=la asignatura|grade=la nota|homework=los deberes|knowledge=el conocimiento|lecture=la conferencia|scholarship=la beca|graduate=graduarse|improve=mejorar|certificate=el certificado",
+society:"community=la comunidad|government=el gobierno|war=la guerra|peace=la paz|rights=los derechos|news=las noticias|problem=el problema|solution=la solución|decision=la decisión|opinion=la opinión|support=el apoyo|future=el futuro",
+verbs3:"decide=decidir|explain=explicar|suggest=sugerir|agree=estar de acuerdo|disagree=no estar de acuerdo|believe=creer|prefer=preferir|allow=permitir|avoid=evitar|achieve=lograr|manage=gestionar|depend=depender",
+science:"cell=la célula|bacteria=las bacterias|virus=el virus|microscope=el microscopio|experiment=el experimento|analysis=el análisis|accurate=preciso|data=los datos|infection=la infección|diagnosis=el diagnóstico|treatment=el tratamiento|vaccine=la vacuna",
+linkers:"because=porque|but=pero|so=así que|although=aunque|however=sin embargo|therefore=por lo tanto|also=también|then=luego|finally=finalmente|for example=por ejemplo",
+character:"confident=seguro de sí mismo|anxious=ansioso|grateful=agradecido|jealous=celoso|stubborn=terco|generous=generoso|reliable=fiable|ambitious=ambicioso|frustrated=frustrado|embarrassed=avergonzado|curious=curioso|patient=paciente",
+academic:"significant=significativo|evidence=la evidencia|approach=el enfoque|assess=valorar|consequence=la consecuencia|factor=el factor|hypothesis=la hipótesis|estimate=estimar|indicate=indicar|require=requerir|sufficient=suficiente",
+routine:"wake up=despertarse|brush=cepillarse|shower=la ducha|get dressed=vestirse|lunch=el almuerzo|nap=la siesta|watch TV=ver la tele|go to bed=acostarse|early=temprano|late=tarde|usually=normalmente",
+fruits:"banana=el plátano|orange=la naranja|grapes=las uvas|lemon=el limón|watermelon=la sandía|tomato=el tomate|potato=la patata|onion=la cebolla|carrot=la zanahoria|cucumber=el pepino|olive=la aceituna|vegetables=las verduras",
+chores:"clean=limpiar|wash=lavar|sweep=barrer|iron=planchar|tidy=ordenar|laundry=la colada|rubbish=la basura|dust=el polvo|fix=arreglar|water the plants=regar las plantas|make the bed=hacer la cama",
+city:"left=izquierda|right=derecha|straight=recto|corner=la esquina|traffic lights=el semáforo|bridge=el puente|square=la plaza|next to=al lado de|opposite=enfrente de|between=entre|far=lejos|near=cerca",
+environment:"pollution=la contaminación|recycle=reciclar|climate=el clima|energy=la energía|waste=los residuos|protect=proteger|plastic=el plástico|drought=la sequía|temperature=la temperatura|resource=el recurso|solar=solar|environment=el medio ambiente",
+media:"social media=las redes sociales|post=la publicación|share=compartir|follow=seguir|comment=el comentario|channel=el canal|fake news=las noticias falsas|online=en línea|search=buscar|upload=subir|privacy=la privacidad|account=la cuenta",
+numbers2:"four=cuatro|five=cinco|six=seis|seven=siete|eight=ocho|nine=nueve|eleven=once|twelve=doce|twenty=veinte|fifty=cincuenta|thousand=mil|second=segundo",
+calendar:"Monday=el lunes|Tuesday=el martes|Wednesday=el miércoles|Thursday=el jueves|Sunday=el domingo|January=enero|March=marzo|June=junio|August=agosto|December=diciembre|weekend=el fin de semana|holiday=las vacaciones",
+classroom:"board=la pizarra|desk=el pupitre|pencil=el lápiz|eraser=la goma|ruler=la regla|page=la página|question=la pregunta|word=la palabra|sentence=la frase|class=la clase|classmate=el compañero de clase|backpack=la mochila",
+drinks:"coffee=el café|juice=el zumo|meat=la carne|cheese=el queso|soup=la sopa|salad=la ensalada|sandwich=el bocadillo|pizza=la pizza|cake=la tarta|honey=la miel|butter=la mantequilla|ice cream=el helado",
+colors2:"pink=rosa|purple=morado|brown=marrón|gray=gris|gold=dorado|silver=plateado|circle=el círculo|rectangle=el rectángulo|triangle=el triángulo|line=la línea|dark=oscuro|bright=brillante",
+house2:"sofa=el sofá|lamp=la lámpara|mirror=el espejo|carpet=la alfombra|stairs=las escaleras|bathroom=el baño|garden=el jardín|pillow=la almohada|blanket=la manta|towel=la toalla|soap=el jabón|clock=el reloj de pared",
+body2:"face=la cara|hair=el pelo|arm=el brazo|finger=el dedo|neck=el cuello|knee=la rodilla|shoulder=el hombro|stomach=el estómago|skin=la piel|lips=los labios|brain=el cerebro|bone=el hueso",
+sports:"basketball=el baloncesto|tennis=el tenis|gym=el gimnasio|player=el jugador|match=el partido|goal=el gol|coach=el entrenador|ball=la pelota|race=la carrera|score=el marcador|stadium=el estadio|exercise=el ejercicio",
+health2:"dentist=el dentista|clinic=la clínica|ambulance=la ambulancia|injection=la inyección|prescription=la receta médica|allergy=la alergia|bandage=la venda|x-ray=la radiografía|symptom=el síntoma|pill=la pastilla|emergency=la emergencia|recover=recuperarse",
+travel2:"suitcase=la maleta|visa=el visado|customs=la aduana|gate=la puerta de embarque|boarding pass=la tarjeta de embarque|delay=el retraso|souvenir=el recuerdo|tour=el recorrido|guide=el guía|return=la vuelta|seat=el asiento|passenger=el pasajero",
+places2:"post office=la oficina de correos|bakery=la panadería|cinema=el cine|park=el parque|zoo=el zoológico|museum=el museo|supermarket=el supermercado|gas station=la gasolinera|police station=la comisaría|factory=la fábrica|office=la oficina|hall=el salón",
+time2:"afternoon=la tarde|evening=el atardecer|noon=el mediodía|midnight=la medianoche|soon=pronto|later=más tarde|already=ya|yet=todavía|often=a menudo|sometimes=a veces|ago=hace",
+verbs4:"sit=sentarse|stand=estar de pie|jump=saltar|laugh=reír|cry=llorar|smile=sonreír|sing=cantar|dance=bailar|play=jugar|push=empujar|pull=tirar|carry=llevar",
+verbs5:"send=enviar|receive=recibir|bring=traer|take=tomar|give=dar|show=mostrar|tell=contar|say=decir|call=llamar|meet=conocer|choose=elegir|invite=invitar",
+work2:"boss=el jefe|career=la carrera profesional|promotion=el ascenso|CV=el currículum|part-time=a tiempo parcial|full-time=a tiempo completo|apply=solicitar|hire=contratar|retire=jubilarse|shift=el turno|training=la formación|internship=las prácticas",
+money:"save=ahorrar|spend=gastar|borrow=pedir prestado|lend=prestar|cash=el efectivo|coin=la moneda|bill=la factura|debt=la deuda|tax=el impuesto|cost=costar|afford=permitirse|wallet=la cartera",
+home3:"rent=el alquiler|landlord=el casero|neighbor=el vecino|furniture=los muebles|repair=reparar|electricity=la electricidad|plumber=el fontanero|balcony=el balcón|garage=el garaje|apartment=el piso|ceiling=el techo|move=mudarse",
+nature2:"forest=el bosque|lake=el lago|island=la isla|valley=el valle|hill=la colina|ocean=el océano|earthquake=el terremoto|flood=la inundación|volcano=el volcán|wave=la ola|sand=la arena|weather forecast=el pronóstico del tiempo",
+tech2:"laptop=el portátil|keyboard=el teclado|mouse=el ratón|printer=la impresora|software=el software|update=la actualización|file=el archivo|folder=la carpeta|camera=la cámara|video=el vídeo|speaker=el altavoz|signal=la señal",
+feelings3:"confused=confundido|disappointed=decepcionado|relieved=aliviado|nervous=nervioso|upset=disgustado|hopeful=esperanzado|cheerful=alegre|shy=tímido|brave=valiente|polite=educado|rude=maleducado|friendly=simpático",
+abstract:"freedom=la libertad|justice=la justicia|ambition=la ambición|confidence=la confianza|patience=la paciencia|honesty=la honestidad|respect=el respeto|success=el éxito|failure=el fracaso|opportunity=la oportunidad|challenge=el reto|kindness=la amabilidad",
+verbsb2:"analyze=analizar|assume=suponer|claim=afirmar|conclude=concluir|consider=considerar|emphasize=destacar|evaluate=evaluar|identify=identificar|maintain=mantener|obtain=obtener|reduce=reducir|contribute=contribuir",
+adjb2:"essential=esencial|crucial=crucial|obvious=obvio|reasonable=razonable|flexible=flexible|independent=independiente|ancient=antiguo|modern=moderno|complex=complejo|practical=práctico|temporary=temporal|permanent=permanente"
+};
+const SENT_ES=[
+["Buenos días.","صباح الخير.","A1"],["Hola, ¿cómo estás?","مرحبا، كيف حالك؟","A1"],["Me llamo Ahmed.","اسمي أحمد.","A1"],["Soy de Palestina.","أنا من فلسطين.","A1"],["Esta es mi familia.","هذه عائلتي.","A1"],["Quiero un té, por favor.","بدي شاي لو سمحت.","A1"],["Agua, por favor.","مي لو سمحت.","A1"],["Muchas gracias.","شكراً كتير.","A1"],["¿Dónde está el hospital?","وين المستشفى؟","A1"],["¿Cuánto cuesta?","قديش سعره؟","A1"],["Estoy aprendiendo español.","عم بتعلم إسباني.","A1"],["Soy estudiante.","أنا طالب.","A1"],["Mi padre es médico.","أبي دكتور.","A1"],["El gato está debajo de la mesa.","القطة تحت الطاولة.","A1"],["Hoy hace mucho calor.","اليوم الجو حار كتير.","A1"],["Hasta mañana.","لبكرة.","A1"],["No entiendo.","مش فاهم.","A1"],["Hable más despacio, por favor.","احكي أبطأ لو سمحت.","A1"],["¿Qué hora es?","كم الساعة؟","A1"],["Tengo hambre.","أنا جوعان.","A1"],["Tengo dos hermanos.","عندي أخوين.","A1"],["El libro está en la mesa.","الكتاب على الطاولة.","A1"],["El autobús llega tarde.","الباص متأخر.","A1"],["Mi casa está cerca de la escuela.","بيتي قريب من المدرسة.","A1"],["¿Te gusta el café?","بتحب القهوة؟","A1"],["Buenas noches.","تصبح على خير.","A1"],["¿Cómo te llamas?","شو اسمك؟","A1"],["¿Dónde vives?","وين ساكن؟","A1"],
+["Ayer fui al mercado.","امبارح رحت عالسوق.","A2"],["Mi madre está cocinando la cena.","أمي عم تطبخ العشا.","A2"],["Mañana vamos a ir a Madrid.","بكرة رح نروح على مدريد.","A2"],["Este hotel es muy caro.","هالفندق غالي كتير.","A2"],["¿Puede ayudarme?","ممكن تساعدني؟","A2"],["Me duele la cabeza.","راسي بوجعني.","A2"],["Tienes que ir al médico.","لازم تروح عالدكتور.","A2"],["La cuenta, por favor.","الحساب لو سمحت.","A2"],["¿Puedo pagar con tarjeta?","بقدر أدفع بالبطاقة؟","A2"],["¿El aeropuerto está lejos de aquí?","المطار بعيد عن هون؟","A2"],["Me levanto a las siete todos los días.","بصحى الساعة سبعة كل يوم.","A2"],["Mi hermana es mayor que yo.","أختي أكبر مني.","A2"],["La semana pasada visité a mi abuela.","الأسبوع الماضي زرت ستي.","A2"],["¿Qué haces el fin de semana?","شو بتعمل بنهاية الأسبوع؟","A2"],["¿Puedo probarme este vestido?","بقدر أجرب هالفستان؟","A2"],["¿A qué hora sale el tren?","إمتى بيطلع القطار؟","A2"],["Me encanta el español.","بحب الإسباني كتير.","A2"],["He perdido mis llaves.","ضيعت مفاتيحي.","A2"],["Quiero un billete.","بدي تذكرة.","A2"],["Gire a la derecha y siga recto.","لف يمين وكمّل دغري.","A2"],["Hablo un poco de español.","بحكي شوية إسباني.","A2"],["La película fue muy buena.","الفيلم كان حلو كتير.","A2"],
+["Vivo aquí desde hace tres años.","ساكن هون من ثلاث سنين.","B1"],["Si llueve, nos quedaremos en casa.","إذا شتت رح نضل بالبيت.","B1"],["Nunca he probado la comida japonesa.","عمري ما جربت أكل ياباني.","B1"],["Estoy pensando en cambiar de trabajo.","عم بفكر أغير شغلي.","B1"],["La reunión ha sido cancelada.","الاجتماع انلغى.","B1"],["Aunque llovía, salimos a pasear.","رغم المطر طلعنا نتمشى.","B1"],["Ojalá tuviera más tiempo libre.","يا ريت عندي وقت فاضي أكثر.","B1"],["Si practicas cada día, mejorarás rápido.","إذا تدربت كل يوم رح تتحسن بسرعة.","B1"],["Tenemos que terminar el informe antes del viernes.","لازم نخلص التقرير قبل الجمعة.","B1"],["Me preguntó dónde vivía.","سألني وين ساكن.","B1"],["Es importante beber suficiente agua.","مهم تشرب مي كفاية.","B1"],["Estoy de acuerdo contigo.","أنا متفق معك.","B1"],["Consiguió resolver el problema.","قدر يحل المشكلة.","B1"],["Tomamos un taxi porque era tarde.","أخدنا تاكسي لأنه كان متأخر.","B1"]
+].map(([en,ar,lv])=>({en,ar,lv}));
+const PHRASES_ES=[
+{id:"greet",name:"تعارف وتحيات",icon:"🤝",p:[["Mucho gusto.","تشرفت بمعرفتك."],["¿Cómo estás?","كيف حالك؟"],["Bien, gracias. ¿Y tú?","منيح شكراً، وإنت؟"],["¿De dónde eres?","من وين إنت؟"],["Soy de Palestina.","أنا من فلسطين."],["Hasta luego.","بنشوفك بعدين."],["Que tengas un buen día.","نهارك سعيد."],["¡Cuánto tiempo!","من زمان ما شفتك!"]]},
+{id:"shop",name:"في المحل",icon:"🛒",p:[["¿Cuánto cuesta esto?","قديش سعر هاد؟"],["¿Puedo ver esto?","بقدر أشوف هاد؟"],["¿Tiene una talla más pequeña?","في مقاس أصغر؟"],["Solo estoy mirando, gracias.","بس بتفرج، شكراً."],["¿Puedo pagar con tarjeta?","بقدر أدفع بالبطاقة؟"],["Es muy caro.","غالي كتير."],["¿Me hace un descuento?","بتعملي خصم؟"],["Me lo llevo.","رح آخده."]]},
+{id:"restaurant",name:"في المطعم",icon:"🍽️",p:[["Una mesa para dos, por favor.","طاولة لشخصين لو سمحت."],["¿Me trae la carta?","بتجيبلي المنيو؟"],["¿Qué me recomienda?","شو بتنصحني؟"],["Quiero el pollo, por favor.","بدي الدجاج لو سمحت."],["Sin picante, por favor.","بدون حار لو سمحت."],["La cuenta, por favor.","الحساب لو سمحت."],["¡Estaba delicioso!","كان طيب كتير!"],["Para llevar, por favor.","سفري لو سمحت."]]},
+{id:"doctor",name:"عند الطبيب",icon:"🩺",p:[["No me encuentro bien.","مش حاسس حالي منيح."],["Me duele aquí.","هون بوجعني."],["Tengo fiebre desde ayer.","عندي سخونة من امبارح."],["¿Tengo que tomar medicina?","لازم آخد دوا؟"],["¿Cuántas veces al día?","كم مرة باليوم؟"],["¿Es grave?","الوضع خطير؟"],["Soy alérgico a la penicilina.","عندي حساسية من البنسلين."],["¿Cuándo estarán los resultados?","إمتى بتجهز النتائج؟"]]},
+{id:"travel",name:"السفر والتنقل",icon:"🧳",p:[["¿Dónde está la parada de autobús?","وين موقف الباص؟"],["¿Cómo llego al centro?","كيف بوصل لوسط البلد؟"],["Quiero reservar una habitación.","بدي أحجز غرفة."],["¿El desayuno está incluido?","الفطور مشمول؟"],["¿A qué hora sale el avión?","إمتى بتطلع الطيارة؟"],["¿Me lo puede mostrar en el mapa?","بتفرجيني عالخريطة؟"],["¿Está lejos de aquí?","بعيد عن هون؟"],["Me he perdido.","أنا ضايع."]]},
+{id:"polite",name:"عبارات لبقة",icon:"🙏",p:[["¿Me puede ayudar?","ممكن تساعدني؟"],["Perdone.","عن إذنك."],["No pasa nada.","ولا يهمك."],["De nada.","العفو."],["No te preocupes.","لا تقلق."],["Perdone las molestias.","آسف على الإزعاج."],["Muchísimas gracias.","شكراً كتير كتير."],["¡Claro!","أكيد!"]]},
+{id:"class",name:"في الصف",icon:"🏫",p:[["¿Puede repetir?","بتعيدها لو سمحت؟"],["¿Qué significa esta palabra?","شو معنى هالكلمة؟"],["¿Cómo se escribe?","كيف بتنكتب؟"],["¿Cómo se dice en español?","كيف بتنقال بالإسباني؟"],["No lo entendí.","ما فهمتها."],["¿Puede hablar más despacio?","بتحكي أبطأ؟"],["¿Puedo hacer una pregunta?","بقدر أسأل سؤال؟"],["He terminado.","خلصت."]]},
+{id:"emergency",name:"طوارئ",icon:"🚑",p:[["¡Socorro!","النجدة!"],["¡Llamen a una ambulancia!","اطلبوا إسعاف!"],["¡Llamen a la policía!","اتصلوا بالشرطة!"],["¡Fuego!","حريق!"],["Necesito un médico.","بحتاج دكتور."],["¿Estás bien?","إنت منيح؟"],["¡Cuidado!","انتبه!"],["¿Dónde está el hospital más cercano?","وين أقرب مستشفى؟"]]}
+];
+const TUTOR_ES_START={free:"¡Hola! Soy Toki, tu profesor de español. ¿De qué quieres hablar hoy?",rest:"¡Buenas noches! Bienvenido a nuestro restaurante. ¿Cuántas personas son?",doc:"Hola, siéntese, por favor. ¿Qué le pasa?",job:"Buenos días, gracias por venir. ¿Puede hablarnos un poco de usted?",air:"Buenos días. ¿Me enseña su pasaporte y su billete, por favor?",friend:"¡Hola! Soy Lucía, soy nueva aquí. ¿De dónde eres?",day:"¡Hola! ¿Qué tal tu día? Cuéntame.",debate:"¡Vamos a debatir! ¿Las redes sociales son buenas o malas para los jóvenes? ¿Qué opinas?",ask:"اسألني أي سؤال عن الإسباني: قاعدة، كلمة، فرق بين كلمتين، نطق… وبجاوبك بالعربي مع أمثلة."};
+const LESSONS_ES=[
+{id:"es_art",lv:"A1",t:"المذكر والمؤنث <span class='en'>el / la</span>",x:`كل اسم بالإسباني يا مذكر يا مؤنث. غالباً اللي بيخلص بـ ${E("-o")} مذكر ويسبقه ${E("el")}، واللي بيخلص بـ ${E("-a")} مؤنث ويسبقه ${E("la")}. بالجمع: ${E("los")} و${E("las")}.`,ex:[["el libro","الكتاب"],["la mesa","الطاولة"],["los libros","الكتب"],["las casas","البيوت"]],
+ q:[["___ casa es grande.",["La","El","Los"],"La"],["___ perro es negro.",["El","La","Las"],"El"],["___ libros son nuevos.",["Los","Las","El"],"Los"],["___ manzanas son rojas.",["Las","Los","La"],"Las"]]},
+{id:"es_ser",lv:"A1",t:"فعل الكون <span class='en'>ser</span>",x:`${E("ser")} للهوية والصفات الثابتة: ${E("yo soy")}، ${E("tú eres")}، ${E("él / ella es")}، ${E("nosotros somos")}، ${E("ellos son")}.`,ex:[["Yo soy estudiante.","أنا طالب."],["Tú eres mi amigo.","إنت صاحبي."],["Ella es médica.","هي دكتورة."],["Somos de Palestina.","إحنا من فلسطين."]],
+ q:[["Yo ___ estudiante.",["soy","eres","es"],"soy"],["Tú ___ mi amigo.",["eres","soy","somos"],"eres"],["Ella ___ médica.",["es","son","soy"],"es"],["Nosotros ___ de Palestina.",["somos","son","es"],"somos"]]},
+{id:"es_estar",lv:"A1",t:"<span class='en'>ser</span> ولا <span class='en'>estar</span>؟",x:`${E("estar")} للمكان والحالة المؤقتة: ${E("estoy cansado")} (أنا تعبان هلأ)، ${E("está en casa")} (هو بالبيت). و${E("ser")} للصفات الثابتة: ${E("es alto")} (طويل).`,ex:[["Estoy cansado.","أنا تعبان."],["El libro está en la mesa.","الكتاب على الطاولة."],["Mi hermano es alto.","أخوي طويل."],["¿Dónde está el baño?","وين الحمام؟"]],
+ q:[["Yo ___ cansado.",["estoy","soy","es"],"estoy"],["El libro ___ en la mesa.",["está","es","son"],"está"],["Mi hermano ___ alto.",["es","está","estoy"],"es"],["¿Dónde ___ el baño?",["está","es","son"],"está"]]},
+{id:"es_hay",lv:"A1",t:"<span class='en'>hay</span> = يوجد",x:`${E("hay")} يعني «في / يوجد»، ونفس الكلمة للمفرد والجمع: ${E("hay un gato")}، ${E("hay dos gatos")}. والنفي ${E("no hay")}.`,ex:[["Hay un gato en la casa.","في قطة بالبيت."],["Hay veinte estudiantes.","في عشرين طالب."],["¿Hay un banco cerca?","في بنك قريب؟"],["No hay agua.","ما في مي."]],
+ q:[["___ un gato en la casa.",["Hay","Es","Está"],"Hay"],["En la clase ___ veinte estudiantes.",["hay","son","está"],"hay"],["¿___ un banco cerca?",["Hay","Está","Es"],"Hay"],["No ___ agua.",["hay","es","está"],"hay"]]},
+{id:"es_pres",lv:"A1",t:"المضارع <span class='en'>-ar / -er / -ir</span>",x:`بنشيل ${E("-ar/-er/-ir")} وبنضيف النهاية: ${E("hablar → hablo, hablas, habla, hablamos")}، ${E("comer → como, comes, come")}، ${E("vivir → vivo, vives, vive")}.`,ex:[["Yo hablo español.","أنا بحكي إسباني."],["Tú comes mucho.","إنت بتاكل كتير."],["Ella vive en Madrid.","هي ساكنة بمدريد."],["Trabajamos en una oficina.","منشتغل بمكتب."]],
+ q:[["Yo ___ español.",["hablo","hablas","habla"],"hablo"],["Tú ___ mucho.",["comes","como","come"],"comes"],["Ella ___ en Madrid.",["vive","vivo","vivimos"],"vive"],["Nosotros ___ en una oficina.",["trabajamos","trabajo","trabajan"],"trabajamos"]]},
+{id:"es_gustar",lv:"A2",t:"<span class='en'>me gusta</span> = بحب",x:`${E("me gusta")} مع المفرد أو الفعل، و${E("me gustan")} مع الجمع. ${E("te gusta")} = بتحب، ${E("le gusta")} = بيحب/بتحب.`,ex:[["Me gusta el café.","بحب القهوة."],["Me gustan las manzanas.","بحب التفاح."],["¿Te gusta bailar?","بتحب ترقص؟"],["A ella le gustan los perros.","هي بتحب الكلاب."]],
+ q:[["Me ___ el café.",["gusta","gustan","gusto"],"gusta"],["Me ___ las manzanas.",["gustan","gusta","gusto"],"gustan"],["¿Te ___ bailar?",["gusta","gustas","gustan"],"gusta"],["A ella le ___ los perros.",["gustan","gusta","gustamos"],"gustan"]]},
+{id:"es_ira",lv:"A2",t:"المستقبل القريب <span class='en'>ir a</span>",x:`«رح أعمل» = ${E("voy a + الفعل")}: ${E("voy a comer")} = رح آكل. التصريف: ${E("voy, vas, va, vamos, van")}.`,ex:[["Mañana voy a viajar.","بكرة رح أسافر."],["¿Qué vas a hacer?","شو رح تعمل؟"],["Ella va a estudiar.","هي رح تدرس."],["Vamos a cenar fuera.","رح نتعشى برا."]],
+ q:[["Mañana ___ a viajar.",["voy","va","vamos"],"voy"],["¿Qué ___ a hacer tú?",["vas","voy","van"],"vas"],["Ella ___ a estudiar.",["va","voy","vas"],"va"],["Nosotros ___ a cenar fuera.",["vamos","van","voy"],"vamos"]]},
+{id:"es_past",lv:"A2",t:"الماضي <span class='en'>pretérito</span>",x:`للي صار وخلص: ${E("hablar → hablé, hablaste, habló")}، ${E("comer → comí, comiste, comió")}. وفي أفعال شاذة مهمة: ${E("ir → fui, fue")}، ${E("hacer → hice, hicimos")}.`,ex:[["Ayer hablé con mi madre.","امبارح حكيت مع أمي."],["¿Qué comiste?","شو أكلت؟"],["Ella fue al mercado.","هي راحت عالسوق."],["Hicimos la cena.","عملنا العشا."]],
+ q:[["Ayer ___ con mi madre.",["hablé","hablo","hablaré"],"hablé"],["¿Qué ___ tú ayer?",["comiste","comí","come"],"comiste"],["Ella ___ al mercado.",["fue","fui","va"],"fue"],["Nosotros ___ la cena.",["hicimos","hice","hacemos"],"hicimos"]]},
+{id:"es_negq",lv:"A2",t:"النفي والسؤال <span class='en'>no / ¿?</span>",x:`للنفي بنحط ${E("no")} قبل الفعل. وبالسؤال بنكتب ${E("¿")} بالأول و${E("?")} بالآخر. كلمات السؤال: ${E("qué, dónde, cómo, cuándo, cuánto")}.`,ex:[["No hablo francés.","ما بحكي فرنسي."],["¿Dónde vives?","وين ساكن؟"],["Ella no bebe café.","هي ما بتشرب قهوة."],["¿Cómo te llamas?","شو اسمك؟"]],
+ q:[["Yo ___ hablo francés.",["no","ni","nada"],"no"],["___ Dónde vives?",["¿","?","!"],"¿"],["Ella no ___ café.",["bebe","beber","bebo"],"bebe"],["¿___ te llamas?",["Cómo","Qué","Dónde"],"Cómo"]]},
+{id:"es_comp",lv:"A2",t:"المقارنة <span class='en'>más ... que</span>",x:`${E("más ... que")} = أكثر من، ${E("menos ... que")} = أقل من، ${E("tan ... como")} = زي. والتفضيل: ${E("el más grande")} = الأكبر.`,ex:[["Madrid es más grande que Toledo.","مدريد أكبر من طليطلة."],["Mi hermano es más alto que yo.","أخوي أطول مني."],["Soy tan alto como tú.","أنا طويل زيك."],["Es el más grande de la ciudad.","هو الأكبر بالمدينة."]],
+ q:[["Madrid es ___ grande que Toledo.",["más","muy","mucho"],"más"],["Mi hermano es más alto ___ yo.",["que","de","como"],"que"],["Es el ___ grande de la ciudad.",["más","muy","tan"],"más"],["Soy ___ alto como tú.",["tan","más","menos"],"tan"]]},
+{id:"es_perf",lv:"B1",t:"الماضي القريب <span class='en'>he + participio</span>",x:`للتجارب واللي صار بفترة لسا مستمرة: ${E("he / has / ha / hemos + -ado / -ido")}: ${E("he comido")} = أكلت، ${E("nunca he estado")} = عمري ما كنت.`,ex:[["Nunca he estado en España.","عمري ما رحت على إسبانيا."],["¿Has visto la película?","شفت الفيلم؟"],["Ella ha llegado tarde.","هي وصلت متأخرة."],["Hoy hemos trabajado mucho.","اليوم اشتغلنا كتير."]],
+ q:[["Nunca ___ estado en España.",["he","has","ha"],"he"],["¿___ visto la película?",["Has","He","Ha"],"Has"],["Ella ___ llegado tarde.",["ha","he","han"],"ha"],["Hoy hemos ___ mucho.",["trabajado","trabajar","trabajamos"],"trabajado"]]},
+{id:"es_cond",lv:"B1",t:"الشرط <span class='en'>si + presente</span>",x:`${E("si")} = إذا. بعدها مضارع، والجواب مضارع أو مستقبل: ${E("Si llueve, me quedo en casa")}. ما بنستخدم المستقبل بعد ${E("si")} مباشرة.`,ex:[["Si tengo tiempo, iré.","إذا عندي وقت رح أروح."],["Si estudias, aprobarás.","إذا درست بتنجح."],["Si llueve, nos quedamos en casa.","إذا شتت بنضل بالبيت."],["Te llamo si necesito algo.","بتصل فيك إذا احتجت إشي."]],
+ q:[["Si ___ tiempo, iré.",["tengo","tendré","tuve"],"tengo"],["Si estudias, ___ el examen.",["aprobarás","aprobaste","aprobar"],"aprobarás"],["Si llueve, nos ___ en casa.",["quedamos","quedar","quedado"],"quedamos"],["Te llamo si ___ algo.",["necesito","necesitar","necesitado"],"necesito"]]},
+{id:"es_oblig",lv:"B1",t:"لازم <span class='en'>tener que / hay que</span>",x:`${E("tener que + فعل")} = لازم (لشخص معين): ${E("tengo que estudiar")}. و${E("hay que + فعل")} = لازم (بشكل عام): ${E("hay que beber agua")}.`,ex:[["Tengo que ir al médico.","لازم أروح عالدكتور."],["Tienes que descansar.","لازم ترتاح."],["Hay que beber agua.","لازم الواحد يشرب مي."],["Tienen que trabajar.","لازم يشتغلوا."]],
+ q:[["___ que ir al médico.",["Tengo","Soy","Estoy"],"Tengo"],["Tú tienes ___ descansar.",["que","de","a"],"que"],["___ que beber agua.",["Hay","Está","Es"],"Hay"],["Ellos ___ que trabajar.",["tienen","tiene","tengo"],"tienen"]]},
+{id:"es_refl",lv:"B1",t:"الأفعال الانعكاسية <span class='en'>me levanto</span>",x:`أفعال بتنعمل على النفس ومعها ضمير: ${E("levantarse → me levanto, te levantas, se levanta, nos levantamos")}. أمثلة: ${E("ducharse, vestirse, acostarse")}.`,ex:[["Me levanto a las siete.","بصحى الساعة سبعة."],["¿A qué hora te acuestas?","إمتى بتنام؟"],["Ella se ducha por la mañana.","هي بتتحمم الصبح."],["Nos vestimos rápido.","منلبس بسرعة."]],
+ q:[["Yo ___ levanto a las siete.",["me","te","se"],"me"],["¿A qué hora ___ acuestas?",["te","me","se"],"te"],["Ella ___ ducha por la mañana.",["se","me","te"],"se"],["Nosotros ___ vestimos rápido.",["nos","se","me"],"nos"]]}
+];
+const STORIES_ES=[
+{id:"ess1",lv:"A1",t:"Mi día",ar:"يومي",en:["Me llamo Omar. Vivo en Gaza con mi familia. Me levanto a las siete.","Desayuno pan, queso y aceitunas. Mi madre prepara té.","Después voy a la escuela. Mi escuela está cerca de mi casa. Me gusta mucho mi profesor."],
+ tr:["اسمي عمر. ساكن بغزة مع عيلتي. بصحى الساعة سبعة.","بفطر خبز وجبنة وزيتون. أمي بتعمل الشاي.","بعدين بروح عالمدرسة. مدرستي قريبة من بيتي. بحب أستاذي كتير."],
+ q:[["¿Dónde vive Omar?",["en Gaza","en Madrid","en Barcelona"],"en Gaza"],["¿Qué desayuna?",["pan, queso y aceitunas","pizza","sopa"],"pan, queso y aceitunas"],["¿Dónde está su escuela?",["cerca de su casa","muy lejos","en el centro"],"cerca de su casa"]]},
+{id:"ess2",lv:"A1",t:"En el mercado",ar:"في السوق",en:["Hoy es sábado. Ana y su madre van al mercado.","Compran tomates, manzanas y naranjas. Las manzanas son muy bonitas.","Ana pregunta: «¿Cuánto cuesta?». El vendedor dice: «Dos euros»."],
+ tr:["اليوم السبت. آنا وأمها رايحين عالسوق.","بيشتروا بندورة وتفاح وبرتقال. التفاح حلو كتير.","آنا بتسأل: «قديش سعره؟» والبياع بيقول: «يورو ين»."],
+ q:[["¿Qué día es hoy?",["sábado","lunes","viernes"],"sábado"],["¿Qué compran?",["tomates, manzanas y naranjas","pan y leche","carne y arroz"],"tomates, manzanas y naranjas"],["¿Cuánto cuesta?",["dos euros","diez euros","cinco euros"],"dos euros"]]},
+{id:"ess3",lv:"A2",t:"Un viaje a Madrid",ar:"رحلة إلى مدريد",en:["El verano pasado fui a Madrid con mi familia. Fuimos en avión y el viaje duró cinco horas.","Visitamos el Museo del Prado y el Parque del Retiro. Comimos paella en un restaurante pequeño.","Lo que más me gustó fue la gente, muy amable. Quiero volver el año que viene."],
+ tr:["الصيف الماضي رحت على مدريد مع عيلتي. رحنا بالطيارة والرحلة أخدت خمس ساعات.","زرنا متحف البرادو وحديقة الريتيرو. أكلنا باييلا بمطعم صغير.","أكثر إشي حبيته الناس، لطاف كتير. بدي أرجع السنة الجاية."],
+ q:[["¿Cómo fueron a Madrid?",["en avión","en tren","en coche"],"en avión"],["¿Qué comieron?",["paella","pizza","sopa"],"paella"],["¿Qué le gustó más?",["la gente","el museo","el tiempo"],"la gente"]]},
+{id:"ess4",lv:"B1",t:"El nuevo trabajo",ar:"الشغل الجديد",en:["Lucía buscó trabajo durante seis meses después de terminar la universidad. Envió muchas solicitudes, pero nadie le respondió.","Por fin, una empresa de software la invitó a una entrevista. Estaba muy nerviosa, pero se preparó bien.","En la entrevista fue sincera y habló de su experiencia. Una semana después, le dijeron que el puesto era suyo."],
+ tr:["لوسيا دورت على شغل ست شهور بعد ما خلصت الجامعة. بعتت طلبات كتير بس ما حدا رد عليها.","أخيراً شركة برمجيات عزمتها على مقابلة. كانت متوترة كتير بس تحضرت منيح.","بالمقابلة كانت صادقة وحكت عن خبرتها. بعد أسبوع قالولها إنه الوظيفة إلها."],
+ q:[["¿Cuánto tiempo buscó trabajo?",["seis meses","un año","dos meses"],"seis meses"],["¿Qué empresa la invitó?",["una empresa de software","un banco","un hospital"],"una empresa de software"],["¿Cuándo supo que tenía el puesto?",["una semana después","al día siguiente","un mes después"],"una semana después"]]}
+];
+const DIALOGS_ES=[
+{id:"esd1",lv:"A1",t:"تعارف",icon:"🤝",a:"Pedro",b:"Sara",l:[["a","¡Hola! Me llamo Pedro.","مرحبا! اسمي بيدرو."],["b","Hola, Pedro. Yo soy Sara. Mucho gusto.","أهلاً بيدرو. أنا سارة. تشرفت."],["a","Igualmente. ¿De dónde eres?","وأنا كمان. من وين إنتِ؟"],["b","Soy de México. ¿Y tú?","أنا من المكسيك. وإنت؟"],["a","Soy de Palestina. Estoy aprendiendo español.","أنا من فلسطين. عم بتعلم إسباني."],["b","¡Qué bien! Hablas muy bien.","حلو! بتحكي منيح كتير."],["a","¡Muchas gracias!","شكراً كتير!"]]},
+{id:"esd2",lv:"A1",t:"في الكافيه",icon:"☕",a:"Camarero",b:"Cliente",l:[["a","¡Hola! ¿Qué desea?","أهلاً! شو بتطلب؟"],["b","Un café con leche, por favor.","قهوة بحليب لو سمحت."],["a","¿Algo más?","إشي ثاني؟"],["b","Sí, un cruasán.","آه، كرواسون."],["a","Muy bien. ¿Para tomar aquí o para llevar?","تمام. هون ولا سفري؟"],["b","Para tomar aquí. ¿Cuánto es?","هون. قديش الحساب؟"],["a","Son cuatro euros.","أربع يورو."]]},
+{id:"esd3",lv:"A2",t:"السؤال عن الطريق",icon:"🗺️",a:"Turista",b:"Señora",l:[["a","Perdone, ¿dónde está el museo?","عفواً، وين المتحف؟"],["b","Siga recto y luego gire a la izquierda.","امشي دغري وبعدين لف شمال."],["a","¿Está lejos?","بعيد؟"],["b","No, está a diez minutos andando.","لا، عشر دقايق مشي."],["a","¿Hay autobús?","في باص؟"],["b","Sí, el autobús número cinco para en la esquina.","آه، الباص رقم خمسة بيوقف عالزاوية."],["a","¡Muchas gracias!","شكراً كتير!"],["b","De nada. ¡Buen día!","العفو. نهارك سعيد!"]]},
+{id:"esd4",lv:"B1",t:"مقابلة عمل",icon:"💼",a:"Directora",b:"Candidato",l:[["a","¿Puede hablarnos un poco de usted?","بتحكيلنا شوي عن حالك؟"],["b","Claro. Soy ingeniero informático y tengo tres años de experiencia.","أكيد. أنا مهندس كمبيوتر وعندي خبرة ثلاث سنين."],["a","¿Por qué quiere trabajar en nuestra empresa?","ليش بدك تشتغل بشركتنا؟"],["b","Porque sus proyectos son muy interesantes y quiero seguir aprendiendo.","لأنه مشاريعكم مثيرة وبدي أكمّل أتعلم."],["a","¿Cuál es su mayor defecto?","شو أكبر عيب فيك؟"],["b","A veces soy demasiado perfeccionista, pero estoy mejorando.","أحياناً بدقق زيادة، بس عم بتحسن."],["a","Gracias. Le llamaremos pronto.","شكراً. رح نتصل فيك قريب."]]}
+];
+const PLACE_ES=[
+["Yo ___ estudiante.",["soy","eres","es"],"soy","A1"],["___ casa es grande.",["La","El","Los"],"La","A1"],["El libro ___ en la mesa.",["está","es","son"],"está","A1"],["Nosotros ___ en Gaza.",["vivimos","vivo","vive"],"vivimos","A1"],
+["el pan",["خبز","ماء","حليب"],"خبز","A1","vocab"],["rojo",["أحمر","أزرق","أخضر"],"أحمر","A1","vocab"],["Hola, ¿cómo estás?",["Hola, ¿cómo estás?","Hola, ¿dónde estás?","Buenos días, ¿cómo estás?"],"Hola, ¿cómo estás?","A1","listen"],
+["Ayer ___ al mercado.",["fui","voy","iré"],"fui","A2"],["Me ___ las manzanas.",["gustan","gusta","gusto"],"gustan","A2"],["Mañana ___ a viajar.",["voy","fui","he"],"voy","A2"],["Mi hermano es más alto ___ yo.",["que","de","como"],"que","A2"],
+["el aeropuerto",["مطار","محطة","ميناء"],"مطار","A2","vocab"],["caro",["غالي","رخيص","جديد"],"غالي","A2","vocab"],["La cuenta, por favor.",["La cuenta, por favor.","La carta, por favor.","La cuenta, por fin."],"La cuenta, por favor.","A2","listen"],
+["Nunca ___ estado en España.",["he","has","ha"],"he","B1"],["Si ___ tiempo, iré.",["tengo","tendré","tuve"],"tengo","B1"],["Tú tienes ___ descansar.",["que","de","a"],"que","B1"],["Ella ___ ducha por la mañana.",["se","me","te"],"se","B1"],
+["la experiencia",["خبرة","تجربة علمية","مقابلة"],"خبرة","B1","vocab"],["el clima",["مناخ","طقس اليوم","بيئة"],"مناخ","B1","vocab"],["Ojalá tuviera más tiempo libre.",["Ojalá tuviera más tiempo libre.","Ojalá tuviera más dinero.","Ojalá tuviera menos trabajo."],"Ojalá tuviera más tiempo libre.","B1","listen"]
+];
 /* ================== TYPING PRACTICE (اكتب الجملة) + PERSONAL PLAN ================== */
 let TY={mode:"sentence",item:null,typed:"",hints:0,done:false,shake:false};
 const tyTarget=()=>TY.item?TY.item.en:"";
 function newTY(){TY.item=TY.mode==="word"?pick(poolWords().filter(w=>/^\p{L}[\p{L}' ]{2,16}$/u.test(w.en))):pick(poolSent());
   TY.typed="";TY.hints=0;TY.done=false;AFTER=()=>{speak(TY.item.en);focusTY()}}
 function focusTY(){const i=$("#tyIn");if(i){i.focus({preventScroll:true});try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}}
-function tyNorm(s){s=String(s).replace(/[’‘]/g,"'");return LANG==="tr"?foldTR(s.toLocaleLowerCase("tr-TR")):s.toLowerCase()}
+function tyNorm(s){s=String(s).replace(/[’‘]/g,"'");return LANG==="en"?s.toLowerCase():foldLang(LANG==="tr"?s.toLocaleLowerCase("tr-TR"):s.toLowerCase())}
 function tyRender(){const t=tyTarget(),ty=TY.typed;let out="",ok=0;
   for(let i=0;i<t.length;i++){const c=t[i],typed=ty[i];
     let cls=typed===undefined?"g":tyNorm(typed)===tyNorm(c)?"k":"x";
@@ -2745,7 +2885,11 @@ LEARN.splice(1,0,["plan","🗓️","خطتي","مهمات اليوم وخطة أ
   return _vh().replace('<h2 class="sec">مهمات اليوم</h2>',`<button class="plan-strip" data-act="go" data-r="plan"><span>${ico("path",22)}</span><b>خطتي اليوم: ${t?`${t} خطوات`:"خلّصتها ✓"}</b><span class="pc">›</span></button><h2 class="sec">مهمات اليوم</h2>`)};VIEWS.home=vHome}
 /* ================== MULTI-LANGUAGE ENGINE (English + Turkish) ================== */
 const LANGS={en:{name:"الإنجليزي",flag:"🇬🇧",tts:"en-US",en:"English",sub:"الكورس الكامل: قواعد، قصص، محادثات، امتحانات وشهادات"},
-             tr:{name:"التركي",flag:"🇹🇷",tts:"tr-TR",en:"Turkish",sub:"جديد: 800+ كلمة، جمل، عبارات، تمارين، ألعاب وتوكي"}};
+             tr:{name:"التركي",flag:"🇹🇷",tts:"tr-TR",en:"Turkish",sub:"750 كلمة، 15 درس قواعد، قصص، محادثات، امتحانات وتوكي"},
+             es:{name:"الإسباني",flag:"🇪🇸",tts:"es-ES",en:"Spanish",sub:"جديد: 750 كلمة، 14 درس قواعد، قصص، محادثات، امتحانات وتوكي"}};
+const LAR=()=>({en:"الإنجليزي",tr:"التركي",es:"الإسباني"})[LANG],LBI=()=>({en:"بالإنجليزي",tr:"بالتركي",es:"بالإسباني"})[LANG],LADJ=()=>({en:"الإنجليزية",tr:"التركية",es:"الإسبانية"})[LANG],LNOUN=()=>({en:"إنجليزي",tr:"تركي",es:"إسباني"})[LANG];
+const LDATA={tr:()=>({W:TRW,SENT:SENT_TR,PHRASES:PHRASES_TR,LESSONS:LESSONS_TR,DIALOGS:DIALOGS_TR,STORIES:STORIES_TR,PLACE:PLACE_TR,START:TUTOR_TR_START,QWERTY:["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]}),
+             es:()=>({W:ESW,SENT:SENT_ES,PHRASES:PHRASES_ES,LESSONS:LESSONS_ES,DIALOGS:DIALOGS_ES,STORIES:STORIES_ES,PLACE:PLACE_ES,START:TUTOR_ES_START,QWERTY:["qwertyuiop","asdfghjklñ","zxcvbnm"]})};
 let LANG="en";
 const LNAME_EN=()=>LANGS[LANG].en;
 let META={cur:"en",picked:false};
@@ -2754,19 +2898,21 @@ const baseKey=()=>KEY.split("|")[0];
 const langKey=l=>l==="en"?baseKey():baseKey()+"|"+l;
 function loadMeta(){try{Object.assign(META,JSON.parse(localStorage.getItem(baseKey()+"|meta")||"{}"))}catch(e){}}
 function saveMeta(){try{localStorage.setItem(baseKey()+"|meta",JSON.stringify(META))}catch(e){}}
+const foldES=s=>s.normalize("NFD").replace(/[\u0300-\u0302\u0308\u0301]/g,"").normalize("NFC").replace(/ñ/g,"n").replace(/¿/g,"?").replace(/¡/g,"!");
+const foldLang=s=>LANG==="tr"?foldTR(s):LANG==="es"?foldES(s):s;
 const foldTR=s=>s.replace(/ı/g,"i").replace(/İ/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").replace(/â/g,"a").replace(/î/g,"i").replace(/û/g,"u");
 
 /* ---------- content snapshots & swapping (arrays are swapped in place) ---------- */
 const EN_DATA={PLACE:PLACE.slice(),CATS:CATS.slice(),SENT:SENT.slice(),PHRASES:PHRASES.slice(),LESSONS:LESSONS.slice(),DIALOGS:DIALOGS.slice(),STORIES:STORIES.slice(),TUTOR:TUTOR.map(t=>Object.assign({},t)),QWERTY:QWERTY.slice(),DICT:Object.assign({},DICT)};
-let TR_DATA=null;
-function buildTR(){if(TR_DATA)return TR_DATA;
-  const cats=[];for(const c of EN_DATA.CATS){const m=TRW[c.id];if(!m)continue;const map={};m.split("|").forEach(p=>{const i=p.indexOf("=");map[p.slice(0,i)]=p.slice(i+1)});
+const LCACHE={};
+function buildLang(l){if(LCACHE[l])return LCACHE[l];const L=LDATA[l]();
+  const cats=[];for(const c of EN_DATA.CATS){const m=L.W[c.id];if(!m)continue;const map={};m.split("|").forEach(p=>{const i=p.indexOf("=");map[p.slice(0,i)]=p.slice(i+1)});
     const w=c.w.filter(x=>map[x[0]]).map(x=>{const tr=map[x[0]];const e=emoOf(x[0]);if(e&&!EMO[tr.toLowerCase()])EMO[tr.toLowerCase()]=e;return [tr,x[1],""]});
     if(w.length)cats.push({id:c.id,lv:c.lv,name:c.name,icon:c.icon,w})}
-  const tutor=EN_DATA.TUTOR.map(t=>Object.assign({},t,{start:TUTOR_TR_START[t.id]||t.start}));
-  TR_DATA={PLACE:PLACE_TR,CATS:cats,SENT:SENT_TR,PHRASES:PHRASES_TR,LESSONS:LESSONS_TR,DIALOGS:DIALOGS_TR,STORIES:STORIES_TR,TUTOR:tutor,QWERTY:["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]};return TR_DATA}
+  const tutor=EN_DATA.TUTOR.map(t=>Object.assign({},t,{start:L.START[t.id]||t.start}));
+  return LCACHE[l]={PLACE:L.PLACE,CATS:cats,SENT:L.SENT,PHRASES:L.PHRASES,LESSONS:L.LESSONS,DIALOGS:L.DIALOGS,STORIES:L.STORIES,TUTOR:tutor,QWERTY:L.QWERTY}}
 const swapArr=(a,b)=>{a.length=0;b.forEach(x=>a.push(x))};
-function applyContent(l){const D=l==="tr"?buildTR():EN_DATA;
+function applyContent(l){const D=l==="en"?EN_DATA:buildLang(l);
   swapArr(PLACE,D.PLACE);swapArr(CATS,D.CATS);swapArr(SENT,D.SENT);swapArr(PHRASES,D.PHRASES);swapArr(LESSONS,D.LESSONS);swapArr(DIALOGS,D.DIALOGS);swapArr(STORIES,D.STORIES);swapArr(TUTOR,D.TUTOR);swapArr(QWERTY,D.QWERTY);
   ALL.length=0;CATS.forEach(c=>c.w.forEach(([en,ar,ex])=>ALL.push({en,ar,ex,cat:c.id,lv:c.lv,key:c.id+":"+en})));
   for(const k in WMAP)delete WMAP[k];for(const k in WKEY)delete WKEY[k];for(const k in DICT)delete DICT[k];
@@ -2787,17 +2933,19 @@ function switchLang(l,o){o=o||{};if(!LANGS[l])return;
   if(!o.silent){route="home";header();render();window.scrollTo(0,0);if(typeof syncNow==="function")syncNow();toast(`${LANGS[l].flag} صرت تتعلم ${LANGS[l].name}`)}}
 
 /* ---------- language-aware text helpers (override core ones) ---------- */
+const NUM_ES={"0":"cero","1":"uno","2":"dos","3":"tres","4":"cuatro","5":"cinco","6":"seis","7":"siete","8":"ocho","9":"nueve","10":"diez","11":"once","12":"doce","20":"veinte","50":"cincuenta","100":"cien"};
 const NUM_TR={"0":"sıfır","1":"bir","2":"iki","3":"üç","4":"dört","5":"beş","6":"altı","7":"yedi","8":"sekiz","9":"dokuz","10":"on","11":"on bir","12":"on iki","20":"yirmi","50":"elli","100":"yüz"};
-function norm(s){const n=LANG==="tr"?NUM_TR:NUM;const low=LANG==="tr"?String(s).toLocaleLowerCase("tr-TR"):String(s).toLowerCase();
-  let r=low.replace(/[’‘`]/g,"'").replace(/[^\p{L}\p{N}' ]/gu," ").replace(/\s+/g," ").trim().split(" ").map(w=>n[w]||w).join(" ");return LANG==="tr"?foldTR(r):r}
+function norm(s){const n=LANG==="tr"?NUM_TR:LANG==="es"?NUM_ES:NUM;const low=LANG==="tr"?String(s).toLocaleLowerCase("tr-TR"):String(s).toLowerCase();
+  let r=low.replace(/[’‘`]/g,"'").replace(/[^\p{L}\p{N}' ]/gu," ").replace(/\s+/g," ").trim().split(" ").map(w=>n[w]||w).join(" ");return foldLang(r)}
 function voiceScore(v){const n=v.name,l=v.lang.replace("_","-"),pre=S.accent.slice(0,2);let s=0;
   if(l===S.accent)s+=50;else if(l.toLowerCase().startsWith(pre))s+=12;else return -999;
   if(/natural|neural/i.test(n))s+=45;if(/online/i.test(n))s+=20;if(/google/i.test(n))s+=30;if(/premium|enhanced/i.test(n))s+=35;
   if(LANG==="en"&&/samantha|ava|allison|susan|zoe|aria|jenny|guy|libby|sonia|ryan|daniel|serena|karen|moira|tessa|nicky|evan|joelle|nathan|michelle|christopher|emma|brian/i.test(n))s+=18;
   if(LANG==="tr"&&/yelda|emel|ahmet|filiz|seda|tolga|cem/i.test(n))s+=18;
+  if(LANG==="es"&&/monica|mónica|jorge|paulina|lucia|lucía|elvira|alvaro|álvaro|helena|laura|pablo|dalia|marisol/i.test(n))s+=18;
   if(BADV.test(n))s-=200;return s}
 function fillIPA(){if(LANG!=="en")return;document.querySelectorAll("[data-ipa]").forEach(el=>{if(el.dataset.done)return;el.dataset.done=1;wordInfo(el.dataset.ipa).then(i=>{if(i&&i.ipa){el.textContent=i.ipa;el.classList.add("show")}})})}
-function tuRules(sc){const L=LNAME_EN(),A=LANG==="en"?"الإنجليزي":"التركي";
+function tuRules(sc){const L=LNAME_EN();
   if(sc.role==="EXPLAIN")return `You are an expert ${L} teacher for Arabic speakers (Palestinian/Levantine). The learner's level is ${userLv()}. Answer the learner's questions about ${L} in simple Arabic (Levantine dialect is welcome), with 2-4 short ${L} examples, each followed by its Arabic meaning. Use **bold** for key ${L} words. Keep answers under 180 words. No headings.`;
   return `You are ${sc.role.replace(/English/g,L)} The learner is an Arabic speaker practicing ${L} at CEFR level ${userLv()}.
 Rules:
@@ -2805,7 +2953,7 @@ Rules:
 2. If the learner's latest message has grammar, spelling or word-choice mistakes, add a new final line that starts with "✏️" and gives a short correction in Arabic, including the corrected ${L} sentence. If there are no mistakes, do not add that line.
 3. If the learner writes in Arabic, reply in ${L} and add a "✏️" line showing how to say their message in ${L}.
 4. Never switch roles, never write long paragraphs, no lists, no emojis except ✏️.`}
-{const _we=wordEq;wordEq=function(a,b){if(LANG==="tr"){a=foldTR(a);b=foldTR(b)}return _we(a,b)}}
+{const _we=wordEq;wordEq=function(a,b){if(LANG!=="en"){a=foldLang(a);b=foldLang(b)}return _we(a,b)}}
 
 /* ---------- hide English-only sections while learning Turkish ---------- */
 const EN_ONLY=new Set(["verbs","sounds"]);
@@ -2939,7 +3087,7 @@ function vAuth(){
       <div class="say-hi"><span class="en">Hi! I'm Toki</span> 👋 أنا معلمك</div><div>${mascot("happy",150)}</div>
       <h1>تعلّم الإنجليزي وإنت بتحكيه</h1>
       <p>محادثة صوتية مع معلم ذكي، ومسار على قد مستواك، وكلمات وقواعد وقصص وألعاب، كله بالعربي وبمكان واحد.</p>
-      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷 جديد: تعلّم التركي كمان!</p>
+      ${tr?`<p class="trial">🎁 <b>${tr} أيام تجربة مجانية</b> لكل الميزات، بدون دفع</p>`:""}${pendingRef()?`<p class="trial">🤝 صديقك دعاك! سجّل وبتاخد أيام مجانية زيادة</p>`:""}<p class="trial" style="background:var(--primary-soft);border-color:#C7D8FF">🇹🇷🇪🇸 جديد: تعلّم التركي والإسباني كمان!</p>
       <div class="row" style="justify-content:center"><button class="btn hl big" data-act="landgo" data-m="signup">ابدأ مجاناً</button><button class="btn ghost big" data-act="landgo" data-m="login">عندي حساب</button></div>
       ${installBtn()}
     </div></section>
