@@ -604,6 +604,28 @@ body.guest .langbtn,body.gated .langbtn{display:none}
 .guide + .py{text-align:center;font-size:1.1rem}
 .zh-big{font-size:2.2rem;font-weight:700;text-align:center;margin:6px 0;color:var(--ink)}
 .zh-big + .py{text-align:center}
+
+/* ===== toki pro ===== */
+.mission{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;background:var(--gold-soft);border-bottom:1.5px solid var(--line);scrollbar-width:none;align-items:center}
+.mission::-webkit-scrollbar{display:none}
+.mission .mt{flex:none;font-weight:700;font-size:.85rem;color:var(--ink)}
+.mission .mg{flex:none;font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--soft);white-space:nowrap}
+.mission .mg.ok{background:var(--good-bg);border-color:var(--good);color:var(--good-d);font-weight:600}
+.tw2{cursor:pointer;border-radius:4px;transition:background .15s}.tw2:hover,.tw2:active{background:var(--gold-soft)}
+.trn2{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);color:var(--soft);font-size:.9rem;direction:rtl;text-align:right}
+.c-help{flex:none;width:44px;height:48px;border:none;border-radius:14px;background:var(--gold-soft);font-size:1.2rem}
+.c-help:disabled{opacity:.45}
+.sugg2{display:flex;gap:8px;overflow-x:auto;padding:10px 12px 4px;background:var(--card);border-top:1.5px solid var(--line);align-items:stretch}
+.sugg2 .sg{flex:none;max-width:78%;text-align:start;border:1.5px solid var(--primary);background:var(--primary-soft);border-radius:16px;padding:8px 12px;color:var(--ink)}
+.sugg2 .sg b{display:block;font-weight:600}.sugg2 .sg small{display:block;color:var(--soft);font-size:.78rem;margin-top:2px}
+.sugg2 .sg-x{flex:none;border:none;background:var(--sky);border-radius:12px;width:36px}
+.wsheet{text-align:center}.ws-w{font-size:2rem;font-weight:700}.ws-ar{font-size:1.4rem;font-weight:700;color:var(--primary);margin:10px 0 4px}
+.ws-ex{margin:12px 0;padding:10px 12px;border-radius:14px;background:var(--sky);text-align:start}.ws-ex b{display:block;font-weight:600}.ws-ex span{display:block;color:var(--soft);font-size:.9rem}
+.tokime{text-align:start}.tokime h2,.tokime>p{text-align:center}.tokime .toki{display:block;margin:0 auto}
+.report{text-align:start}.report .ring{display:block;margin:0 auto;color:var(--ink)}.report h2{text-align:center;margin-top:6px}.report>p.muted{text-align:center}
+.rl{margin:0;padding-inline-start:20px}.rm{padding:10px 12px;border-radius:14px;background:var(--bad-bg);margin-bottom:8px}.rm s{display:block;color:var(--margin-d)}.rm b{display:block;color:var(--good-d);font-weight:600}.rm small{display:block;color:var(--ink-2)}
+.rw{display:flex;flex-wrap:wrap;gap:8px}.rtip{margin:14px 0;padding:12px 14px;border-radius:16px;background:var(--gold-soft);font-weight:500}
+.aigen{background:var(--primary-soft)!important;border:1.5px dashed var(--primary)!important;padding:16px!important;margin-top:10px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -1383,10 +1405,10 @@ async function rGen(){
   const topic=(($("#aiTopic")||{}).value||"").trim()||"daily life";if(!AI)return;
   R.busy=true;R.err=null;render();aiCtl=new AbortController();
   const lv=userLv();
-  const prompt=`Write an original short story in English for an Arabic-speaking learner at CEFR level ${lv}, about this topic (it may be written in Arabic): "${topic}".
+  const prompt=`Write an original short story in ${LNAME_EN()} for an Arabic-speaking learner at CEFR level ${lv}, about this topic (it may be written in Arabic): "${topic}".
 Use vocabulary and grammar suited to ${lv}. 3 paragraphs, ${lv==="A1"?"2-3 short sentences":lv==="A2"?"3-4 sentences":"4-5 sentences"} each. Make it interesting, with a small twist at the end.
 Reply with ONLY a JSON object, no markdown:
-{"title":"English title","title_ar":"Arabic title","paragraphs":["p1","p2","p3"],"translation":["Arabic of p1","Arabic of p2","Arabic of p3"],"questions":[{"q":"comprehension question in English","options":["a","b","c"],"answer":"must be exactly one of the options"}]}
+{"title":"title in ${LNAME_EN()}","title_ar":"Arabic title","paragraphs":["p1","p2","p3"],"translation":["Arabic of p1","Arabic of p2","Arabic of p3"],"questions":[{"q":"comprehension question in ${LNAME_EN()}","options":["a","b","c"],"answer":"must be exactly one of the options"}]}
 Give exactly 3 questions.`;
   try{const r=await AI.json(prompt,{signal:aiCtl.signal,modelTier:"default"});
     if(!r||!Array.isArray(r.paragraphs)||!r.paragraphs.length||!Array.isArray(r.questions))throw{code:"invalid_json"};
@@ -1626,10 +1648,10 @@ async function tuSend(text){
   TU.busy=true;TU.err=null;render();aiCtl=new AbortController();
   const hist=msgs.slice(-16);const turns=[{role:"user",content:tuRules(sc)},...(hist[0].role==="user"?[{role:"assistant",content:sc.start}]:[]),...hist];
   const bot={role:"assistant",content:""};let added=false;
-  try{const r=await AI(turns,{cache:false,signal:aiCtl.signal,modelTier:"quick",onText:({text})=>{bot.content=text;if(!added){msgs.push(bot);added=true;render()}else{const b=document.querySelectorAll("#chatBox .bub.a > div");const last=b[b.length-1];if(last)last.innerHTML=md(text);const c=$("#chatBox");if(c)c.scrollTop=c.scrollHeight}}});
-    bot.content=r.text;if(!added)msgs.push(bot);S.st.chat++;addXP(3)}
+  try{const r=await AI(turns,{cache:false,signal:aiCtl.signal,modelTier:"quick",onText:({text})=>{bot.content=text;if(!added){msgs.push(bot);added=true;render()}else{const b=document.querySelectorAll("#chatBox .bub.a > div");const last=b[b.length-1];if(last)last.innerHTML=md(stripTag(text));const c=$("#chatBox");if(c)c.scrollTop=c.scrollHeight}}});
+    bot.content=r.text;tuAfter(bot,sc);if(!added)msgs.push(bot);S.st.chat++;addXP(3)}
   catch(e){if(e&&e.text){bot.content=e.text;if(!added)msgs.push(bot)}else if(added)msgs.pop();if(!e||e.code!=="cancelled")TU.err=aiErr(e)}
-  TU.busy=false;render();if(TU.voice&&bot.content)voiceSpeak(bot.content)}
+  TU.busy=false;render();if(TU.voice&&bot.content)voiceSpeak(stripTag(bot.content))}
 function enPart(c){return c.split("\n").filter(l=>!hasAr(l)&&!l.trim().startsWith("✏")).join(" ").replace(/\*\*/g,"").trim()}
 function voiceSpeak(text){const en=enPart(text);if(!en){voiceListen();return}
   TU.speaking=true;render();speakSeq(en.split(/(?<=[.!?])\s+/).filter(Boolean).map(t=>({t})),()=>{TU.speaking=false;if(TU.voice&&route==="tutor")voiceListen();else render()})}
@@ -3433,6 +3455,104 @@ if(LANG==="zh")loadPinyin();
     let k=0;const html=[...target].map(c=>isH(c)?`<span class="${r[k++]?"ok":"miss"}">${esc(c)}</span>`:esc(c)).join("");
     const pct=n?Math.round(100*r.filter(Boolean).length/n):0;if(!best||pct>best.pct)best={pct,html,heard:h}}
   return best}}
+/* ================== TOKI PRO ================== */
+const TOKI_MISSIONS={
+  rest:[["سلّم واطلب طاولة","greet and ask for a table"],["اطلب أكل وشرب","order food and a drink"],["اسأل عن إشي بالمنيو","ask a question about the menu"],["اطلب الحساب","ask for the bill"]],
+  doc:[["اشرح شو بوجعك","describe the symptoms"],["احكي من إمتى بدأ","say since when it started"],["اسأل عن الدوا","ask about the medicine"],["اسأل كيف تتحسن","ask how to get better"]],
+  job:[["عرّف عن حالك","introduce yourself"],["احكي عن خبرتك","talk about your experience"],["اشرح ليش بدك الوظيفة","explain why you want the job"],["اسأل سؤال عن الشركة","ask a question about the company"]],
+  air:[["أعطي جوازك وتذكرتك","hand over passport and ticket"],["احكي وين رايح وقديش رح تضل","say where you are going and for how long"],["اسأل عن البوابة أو الوقت","ask about the gate or boarding time"]],
+  friend:[["عرّف عن حالك","introduce yourself"],["اسأل عن اهتماماته","ask about their interests"],["اقترح تطلعوا مع بعض","suggest meeting or going out together"]],
+  day:[["احكي شو عملت اليوم","say what you did today"],["احكي عن إشي حلو صار","describe something good that happened"],["احكي خطتك لبكرة","say your plan for tomorrow"]],
+  debate:[["قول رأيك بوضوح","state your opinion clearly"],["أعطي سبب أو مثال","give a reason or example"],["رد على رأي توكي","respond to Toki's counter-argument"]],
+  free:[["احكي 5 رسائل","send at least 5 messages"],["اسأل توكي سؤال","ask Toki a question"]]};
+TU.mission=TU.mission||{};TU.sugg=null;
+function stripTag(t){return String(t||"").replace(/\[\[done:[^\]]*\]\]/g,"").replace(/\[\[[^\]]*$/,"").trim()}
+function tuAfter(bot,sc){const m=/\[\[done:([^\]]*)\]\]/.exec(bot.content||"");bot.content=stripTag(bot.content);
+  const ms=TOKI_MISSIONS[sc.id];if(!m||!ms)return;const key=LANG+":"+sc.id,prev=TU.mission[key]||[];
+  const nums=m[1].split(/[^0-9]+/).map(Number).filter(n=>n>=1&&n<=ms.length);const now=[...new Set(prev.concat(nums))];TU.mission[key]=now;
+  if(now.length>prev.length){sfx("ok");if(now.length===ms.length){setTimeout(()=>{confetti();sfx("win");toast("🎯 خلّصت المهمة! +15 ⭐")},400);addXP(15)}else toast(`✅ ${ms[nums.find(n=>!prev.includes(n))-1][0]}`)}}
+{const _tr=tuRules;tuRules=function(sc){let r=_tr(sc);if(sc.role==="EXPLAIN")return r;const L=LNAME_EN(),me=S.tokiMe||{},extra=[];
+  if(me.name||me.work||me.likes||me.goal)extra.push(`About the learner — name: ${me.name||"?"}; job/study: ${me.work||"?"}; interests: ${me.likes||"?"}; learning goal: ${me.goal||"?"}. Personalize topics and questions to this, and use their name now and then.`);
+  const weak=(S.mistakes||[]).slice(0,5).map(m=>m.en).filter(Boolean);if(weak.length)extra.push(`The learner recently made mistakes with: ${weak.join(" | ")}. Naturally create chances to practice these.`);
+  extra.push(`Adapt difficulty: if the learner writes very short messages or makes many mistakes, simplify; if they are fluent, gradually use richer ${L}.`);
+  const ms=TOKI_MISSIONS[sc.id];if(ms)extra.push(`Learner goals for this conversation: ${ms.map((g,i)=>`${i+1}) ${g[1]}`).join("; ")}. Gently guide the conversation so the learner can achieve them. At the very end of EVERY reply, on a new line, write [[done:N,N]] with the numbers of the goals the learner has achieved so far in the conversation (write [[done:]] if none).`);
+  return r+"\n"+extra.join("\n")}}
+{const _fb=fmtBot;fmtBot=function(c){return _fb(stripTag(c))}}
+/* ---------- view additions ---------- */
+{const _vt=vTutor;vTutor=function(){let h=_vt();const sc=TU.sc,ms=TOKI_MISSIONS[sc],dis=AIstate!=="ok"?"disabled":"",done=TU.mission[LANG+":"+sc]||[];
+  h=h.replace('<button class="ch-btn" data-act="tureset"',`<button class="ch-btn" data-act="tokime" title="عرّف توكي عليك" aria-label="عرّف توكي عليك">👤</button><button class="ch-btn" data-act="tureport" title="قيّم محادثتي" aria-label="قيّم محادثتي" ${dis}>📊</button><button class="ch-btn" data-act="tureset"`);
+  if(ms)h=h.replace('<div class="chat-body" id="chatBox">',`<div class="mission"><span class="mt">🎯 مهمتك ${done.length}/${ms.length}</span>${ms.map((g,i)=>`<span class="mg ${done.includes(i+1)?"ok":""}">${done.includes(i+1)?"✓":"○"} ${g[0]}</span>`).join("")}</div><div class="chat-body" id="chatBox">`);
+  const msgs=tuMsgs();
+  h=h.replace(/data-act="tusay" data-i="(\d+)" aria-label="استمع">🔊<\/button>/g,(all,i)=>{const m=msgs[+i];return all+`<button class="say mini" data-act="tutr" data-i="${i}" aria-label="ترجم" ${dis}>🌐</button>${m&&m.tr?`<div class="trn2">${esc(m.tr)}</div>`:m&&m.trBusy?`<div class="trn2 muted">عم بترجم…</div>`:""}`});
+  if(TU.sugg)h=h.replace('<div class="composer2">',`<div class="sugg2">${TU.sugg==="busy"?`<span class="muted">توكي عم يفكرلك بردود…</span>`:TU.sugg.map(o=>`<button class="sg" data-act="tusugg" data-t="${esc(o.t)}"><b dir="auto">${esc(o.t)}</b><small>${esc(o.lv||"")} · ${esc(o.ar||"")}</small></button>`).join("")}<button class="sg-x" data-act="tusuggx" aria-label="إغلاق">✕</button></div><div class="composer2">`);
+  h=h.replace('<textarea id="tuIn"',`<button class="c-help" data-act="tuhelp" aria-label="ساعدني أرد" title="ساعدني أرد" ${dis}>💡</button><textarea id="tuIn"`);
+  return h};VIEWS.tutor=vTutor}
+/* tap any word in Toki's replies */
+function wrapWords(el){const seg=window.Intl&&Intl.Segmenter?new Intl.Segmenter(LANGS[LANG].tts,{granularity:"word"}):null;
+  const walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);const nodes=[];while(walk.nextNode())nodes.push(walk.currentNode);
+  nodes.forEach(n=>{if(n.parentElement.closest(".fix,button"))return;const t=n.nodeValue;if(!t.trim()||hasAr(t))return;
+    const parts=seg?[...seg.segment(t)].map(s=>({s:s.segment,w:s.isWordLike})):t.split(/(\s+|[.,!?;:"()])/).map(s=>({s,w:/\p{L}/u.test(s)}));
+    const f=document.createDocumentFragment();parts.forEach(p=>{if(p.w&&/\p{L}/u.test(p.s)){const sp=document.createElement("span");sp.className="tw2";sp.dataset.act="tuword";sp.dataset.w=p.s;sp.textContent=p.s;f.appendChild(sp)}else f.appendChild(document.createTextNode(p.s))});
+    n.replaceWith(f)})}
+{const _r=render;render=function(){_r();if(route==="tutor")document.querySelectorAll(".msg.bot .bub.a > div[dir=auto]").forEach(el=>{if(!el.dataset.w){el.dataset.w=1;wrapWords(el)}})}}
+const WCACHE={};
+function wordSheet(w,d){const saved=(S.mistakes||[]).some(m=>m.en===w);
+  showSheet(`<div class="wsheet"><div class="ws-w" dir="auto">${esc(w)}</div>${LANG==="zh"&&typeof pyOf==="function"&&pyOf(w)?`<div class="py">${esc(pyOf(w))}</div>`:""}
+    <div class="row" style="justify-content:center">${sayBtn(w)}${slowBtn(w)}</div>
+    ${d?d.busy?`<p class="muted">عم بجيب المعنى…</p>`:`<div class="ws-ar">${esc(d.ar||"")}</div>${d.type?`<small class="muted">${esc(d.type)}</small>`:""}${d.ex?`<div class="ws-ex"><b dir="auto">${esc(d.ex)}</b><span>${esc(d.exar||"")}</span></div>`:""}
+    <button class="btn wide" data-act="tuwsave" data-w="${esc(w)}" data-ar="${esc(d.ar||"")}" ${saved?"disabled":""}>${saved?"✓ محفوظة":"⭐ احفظها للمراجعة"}</button>`:""}</div>`)}
+Object.assign(A,{
+  tuword:async d=>{const w=d.w,k=LANG+":"+w.toLowerCase();speak(w);const wm=WMAP[w.toLowerCase()];
+    if(wm){wordSheet(w,{ar:wm.ar,ex:wm.ex||"",exar:""});return}
+    if(WCACHE[k]){wordSheet(w,WCACHE[k]);return}
+    if(!AI){wordSheet(w,{ar:"—"});return}wordSheet(w,{busy:true});
+    try{const r=await AI.json(`Give the Arabic meaning of the ${LNAME_EN()} word "${w}" as used in everyday speech, for an Arabic learner. Reply as JSON: {"ar":"short Arabic meaning","type":"part of speech in Arabic","ex":"a short simple example sentence in ${LNAME_EN()}","exar":"its Arabic translation"}`,{modelTier:"quick"});
+      WCACHE[k]=r||{ar:"—"};if(!$("#sheet").hidden)wordSheet(w,WCACHE[k])}catch(e){wordSheet(w,{ar:"ما قدرت أجيب المعنى، جرّب كمان مرة."})}},
+  tuwsave:d=>{quietMistake(d.w,d.ar,"توكي");save();toast("⭐ انحفظت، وبترجعلك بالمراجعة");$("#sheet").hidden=true},
+  tutr:async d=>{const m=tuMsgs()[+d.i];if(!m||m.tr||m.trBusy||!AI)return;m.trBusy=true;render();
+    try{const r=await AI(`Translate this ${LNAME_EN()} message into natural Palestinian/Levantine Arabic. Reply with the translation only:\n\n${stripTag(m.content).replace(/✏.*$/s,"").trim()}`,{modelTier:"quick"});m.tr=String(r.text||"").trim()}catch(e){m.tr="ما قدرت أترجم هلأ."}
+    m.trBusy=false;render()},
+  tuhelp:async()=>{if(!AI||TU.sugg==="busy")return;const msgs=tuMsgs(),last=[...msgs].reverse().find(m=>m.role==="assistant");TU.sugg="busy";render();
+    try{const r=await AI.json(`You help an Arabic-speaking learner (CEFR ${userLv()}) reply in ${LNAME_EN()}. The tutor just said: "${stripTag(last?last.content:"").replace(/✏.*$/s,"").slice(0,400)}". Suggest 3 possible replies the learner could send: one very easy, one medium, one more advanced. Reply as JSON: {"options":[{"t":"reply in ${LNAME_EN()}","ar":"Arabic meaning","lv":"سهل"},{"t":"...","ar":"...","lv":"متوسط"},{"t":"...","ar":"...","lv":"متقدم"}]}`,{modelTier:"quick"});
+      TU.sugg=(r&&Array.isArray(r.options)?r.options:[]).filter(o=>o&&o.t).slice(0,3);if(!TU.sugg.length)TU.sugg=null}catch(e){TU.sugg=null;toast("ما قدرت أجيب اقتراحات هلأ")}render()},
+  tusugg:d=>{TU.sugg=null;render();const t=$("#tuIn");if(t){t.value=d.t;KEEP.tuIn=d.t;tuGrow();t.focus()}},
+  tusuggx:()=>{TU.sugg=null;render()},
+  tokime:()=>{const me=S.tokiMe||{};showSheet(`<div class="tokime">${mascot("happy",80)}<h2>عرّف توكي عليك</h2><p class="muted">توكي رح يتذكّر هالمعلومات ويخلّي المحادثات عن حياتك واهتماماتك.</p>
+    <label class="fld"><span>اسمك</span><input id="tmName" value="${esc(me.name||"")}" placeholder="مثلاً: محمد"></label>
+    <label class="fld"><span>شغلك أو دراستك</span><input id="tmWork" value="${esc(me.work||"")}" placeholder="مثلاً: طالب طب، مهندس، مصمم…"></label>
+    <label class="fld"><span>اهتماماتك</span><input id="tmLikes" value="${esc(me.likes||"")}" placeholder="مثلاً: كرة القدم، الطبخ، السفر…"></label>
+    <label class="fld"><span>ليش بتتعلم اللغة؟</span><select id="tmGoal" class="answer" style="font-size:1rem;direction:rtl;text-align:right">${["","السفر","الشغل","الدراسة","السفر والهجرة","تطوير نفسي","التواصل مع ناس"].map(g=>`<option ${me.goal===g?"selected":""}>${g}</option>`).join("")}</select></label>
+    <button class="btn big wide" data-act="tokimesave">احفظ</button></div>`)},
+  tokimesave:()=>{S.tokiMe={name:($("#tmName").value||"").trim().slice(0,40),work:($("#tmWork").value||"").trim().slice(0,80),likes:($("#tmLikes").value||"").trim().slice(0,120),goal:$("#tmGoal").value};save();$("#sheet").hidden=true;toast("🧠 توكي صار يعرفك!")},
+  tureport:async()=>{const msgs=tuMsgs(),mine=msgs.filter(m=>m.role==="user");if(mine.length<2){toast("احكي مع توكي رسالتين على الأقل أول 🙂");return}if(!AI)return;
+    showSheet(`<div class="center">${mascot("think",90)}<h2>توكي عم يقيّم محادثتك…</h2><p class="muted">ثواني بس</p></div>`);
+    const conv=msgs.slice(-20).map(m=>(m.role==="user"?"LEARNER: ":"TUTOR: ")+stripTag(m.content).replace(/✏.*$/gm,"").slice(0,300)).join("\n");
+    try{const r=await AI.json(`You are an expert ${LNAME_EN()} teacher. Evaluate ONLY the LEARNER's messages in this conversation (learner is an Arabic speaker, target level ${userLv()}).\n\n${conv}\n\nReply as JSON: {"score":0-100,"level":"estimated CEFR level","summary_ar":"2 sentences in Levantine Arabic about how they did","strengths_ar":["up to 3 short strengths in Arabic"],"mistakes":[{"wrong":"learner's wrong phrase","right":"corrected ${LNAME_EN()}","why_ar":"short reason in Arabic"}],"words":[{"w":"useful ${LNAME_EN()} word from the conversation to learn","ar":"meaning"}],"tip_ar":"one concrete tip in Arabic for next time"}. Max 5 mistakes, max 5 words.`,{modelTier:"default"});
+      const sc=Math.max(0,Math.min(100,r.score|0));S.tokiReports=[{d:Date.now(),score:sc,sc:TU.sc},...(S.tokiReports||[])].slice(0,20);save();TU.lastReport=r;addXP(5);
+      showSheet(`<div class="report">${ring(sc,96).replace('stroke="rgba(255,255,255,.28)"','stroke="var(--rule-faint)"').replace('fill="#fff"','fill="currentColor"')}<h2>تقرير المحادثة</h2><p class="muted">المستوى المتوقع: <b>${esc(r.level||userLv())}</b></p><p>${esc(r.summary_ar||"")}</p>
+        ${(r.strengths_ar||[]).length?`<h3>💪 نقاط قوتك</h3><ul class="rl">${r.strengths_ar.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+        ${(r.mistakes||[]).length?`<h3>✏️ أخطاء تتعلم منها</h3>${r.mistakes.map(m=>`<div class="rm"><s dir="auto">${esc(m.wrong||"")}</s><b dir="auto">✓ ${esc(m.right||"")}</b><small>${esc(m.why_ar||"")}</small></div>`).join("")}`:`<p class="ok">ولا غلطة! 👏</p>`}
+        ${(r.words||[]).length?`<h3>📚 كلمات جديدة</h3><div class="rw">${r.words.map(w=>`<button class="badge" data-act="say" data-t="${esc(w.w)}">🔊 <span dir="auto">${esc(w.w)}</span> · ${esc(w.ar||"")}</button>`).join("")}</div>`:""}
+        ${r.tip_ar?`<div class="rtip">💡 ${esc(r.tip_ar)}</div>`:""}
+        <button class="btn big wide" data-act="tusavereport">⭐ احفظ الأخطاء والكلمات للمراجعة</button></div>`)}
+    catch(e){showSheet(`<div class="center">${mascot("sad",80)}<p>ما قدرت أعمل التقرير هلأ، جرّب كمان شوي.</p></div>`)}},
+  tusavereport:()=>{const r=TU.lastReport;if(!r)return;(r.mistakes||[]).forEach(m=>m.right&&quietMistake(m.right,m.why_ar||"","توكي"));(r.words||[]).forEach(w=>w.w&&quietMistake(w.w,w.ar||"","توكي"));save();$("#sheet").hidden=true;toast("⭐ انحفظوا بدفتر أخطائك وبالمراجعة")}});
+{const _rs=A.tureset;A.tureset=d=>{delete TU.mission[LANG+":"+TU.sc];TU.sugg=null;_rs(d)}}
+{const _sc=A.tusc;A.tusc=d=>{TU.sugg=null;_sc(d)}}
+
+/* ---------- AI dialogs in every language ---------- */
+let DGA={busy:false,err:null};
+{const _vd=vDialogs;vDialogs=function(){(S.aiDialogs||[]).forEach(d=>{if(!DIALOGS.some(x=>x.id===d.id))DIALOGS.push(d)});let h=_vd();
+  if(!DG.id){const box=`<div class="panel aigen"><h3 style="margin-top:0">🤖 محادثة جديدة عن أي موقف</h3><p class="muted" style="margin:0 0 10px">اكتب الموقف، وتوكي بيألفلك محادثة على قد مستواك ${LBI()}.</p>
+    ${AIstate!=="ok"?aiMissing():`<div class="row"><input class="answer" id="dgTopic" data-keep style="flex:1;font-size:1rem;direction:auto;text-align:start" placeholder="مثلاً: بالبنك، حجز فندق، مع الجيران…"><button class="btn" data-act="dgen" ${DGA.busy?"disabled":""}>${DGA.busy?"عم يكتب…":"اكتب"}</button></div>${DGA.err?`<p class="fb bad">${DGA.err}</p>`:""}`}</div>`;
+    h=h.replace('</section>',box+'</section>')}
+  return h};VIEWS.dialogs=vDialogs}
+A.dgen=async()=>{const topic=(($("#dgTopic")||{}).value||"").trim()||"daily life";if(!AI||DGA.busy)return;DGA.busy=true;DGA.err=null;render();
+  try{const r=await AI.json(`Write a natural dialogue in ${LNAME_EN()} between two people for an Arabic-speaking learner at CEFR level ${userLv()}, about this situation (may be written in Arabic): "${topic}". 8-10 short lines, alternating speakers. Reply as JSON: {"title_ar":"short Arabic title","icon":"one emoji","a":"name or role of speaker A","b":"name or role of speaker B","lines":[{"who":"a","text":"line in ${LNAME_EN()}","ar":"Levantine Arabic translation"}]}`,{modelTier:"default"});
+    if(!r||!Array.isArray(r.lines)||r.lines.length<4)throw{code:"invalid_json"};
+    const d={id:"aid"+Date.now(),lv:userLv(),t:String(r.title_ar||topic),icon:String(r.icon||"💬").slice(0,4),a:String(r.a||"A"),b:String(r.b||"B"),l:r.lines.filter(x=>x&&x.text).map(x=>[x.who==="b"?"b":"a",String(x.text),String(x.ar||"")])};
+    S.aiDialogs=[d,...(S.aiDialogs||[])].slice(0,20);save();DIALOGS.push(d);clearField("dgTopic");addXP(3);DGA.busy=false;openDialog(d.id);render();window.scrollTo(0,0);return}
+  catch(e){DGA.err="ما زبطت، جرّب موضوع ثاني أو كمان مرة."}DGA.busy=false;render()};
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
