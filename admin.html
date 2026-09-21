@@ -59,6 +59,7 @@ async function load(){
     sb.from("plans").select("*").order("sort")]);
   const [c,g,an]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings"),sb.rpc("admin_analytics",{days:ST.anDays})]);
   ST.an=an.error?{error:an.error.message}:an.data;
+  try{const lu=await sb.rpc("admin_live_usage");ST.live=lu.error?{error:lu.error.message}:lu.data}catch(e){ST.live={error:String(e)}}
   const er=s.error||r.error||u.error||p.error||c.error||g.error;
   ST.err=er?"تعذّر تحميل بعض البيانات: "+er.message+(/coupons|app_settings|admin_get_settings/.test(er.message||"")?" — شغّل ملف upgrade-v2.sql":""):null;
   ST.stats=s.data;ST.reqs=r.data||[];ST.users=u.data||[];ST.plans=p.data||[];ST.coupons=c.data||[];ST.settings=g.data||{};render()}
@@ -115,7 +116,19 @@ function vCoupons(){return `<div class="panel"><p class="muted">الكود بي�
   ${ST.coupons.length?`<div class="scroll"><table><thead><tr><th>الكود</th><th>الخصم</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.coupons.map(c=>`<tr><td class="en"><b>${esc(c.code)}</b></td><td>${c.percent}%</td><td>${c.used_count}${c.max_uses?" / "+c.max_uses:""}</td><td>${c.expires_at?fmt(c.expires_at):"—"}</td>
     <td><span class="chip ${c.active?"ok":"no"}">${c.active?"فعّال":"موقّف"}</span></td><td><div class="row"><button class="btn ghost sm" data-a="togglecoupon" data-v="${esc(c.code)}">${c.active?"إيقاف":"تفعيل"}</button><button class="btn bad sm" data-a="delcoupon" data-v="${esc(c.code)}">حذف</button></div></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">ما في أكواد لسا.</p>`}</div>`}
-function vSettings(){const g=ST.settings||{};return `<div class="panel"><h3>🎁 التجربة المجانية</h3><p class="muted">عدد الأيام اللي بياخدها كل حساب جديد بكل الميزات. حط 0 لإلغاء التجربة.</p>
+function vLive(){const g=ST.settings||{},u=ST.live||{},mode=g.live_voice||"admins";
+  return `<div class="panel"><h3>⚡ صوت توكي الحقيقي</h3><p class="muted">مكالمة بصوت طبيعي بتفهم عربي وإنجليزي مخلوطين. إذا الخط تعبّى أو خلصت دقايق المشترك، بيرجع لحاله للصوت العادي.</p>
+  ${u.error?`<p class="muted" style="color:#b45309">⚠️ لازم تشغّل ملف <b class="en">upgrade-v6.sql</b> بـ Supabase عشان يشتغل العداد.</p>`:`<div class="row" style="gap:16px;flex-wrap:wrap;margin:8px 0 14px">
+    <div><b style="font-size:1.4rem">${u.today_min??0}</b> <small class="muted">دقيقة اليوم</small></div>
+    <div><b style="font-size:1.4rem">${u.users_today??0}</b> <small class="muted">مشترك حكى اليوم</small></div>
+    <div><b style="font-size:1.4rem">${u.month_min??0}</b> <small class="muted">دقيقة هالشهر</small></div>
+    <div><b style="font-size:1.4rem">${u.calls_month??0}</b> <small class="muted">مكالمة هالشهر</small></div></div>
+    <p class="muted" style="font-size:.85rem">التكلفة التقريبية إذا فعّلت الدفع على مفتاح Google: حوالي <b>$${((u.month_min||0)*0.025).toFixed(2)}</b> هالشهر. على المستوى المجاني: ببلاش.</p>`}
+  <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
+    <select class="in" id="s_live" style="width:auto"><option value="off" ${mode==="off"?"selected":""}>مطفي</option><option value="admins" ${mode==="admins"?"selected":""}>للأدمن بس</option><option value="all" ${mode==="all"?"selected":""}>لكل المشتركين</option></select>
+    <input class="in" id="s_livemin" type="number" min="1" max="120" value="${esc(g.live_daily_min??5)}" style="width:90px"><span>دقيقة باليوم لكل مشترك</span>
+    <button class="btn" data-a="savelive">حفظ</button></div></div>`}
+function vSettings(){const g=ST.settings||{};return vLive()+`<div class="panel"><h3>🎁 التجربة المجانية</h3><p class="muted">عدد الأيام اللي بياخدها كل حساب جديد بكل الميزات. حط 0 لإلغاء التجربة.</p>
   <div class="row"><input class="in" id="s_trial" type="number" min="0" max="60" value="${esc(g.trial_days??3)}" style="width:100px"><span>يوم</span><button class="btn" data-a="savetrial">حفظ</button></div></div>
   <div class="panel"><h3>🤝 ادعُ صديقك</h3><p class="muted">عدد الأيام المجانية اللي بياخدها كل واحد (الداعي والمدعو) لما حدا يسجّل من رابط دعوة. حط 0 لإلغائها.</p>
   <div class="row"><input class="in" id="s_ref" type="number" min="0" max="60" value="${esc(g.ref_days??3)}" style="width:100px"><span>يوم</span><button class="btn" data-a="saveref">حفظ</button></div></div>
@@ -160,6 +173,8 @@ const act={
     const {error}=await sb.from("coupons").insert({code,percent:pct,max_uses:mx?+mx:null,expires_at:ex?new Date(ex+"T23:59:59").toISOString():null});ST.msg=error?null:"انضاف الكود ✅";ST.err=error?(/duplicate/.test(error.message)?"الكود موجود من قبل":error.message):null;load()},
   togglecoupon:async v=>{const c=ST.coupons.find(x=>x.code===v);const {error}=await sb.from("coupons").update({active:!c.active}).eq("code",v);ST.msg=error?null:"تم ✅";ST.err=error?error.message:null;load()},
   delcoupon:async v=>{if(!confirm("حذف الكود "+v+"؟"))return;const {error}=await sb.from("coupons").delete().eq("code",v);ST.msg=error?null:"انحذف";ST.err=error?error.message:null;load()},
+  savelive:async()=>{const a=await sb.rpc("admin_set_setting",{k:"live_voice",v:$("#s_live").value});const b=await sb.rpc("admin_set_setting",{k:"live_daily_min",v:String(Math.max(1,Math.min(120,+$("#s_livemin").value||5)))});
+    const er=a.error||b.error;ST.msg=er?null:"انحفظ ✅";ST.err=er?("ما انحفظ: "+er.message+(/bad_key/.test(er.message)?" — شغّل upgrade-v6.sql":"")):null;await load()},
   savetrial:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"trial_days",v:String(Math.max(0,+$("#s_trial").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?error.message:null;load()},
   saveref:async()=>{const {error}=await sb.rpc("admin_set_setting",{k:"ref_days",v:String(Math.max(0,+$("#s_ref").value||0))});ST.msg=error?null:"انحفظ ✅";ST.err=error?(/bad_key/.test(error.message)?"شغّل upgrade-v4.sql أول":error.message):null;load()},
   savetg:async()=>{const a=await sb.rpc("admin_set_setting",{k:"telegram_token",v:$("#s_tok").value});const b=await sb.rpc("admin_set_setting",{k:"telegram_chat_id",v:$("#s_chat").value});const e=a.error||b.error;ST.msg=e?null:"انحفظ ✅ جرّب «إرسال تجربة»";ST.err=e?e.message:null;load()},
