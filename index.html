@@ -962,6 +962,23 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .tc-lesson{flex:none;display:flex;align-items:center;gap:6px;border:none;background:linear-gradient(135deg,#FFE08A,#FFC940);color:#2A1E00;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.85rem;white-space:nowrap;max-width:75vw;overflow:hidden;text-overflow:ellipsis}
 .tc-lesson b{font-weight:700}
 .tk-plan .btn{margin-top:10px}
+
+/* ===== read & speak ===== */
+.rs-text{font-size:1.45rem;line-height:2.2;margin:14px 2px;font-family:"Rubik","Noto Sans SC",sans-serif}
+.rs-w{border-radius:8px;padding:1px 3px;transition:background .15s,color .15s}
+.rs-w.ok{background:var(--good-bg);color:var(--good-d)}
+.rs-w.hard{background:#FEE2E2;color:#B91C1C}
+.rs-w.cur{box-shadow:inset 0 -3px 0 #FFC940;background:var(--gold-soft)}
+.rs-w.model{background:var(--primary);color:#fff}
+[data-theme="dark"] .rs-w.hard{background:rgba(239,68,68,.2);color:#FCA5A5}[data-theme="dark"] .rs-w.cur{background:rgba(255,201,64,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rs-w.hard{background:rgba(239,68,68,.2);color:#FCA5A5}:root:not([data-theme="light"]) .rs-w.cur{background:rgba(255,201,64,.18)}}
+.rs-tr{background:var(--sky);border-radius:14px;padding:10px 12px;color:var(--soft);line-height:1.8}
+.rs-heard{min-height:1.6em;color:var(--soft);font-size:.9rem;margin:6px 0}
+.rs-ctrl{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.rs-mic{display:flex;flex-direction:column;align-items:center;gap:2px;width:92px;height:92px;border-radius:50%;border:none;background:linear-gradient(135deg,#4F86FF,#2F6BFF);color:#fff;font-size:1.8rem;box-shadow:0 12px 26px -12px rgba(47,107,255,.8)}
+.rs-mic small{font-size:.75rem;font-weight:700}.rs-mic.on{background:linear-gradient(135deg,#F87171,#EF4444);animation:tkpulse 1.2s infinite}
+.rs-stats{display:flex;justify-content:center;gap:10px;margin-top:10px}.rs-stats div{background:var(--sky);border-radius:16px;padding:10px 14px}.rs-stats b{display:block;font-size:1.5rem}.rs-stats small{color:var(--soft)}
+.rs-hw{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.rs-hw>div{flex:1}.rs-hw b{display:block;font-size:1.15rem}.rs-hw small{color:var(--soft)}.rs-hw .pn-btn{flex:none;width:44px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5220,6 +5237,86 @@ Object.assign(A,{
   tkfocus:d=>{TU.focus={type:d.t,id:d.id};TU.sc="buddy";TU.voice=false;go("tutor");const it=tkStep();setTimeout(()=>{if(it)tuSend(`يلا علّمني «${noHtml(it.name)}» من خطتي، خطوة خطوة.`)},250)}});
 {const _vr=VIEWS.plan;VIEWS.plan=function(){let h=_vr();const it=tkStep();if(!it)return h;
   return h.replace('<h2 class="sec">خريطة الطريق</h2>',`<section class="panel tk-plan"><div class="rm-teacher">${mascot("happy",54)}<div class="rm-bub"><p><b>بدك أعلّمك خطوتك الجاية بنفسي؟</b></p><p>«${esc(noHtml(it.name))}»: بشرحلك، وبدرّبك، وبصحّحلك، ولما نخلص بتنعلّم عليها ✓ بخطتك.</p></div></div><button class="btn hl wide" data-act="tkfocus" data-t="${it.type}" data-id="${esc(String(it.id))}">🎓 علّمني إياها يا توكي</button></section><h2 class="sec">خريطة الطريق</h2>`)}}
+/* ================== اقرأ واحكي 📖🎙️: قراءة بصوت عالي مع تظليل الكلمات + قائمة الكلمات الصعبة ================== */
+let RS={src:null,paras:[],tr:[],pi:0,toks:[],p:0,ok:{},hard:{},stall:{},att:{},listening:false,rec:null,finals:[],interim:"",lastAdv:0,timer:null,start:0,done:false,allHard:[],allOk:0,allTot:0,showTr:false,modelIdx:-1};
+const rsZh=()=>LANG==="zh";
+function rsTok(par){if(rsZh())return [...par].map(ch=>({raw:ch,n:/[\u4e00-\u9fff]/.test(ch)?ch:""}));
+  return par.split(/(\s+)/).filter(x=>x.length).map(raw=>/^\s+$/.test(raw)?{raw,n:"",sp:true}:{raw,n:pnNorm(raw).replace(/\s+/g,"")})}
+function rsSim(a,b){if(!a||!b)return false;if(a===b)return true;if(rsZh())return false;const L=Math.max(a.length,b.length);if(L<3)return false;const d=pnLev(a,b);return L<5?d<=1:1-d/L>=.72}
+/* recompute where the reader is from everything heard so far */
+function rsAlign(){const T=RS.toks,idx=T.map((t,i)=>t.n?i:-1).filter(i=>i>=0);
+  const heard=((RS.finals.join(" ")+" "+RS.interim).trim());const H=rsZh()?[...heard].filter(c=>/[\u4e00-\u9fff]/.test(c)):pnNorm(heard).split(" ").filter(Boolean);
+  let q=0;const ok={},hard={},att={};
+  for(const h of H){if(q>=idx.length)break;const cur=idx[q];
+    if(rsSim(h,T[cur].n)){ok[cur]=1;if((att[cur]||0)>=2)hard[cur]="struggle";q++;continue}
+    let jumped=false;for(let k=1;k<=3&&q+k<idx.length;k++){const j=idx[q+k];if(rsSim(h,T[j].n)){for(let m=q;m<q+k;m++)hard[idx[m]]="skip";ok[j]=1;q=q+k+1;jumped=true;break}}
+    if(!jumped)att[cur]=(att[cur]||0)+1}
+  const prevQ=RS.p;RS.ok=ok;RS.hard=Object.assign({},hard,RS.stall);RS.att=att;RS.p=q;if(q!==prevQ)RS.lastAdv=Date.now();
+  return idx.length}
+function rsPaint(){const box=document.getElementById("rsText");if(!box)return;const T=RS.toks,idx=T.map((t,i)=>t.n?i:-1).filter(i=>i>=0),cur=idx[RS.p];
+  box.querySelectorAll("[data-w]").forEach(el=>{const i=+el.dataset.w;el.className="rs-w"+(RS.ok[i]&&!RS.hard[i]?" ok":"")+(RS.hard[i]?" hard":"")+(i===cur&&RS.listening?" cur":"")+(i===RS.modelIdx?" model":"")});
+  const cap=document.getElementById("rsHeard");if(cap)cap.textContent=RS.interim||RS.finals.slice(-1)[0]||"";
+  const pr=document.getElementById("rsProg");if(pr)pr.style.width=Math.round(100*RS.p/Math.max(1,idx.length))+"%"}
+function rsLoad(pi){RS.pi=pi;RS.toks=rsTok(RS.paras[pi]);RS.p=0;RS.ok={};RS.hard={};RS.stall={};RS.att={};RS.finals=[];RS.interim="";RS.lastAdv=Date.now();RS.modelIdx=-1}
+function rsWordOf(i){return (RS.toks[i]&&RS.toks[i].raw||"").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,"")}
+function rsCollect(){const T=RS.toks,idx=T.map((t,i)=>t.n?i:-1).filter(i=>i>=0);
+  RS.allTot+=idx.slice(0,Math.max(RS.p,1)).length;idx.slice(0,RS.p).forEach(i=>{if(RS.hard[i]){const w=rsWordOf(i);if(w&&!RS.allHard.find(x=>x.w===w))RS.allHard.push({w,why:RS.hard[i]})}else if(RS.ok[i])RS.allOk++})}
+function rsStartRec(){const SRc=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SRc){toast("المايك بيحتاج Chrome أو Safari حديث");return}
+  const r=new SRc();r.lang=S.accent;r.continuous=true;r.interimResults=true;r.maxAlternatives=1;RS.rec=r;
+  r.onresult=e=>{let inter="";for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)RS.finals.push(t);else inter+=t}RS.interim=inter;const n=rsAlign();rsPaint();if(RS.p>=n)rsParaDone()};
+  r.onerror=ev=>{if(ev&&/not-allowed|service-not-allowed/.test(ev.error)){RS.listening=false;toast("لازم تسمح للموقع يستخدم المايك 🎙️");render()}};
+  r.onend=()=>{if(RS.listening&&!RS.done)setTimeout(()=>{try{r.start()}catch(e){}},150)};
+  try{r.start()}catch(e){}}
+function rsStop(){RS.listening=false;clearInterval(RS.timer);try{RS.rec&&RS.rec.abort()}catch(e){}RS.rec=null}
+function rsParaDone(){rsStop();rsCollect();if(typeof sfx==="function")sfx("ok");
+  if(RS.pi+1<RS.paras.length){rsLoad(RS.pi+1);render();setTimeout(()=>A.rsmic(),700)}else rsFinish()}
+function rsFinish(){rsStop();RS.done=true;const wpm=Math.round(RS.allTot/Math.max(1,(Date.now()-RS.start)/60000));RS.wpm=wpm;
+  RS.allHard.forEach(h=>{const k=WKEY[h.w.toLowerCase()],wo=k&&WMAP[k];quietMistake(h.w,(wo&&wo.ar)||"","اقرأ واحكي")});save();
+  const acc=RS.allTot?Math.round(100*RS.allOk/RS.allTot):0;RS.acc=acc;if(acc>=70)addXP(10);render()}
+function vReadSpeak(){if(!RS.src){const lv=userLv(),list=STORIES.slice().sort((a,b)=>(a.lv===lv?-1:0)-(b.lv===lv?-1:0));
+    return `<section class="panel">${topbar("اقرأ واحكي 📖🎙️","اقرأ بصوت عالي، والكلمات بتتظلل وإنت بتقرأ")}
+      <div class="rm-teacher">${mascot("happy",54)}<div class="rm-bub"><p>اختار نص واقرأه <b>بصوت عالي</b>. كل كلمة بتقرأها صح بتصير <span class="rs-w ok">خضرا</span>، واللي بتتعثر فيها بتصير <span class="rs-w hard">حمرا</span>، وبالآخر بتلاقيها بقائمة لتراجعها.</p></div></div></section>
+    <section class="panel"><button class="plan-task" data-act="rsopen" data-t="sent" data-id="sent"><span class="pi">✨</span><span class="pt"><b>جمل قصيرة من مستواك</b><small>5 جمل للتسخين</small></span><span class="pc">›</span></button>
+      ${list.map(s=>`<button class="plan-task" data-act="rsopen" data-t="story" data-id="${s.id}"><span class="pi">📜</span><span class="pt"><b dir="auto">${esc(s.t)}</b><small>${esc(s.ar)} · ${s.lv}</small></span><span class="pc">›</span></button>`).join("")}</section>`}
+  if(RS.done){const hard=RS.allHard;
+    return `<section class="panel center">${mascot(RS.acc>=85?"happy":RS.acc>=60?"smile":"think",90)}<h2>${RS.acc>=85?"قراءة ممتازة! 🎉":RS.acc>=60?"قراءة منيحة 👏":"كمّل تدرّب، رح تتحسن 💪"}</h2>
+      <div class="rs-stats"><div><b>${RS.acc}%</b><small>دقة القراءة</small></div><div><b>${RS.wpm}</b><small>كلمة بالدقيقة</small></div><div><b>${hard.length}</b><small>كلمة صعبة</small></div></div></section>
+    ${hard.length?`<section class="panel"><h2>📝 كلمات بدها مراجعة</h2><p class="muted">انضافوا لحالهم لقائمة أخطائك ومراجعتك. اسمع كل وحدة وجرّب تحكيها:</p>
+      ${hard.map((h,i)=>{const k=WKEY[h.w.toLowerCase()],wo=k&&WMAP[k],p=PN["rs:"+i];return `<div class="rs-hw"><div><b dir="auto">${esc(h.w)}</b><small>${wo?esc(wo.ar):""} ${h.why==="skip"?"· تخطيتها":"· تعثّرت فيها"}</small></div>
+        <button class="pn-btn" data-act="rssay" data-w="${esc(h.w)}">🔊</button><button class="pn-btn ${p&&p.busy?"on":""}" data-act="rstry" data-i="${i}">🎙️</button>
+        ${p&&!p.busy&&p.score!=null?`<span class="pn-res ${p.score>=85?"ok":p.score>=60?"mid":"bad"}">${p.score}%</span>`:""}</div>`}).join("")}</section>`:""}
+    <div class="row" style="justify-content:center"><button class="btn hl" data-act="rsagain">🔁 اقرأها مرة ثانية</button><button class="btn ghost" data-act="rsback">نص ثاني</button></div>`}
+  const T=RS.toks;
+  return `<section class="panel"><div class="spread"><button class="back" data-act="rsback" aria-label="رجوع">→</button><span class="muted">فقرة ${RS.pi+1} من ${RS.paras.length}</span><button class="say" data-act="rstr">${RS.showTr?"إخفاء الترجمة":"🌐 ترجمة"}</button></div>
+    <div class="progress"><i id="rsProg" style="width:0%"></i></div>
+    <div id="rsText" class="rs-text" dir="${rsZh()?"ltr":"auto"}">${T.map((t,i)=>t.sp?t.raw:t.n?`<span class="rs-w" data-w="${i}">${esc(t.raw)}</span>`:esc(t.raw)).join("")}</div>
+    ${RS.showTr&&RS.tr[RS.pi]?`<p class="rs-tr">${esc(RS.tr[RS.pi])}</p>`:""}
+    <div class="rs-heard"><small>🎧 سامعك:</small> <span id="rsHeard" dir="auto"></span></div>
+    <div class="rs-ctrl"><button class="rs-mic ${RS.listening?"on":""}" data-act="rsmic">${RS.listening?"⏸":"🎙️"}<small>${RS.listening?"وقّف":"ابدأ اقرأ"}</small></button>
+      <button class="btn ghost" data-act="rsmodel">🔊 اسمع توكي يقرأ</button><button class="btn ghost" data-act="rsfinish">خلصت</button></div></section>`}
+VIEWS.readspeak=vReadSpeak;PARENT.readspeak="practice";
+Object.assign(A,{
+  rsopen:d=>{let paras,tr;if(d.t==="sent"){const lv=userLv(),pool=SENT.filter(s=>s.lv===lv);const pick=shuffle((pool.length?pool:SENT).slice()).slice(0,5);paras=pick.map(s=>s.en);tr=pick.map(s=>s.ar)}
+    else{const s=STORIES.find(x=>x.id===d.id);if(!s)return;paras=s.en.slice();tr=(s.tr||[]).slice()}
+    RS=Object.assign(RS,{src:d.t+":"+d.id,paras,tr,done:false,allHard:[],allOk:0,allTot:0,start:Date.now(),showTr:false});rsLoad(0);go("readspeak")},
+  rsmic:()=>{if(RS.listening){rsStop();render();return}RS.listening=true;RS.lastAdv=Date.now();try{speechSynthesis.cancel()}catch(e){}
+    rsStartRec();clearInterval(RS.timer);RS.timer=setInterval(()=>{if(!RS.listening)return;const idx=RS.toks.map((t,i)=>t.n?i:-1).filter(i=>i>=0),cur=idx[RS.p];
+      if(cur!=null&&Date.now()-RS.lastAdv>6000&&!RS.stall[cur]){RS.stall[cur]="stall";RS.hard[cur]="stall";rsPaint()}},1000);render();setTimeout(rsPaint,0)},
+  rsfinish:()=>{rsStop();rsCollect();rsFinish()},
+  rsback:()=>{rsStop();RS.src=null;RS.done=false;render()},
+  rsagain:()=>{const [t,id]=RS.src.split(":");if(t==="story")A.rsopen({t,id});else{RS=Object.assign(RS,{done:false,allHard:[],allOk:0,allTot:0,start:Date.now()});rsLoad(0);render()}},
+  rstr:()=>{RS.showTr=!RS.showTr;render();setTimeout(rsPaint,0)},
+  rssay:d=>speak(d.w),
+  rstry:d=>{const h=RS.allHard[+d.i];if(h)pnTry([h.w,h.w,h.w,"","",""],"rs:"+d.i)},
+  /* Toki reads the paragraph with a moving highlight (device voice gives word timings) */
+  rsmodel:()=>{rsStop();const text=RS.paras[RS.pi];const starts=[];let pos=0;RS.toks.forEach((t,i)=>{starts.push([pos,i]);pos+=t.raw.length});
+    try{speechSynthesis.cancel()}catch(e){}const u=new SpeechSynthesisUtterance(text);u.lang=S.accent;const v=pickVoice();if(v)u.voice=v;u.rate=Math.min(1,S.rate||.9);
+    u.onboundary=e=>{if(e.name&&e.name!=="word")return;let w=-1;for(const [p,i] of starts){if(p<=e.charIndex)w=i;else break}if(w>=0&&RS.toks[w]&&!RS.toks[w].n){w=starts.find(x=>x[0]>e.charIndex&&RS.toks[x[1]].n)?.[1]??w}RS.modelIdx=w;rsPaint()};
+    u.onend=()=>{RS.modelIdx=-1;rsPaint()};render();setTimeout(()=>speechSynthesis.speak(u),50)}});
+/* add it to the practice menu (after «نطق») */
+{const i=PRACT.findIndex(x=>x[0]==="speaking");const tile=["readspeak","📖","اقرأ واحكي","اقرأ بصوت عالي والكلمات بتتظلل"];if(i>=0)PRACT.splice(i+1,0,tile);else PRACT.push(tile)}
+if(typeof ICMAP!=="undefined")ICMAP.readspeak="reading";
+{const _go=go;go=function(r){if(route==="readspeak"&&r!=="readspeak"){rsStop();try{speechSynthesis.cancel()}catch(e){}}return _go.apply(this,arguments)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -5461,7 +5558,7 @@ function enEmpty(){const e=EN.st||{};
     <p class="muted">أو اشحن رصيد ⚡ وكمّل هلأ. الرصيد المشحون ما بينتهي أبداً.</p>
     <div class="row" style="justify-content:center"><button class="btn hl big" data-act="entop">⚡ اشحن رصيد</button></div>
 </div>`)}
-const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,drstart:0};
+const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,rsopen:1,drstart:0};
 const EN_ROUTES={dictation:1,spelling:1,speaking:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,typing:1};
 function gateCheck(act,d){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return false;
   let key=null;
