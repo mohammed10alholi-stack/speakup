@@ -958,6 +958,10 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 @keyframes igB{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,10px)}}
 @keyframes igT{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @media (prefers-reduced-motion:reduce){#iosarrow{animation:none}}
+
+.tc-lesson{flex:none;display:flex;align-items:center;gap:6px;border:none;background:linear-gradient(135deg,#FFE08A,#FFC940);color:#2A1E00;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.85rem;white-space:nowrap;max-width:75vw;overflow:hidden;text-overflow:ellipsis}
+.tc-lesson b{font-weight:700}
+.tk-plan .btn{margin-top:10px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5165,6 +5169,57 @@ A.setcoach=d=>{S.coach=d.m!=="off";if(S.coach)delete S.coachOff;save();render()}
 /* tapping anywhere else (like «next») closes the coach so it never blocks the exercise */
 document.addEventListener("pointerdown",e=>{const c=document.getElementById("coach");if(!c||!c.classList.contains("show"))return;
   if(e.target.closest&&(e.target.closest("#coach")||e.target.closest("#sheet")))return;coHide()},{capture:true});
+/* ================== توكي بيعلّمك من خطتك: درس اليوم خطوة بخطوة ================== */
+const noHtml=t=>String(t||"").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
+/* which plan step Toki teaches now: the one you picked, else the next unfinished one */
+function tkStep(){const items=planItems();let it=TU.focus&&items.find(x=>x.type===TU.focus.type&&String(x.id)===String(TU.focus.id));
+  if(!it||it.done){TU.focus=null;it=items.find(x=>!x.done)}return it||null}
+function tkStepNext(cur){const items=planItems();const i=items.indexOf(cur);return items.slice(i+1).find(x=>!x.done)||null}
+function tkStepContent(it){if(!it)return"";
+  if(it.type==="cat"){const c=CATS.find(x=>x.id===it.id);if(!c)return"";const left=c.w.filter(w=>!S.known[c.id+":"+w[0]]);
+    return "Vocabulary to teach (word = Arabic):\n"+(left.length?left:c.w).slice(0,12).map(w=>`${w[0]} = ${w[1]}`).join("\n")}
+  if(it.type==="lesson"){const l=LESSONS.find(x=>x.id===it.id);if(!l)return"";
+    return `Grammar lesson: ${noHtml(l.t)}\nExplanation (Arabic): ${noHtml(l.x).slice(0,500)}\nExamples:\n${(l.ex||[]).map(e=>`${e[0]} = ${e[1]}`).join("\n")}`}
+  if(it.type==="story"){const s=STORIES.find(x=>x.id===it.id);if(!s)return"";
+    return `Reading: "${s.t}" (${s.ar})\nText:\n${(s.en||[]).join(" ").slice(0,700)}\nComprehension questions:\n${(s.q||[]).map(q=>q[0]).join("\n")}`}
+  if(it.type==="dialog"){const d=DIALOGS.find(x=>x.id===it.id);if(!d)return"";
+    return `Dialogue: ${d.t}\n${(d.l||[]).slice(0,8).map(x=>`${x[0]==="a"?d.a:d.b}: ${x[1]} (${x[2]})`).join("\n")}\nGoal: teach the key phrases, then role-play it with the learner.`}
+  if(it.type==="abc"){const g=abcData().groups.find(x=>x.id===it.id);if(!g)return"";
+    return `Letters/sounds group "${g.name}":\n${g.L.map(x=>`${x[0]} — example ${x[2]} (${x[3]}) — tip: ${x[5]}`).join("\n")}`}
+  if(it.type==="exam")return "End-of-level review: quickly quiz the learner on mixed vocabulary and grammar from this level before they take the exam.";
+  return""}
+function tkLessonBlock(){const it=tkStep();if(!it)return"";const nx=tkStepNext(it);
+  return `
+TODAY'S LESSON FROM THE LEARNER'S PLAN — teach exactly this, step by step (it is the core of this chat):
+Step: ${it.kind} — ${noHtml(it.name)}
+${tkStepContent(it)}
+How to teach it:
+- Teach 2–3 items at a time: meaning, a short example, and how to say it. Then give a practice task for EACH item (use it in a sentence, translate, answer a question, or say it aloud).
+- Correct every answer; re-practice anything they got wrong before moving on.
+- Keep track of what has been covered and move through the list in order. If the learner goes off-topic, answer briefly and bring them back to the lesson.
+- When ALL items of this step have been taught AND practiced correctly, congratulate them, tell them this step of their plan is complete${nx?`, say the next step will be «${noHtml(nx.name)}»`:""}, and put the hidden tag [[step_done]] at the very end of that message. Never use that tag at any other time.`}
+/* feed the lesson into Toki's instructions (friend chat and live call) */
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);return sc&&sc.id==="buddy"?r+tkLessonBlock():r}}
+{const _st=stripTag;stripTag=t=>{t=String(t||"");if(t.includes("[[step_done]]"))TU.stepDoneSeen=true;return _st(t.replace(/\[\[step_done\]\]/g,""))}}
+/* when Toki says the step is finished, mark it done in the plan */
+function tkMarkDone(it){if(!it)return;
+  if(it.type==="cat"){const c=CATS.find(x=>x.id===it.id);if(c)c.w.forEach(w=>{S.known[c.id+":"+w[0]]=1;const k=WKEY[String(w[0]).toLowerCase()];if(k&&!S.srs[k])srsAdd(k,1)})}
+  else if(it.type==="lesson")S.done["g:"+it.id]=1;else if(it.type==="story")S.done["s:"+it.id]=1;else if(it.type==="dialog")S.done["d:"+it.id]=1;else if(it.type==="abc")S.done["abc:"+it.id]=1;
+  TU.focus=null;addXP(15);save();confetti&&confetti();toast(`✅ خلّصت «${noHtml(it.name)}» من خطتك مع توكي!`)}
+{const _ts=tuSend;tuSend=async function(t){const step=TU.sc==="buddy"?tkStep():null;TU.stepDoneSeen=false;await _ts(t);
+  const m=TU.msgs.buddy||[],last=m[m.length-1];if(last&&last.role==="assistant"&&/\[\[step_done\]\]/.test(last.content)){last.content=stripTag(last.content);TU.stepDoneSeen=true}
+  if(step&&TU.stepDoneSeen){TU.stepDoneSeen=false;tkMarkDone(step);render()}}}
+/* live voice: the model must never speak tags */
+{const _ls=lvStyle;lvStyle=function(){return _ls()+"\n- In this voice call never say any [[tags]]; just tell the learner when the step is complete."}}
+/* UI: a «today's lesson» chip in the friend chat + a button on the plan page */
+{const _vt=vTutorNew;const f=function(){let h=_vt();if(TU.voice||TU.sc!=="buddy")return h;const it=tkStep();if(!it)return h;
+  return h.replace('</button><div class="tc-mis">','</button><div class="tc-mis">').replace(/(<button class="tc-scn"[\s\S]*?<\/button>)/,`$1<button class="tc-lesson" data-act="tulesson"><span>🎓</span><b>درس اليوم:</b> ${esc(noHtml(it.name)).slice(0,40)}</button>`)};
+  vTutor=f;VIEWS.tutor=f}
+Object.assign(A,{
+  tulesson:()=>{const it=tkStep();if(!it)return;tuSend(`يلا علّمني «${noHtml(it.name)}» من خطتي، خطوة خطوة.`)},
+  tkfocus:d=>{TU.focus={type:d.t,id:d.id};TU.sc="buddy";TU.voice=false;go("tutor");const it=tkStep();setTimeout(()=>{if(it)tuSend(`يلا علّمني «${noHtml(it.name)}» من خطتي، خطوة خطوة.`)},250)}});
+{const _vr=VIEWS.plan;VIEWS.plan=function(){let h=_vr();const it=tkStep();if(!it)return h;
+  return h.replace('<h2 class="sec">خريطة الطريق</h2>',`<section class="panel tk-plan"><div class="rm-teacher">${mascot("happy",54)}<div class="rm-bub"><p><b>بدك أعلّمك خطوتك الجاية بنفسي؟</b></p><p>«${esc(noHtml(it.name))}»: بشرحلك، وبدرّبك، وبصحّحلك، ولما نخلص بتنعلّم عليها ✓ بخطتك.</p></div></div><button class="btn hl wide" data-act="tkfocus" data-t="${it.type}" data-id="${esc(String(it.id))}">🎓 علّمني إياها يا توكي</button></section><h2 class="sec">خريطة الطريق</h2>`)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
