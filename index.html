@@ -5616,7 +5616,7 @@ async function subSend(){
 /* ---------- لوحات إضافية ---------- */
 function vAccountPanel(){const p=AUTH.profile||{},e=EN.st;
   return `<section class="panel"><div class="spread"><div><h2 style="margin:0">${esc(p.full_name||"حسابي")}</h2><p class="muted en" style="text-align:right;margin:0">${esc(AUTH.user.email)}</p></div><span class="chip">${p.role==="admin"?"👑 أدمن":"⚡ "+enLeft()}</span></div>
-    <p style="margin-top:10px">${p.role==="admin"?"حساب أدمن، بلا حدود.":e?`مجاني اليوم: <b>${e.free_left} من ${e.quota}</b> ⚡ · رصيدك المشحون: <b>${e.balance}</b> ⚡${e.reset_at&&!e.free_left?` · المجاني بيرجع ${enWhen(e.reset_at)}`:""}`:"…"}</p>
+    <p style="margin-top:10px">${p.role==="admin"?"حساب أدمن، بلا حدود.":e?`مجاني اليوم: <b>${e.free_left} من ${e.quota}</b> ⚡ · رصيدك المشحون: <b>${e.balance}</b> ⚡${e.reset_at?` · المجاني بيرجع ${e.quota} ${enWhen(e.reset_at)}`:""}`:"…"}</p>
     <div class="row"><button class="btn hl" data-act="entop">⚡ اشحن رصيد</button>${p.role==="admin"?`<a class="btn ghost" href="admin.html">لوحة التحكم</a>`:""}<button class="btn ghost" data-act="go" data-r="terms">الشروط</button><button class="btn ghost danger" data-act="logout">تسجيل خروج</button></div>${installBtn()}</section>`}
 function vPremiumBanner(){if(!AUTH.user)return "";const p=AUTH.profile||{};if(p.role==="admin")return "";const e=EN.st;
   if(e&&enLeft()<=3)return `<section class="panel hlpanel"><div class="spread"><div><b>${enLeft()?`⚡ باقيلك ${enLeft()} بس`:"⚡ خلصت طاقتك"}</b><p class="muted" style="margin:0">${enLeft()?"اشحن رصيد عشان ما توقف بنص الدرس.":`المجاني بيرجع ${enWhen(e.reset_at)}، أو اشحن وكمّل هلأ.`}</p></div><button class="btn hl" data-act="entop">اشحن</button></div></section>`;
