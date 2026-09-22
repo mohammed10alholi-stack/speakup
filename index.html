@@ -1024,6 +1024,13 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 
 .usdt-amt{background:#FEF3C7;color:#6B4A00;border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:1.05rem}.usdt-amt b{font-size:1.3rem}.usdt-amt small{display:block;opacity:.8}
 .pay-qr{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 10px}.pay-qr img{border-radius:14px;background:#fff;padding:8px;border:1.5px solid var(--line)}.pay-qr small{color:var(--soft)}
+
+.tc .bub.a .ln{display:block;unicode-bidi:plaintext}
+.tc .bub.a .ln[dir="ltr"]{text-align:left;font-weight:600;color:var(--primary-d,#1E40AF)}
+[data-theme="dark"] .tc .bub.a .ln[dir="ltr"]{color:#8FB3FF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tc .bub.a .ln[dir="ltr"]{color:#8FB3FF}}
+.enr{unicode-bidi:isolate}
+.tc .bub.a .ln+.ln{margin-top:4px}.tc .bub.a .ln.gap{height:2px}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5405,6 +5412,34 @@ function meTabsInstall(){if(VIEWS.me.__tabs)return;const _vm=VIEWS.me;VIEWS.me=f
 setTimeout(()=>{meTabsInstall();if(route==="me")render()},0);
 A.metab=d=>{ME.tab=d.m;render();window.scrollTo(0,0)};
 /* practice tile for the league lives in «ألعاب وتحديات»; «مسار التعلّم» is now inside «خطتي» */
+/* ================== توكي أوضح وأنفع: ترتيب ثابت للرد + عرض عربي/إنجليزي سليم + «علّمني يا توكي» = المكالمة الحقيقية ================== */
+const TOKI_FORMAT=`
+REPLY FORMAT (text chat) — keep it clean and helpful:
+- NEVER mix Arabic and English inside the same line. Put every English sentence on its own separate line.
+- When the learner made a mistake, answer in exactly this shape (short lines):
+✏️ <the corrected English sentence, alone on its line>
+💡 <one short Arabic line: what was wrong and the rule>
+🎯 <one short Arabic line with a practice task on the SAME point>
+<the start of the English answer they should complete, e.g. "I had ___ before ___.">
+- When there is no mistake: one short Arabic praise line, then teach the next item with an English example on its own line, then 🎯 a practice task.
+- Stay on the current lesson point until the learner gets it right twice; don't jump to unrelated topics.
+- Max 6 short lines. No markdown headings, no bullet lists.`;
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);return sc&&sc.id==="buddy"?r+TOKI_FORMAT:r}}
+{const _ls=lvStyle;lvStyle=function(){return _ls()+"\n- In this voice call ignore the text REPLY FORMAT symbols (✏️ 💡 🎯); just speak naturally, but keep the same teaching order: correct, explain briefly, give a practice task on the same point."}}
+/* show English runs left-to-right inside Arabic lines, and give each line its own direction */
+function bidiRuns(html){return String(html).split(/(<[^>]+>)/).map(seg=>seg.startsWith("<")?seg:seg.replace(/([A-Za-z][A-Za-z0-9'’"“”\-\s,.!?;:()_]*[A-Za-z0-9.!?'"”)_])/g,(m)=>/[A-Za-z]{2}/.test(m)?`<bdi class="enr" dir="ltr">${m}</bdi>`:m)).join("")}
+{const _fb=fmtBot;fmtBot=function(c){const html=_fb(c);return html.split("<br>").map(l=>{const t=l.replace(/<[^>]+>/g,"").trim(),ar=(t.match(/[\u0600-\u06FF]/g)||[]).length,en=(t.match(/[A-Za-z]/g)||[]).length;
+  if(!t)return `<span class="ln gap"></span>`;
+  return en>ar*2?`<span class="ln" dir="ltr">${l}</span>`:`<span class="ln" dir="rtl">${bidiRuns(l)}</span>`}).join("")}}
+/* «علّمني يا توكي» opens the REAL voice call on your lesson (text chat only if the real voice isn't available) */
+async function tkLiveLesson(){if(typeof liveAvailable!=="function"||!liveAvailable())return false;
+  try{await liveStatus(true)}catch(e){}const st=LV.status||{},admin=typeof lvIsAdmin==="function"&&lvIsAdmin();
+  if(!st.enabled&&!admin)return false;
+  const useBal=!admin&&(st.remaining_sec||0)<20&&(st.balance_sec||0)>=20;
+  if(!admin&&(st.remaining_sec||0)<20&&!useBal){toast("خلصت دقايق الصوت الحقيقي لليوم، كمّلنا الدرس بالشات 💬");return false}
+  TU.voice=true;TU.err=null;TU.callStart=Date.now();render();liveStart(useBal);return true}
+{const _tf=A.tkfocus;A.tkfocus=async d=>{TU.focus={type:d.t,id:d.id};TU.sc="buddy";go("tutor");if(await tkLiveLesson())return;_tf(d)}}
+{const _tl=A.tulesson;A.tulesson=async()=>{if(await tkLiveLesson())return;_tl()}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
