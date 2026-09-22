@@ -4439,10 +4439,11 @@ How to talk:
 - Chat like a close friend on a voice call: casual Palestinian/Levantine Arabic written in Arabic script, naturally mixed with ${L}. Use ${ratio}.
 - Always write ${L} words and sentences in ${L} script${LANG==="zh"?" (Simplified Chinese) followed by pinyin in parentheses":""}; never transliterate them into Arabic letters.
 - Keep every reply SHORT: 1-3 short sentences, like spoken conversation. No lists, no headings, no markdown, at most one emoji.
-- Teach naturally: when it fits, drop one useful ${L} phrase with its meaning and invite the learner to try saying it.
+- You are a TEACHER first, a friend second. EVERY reply must teach one concrete thing (a word, a phrase, or a grammar point) suited to their level and current study, with a short example and its Arabic meaning.
 - When the learner uses ${L}, praise them warmly; if there is a mistake, correct it gently in Arabic and say the correct ${L} sentence.
 - If the learner speaks Arabic, answer naturally in Arabic and show how to say their idea in ${L}.
-- Ask about their life, day, interests and plans to keep the chat flowing; remember what they said earlier.
+- Every question you ask must be a practice task that makes the learner USE what you just taught (e.g. "استعمل went واحكيلي لوين رحت امبارح"). No small-talk questions without a learning goal. Personal topics are only the context for practice.
+- Loop: brief reaction (half a line) → teach one thing → practice question → correct their answer → either deepen the same point or move to the next. Every few turns, quickly review something taught earlier.
 - Slowly increase the amount of ${L} when the learner is doing well.
 ${me.name?`The learner's name is ${me.name}; use it now and then.`:""}${me.work?` They work/study: ${me.work}.`:""}${me.likes?` Interests: ${me.likes}.`:""}${me.goal?` Learning goal: ${me.goal}.`:""}
 ${weak?`Recent mistakes to practice gently when natural: ${weak}.`:""}`}}
@@ -4569,7 +4570,7 @@ function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss
   ws.onmessage=async ev=>{let m;try{m=JSON.parse(typeof ev.data==="string"?ev.data:await ev.data.text())}catch(e){return}
     if(m.setupComplete){LV.ready=true;LV.state="listening";LV.start=Date.now();lvUi();
       LV.node.port.onmessage=e=>{if(ws.readyState===1&&!LV.muted)ws.send(JSON.stringify({realtimeInput:{audio:{data:lvB64(e.data,LV.ac.sampleRate),mimeType:"audio/pcm;rate=16000"}}}))};
-      ws.send(JSON.stringify({realtimeInput:{text:(S.tokiMem&&S.tokiMem.summary)||(S.tokiLog||[]).length?"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة، وذكّره باختصار وين وقفنا المرة الماضية، وكمّل من هناك بدون ما تعيد نفس الأسئلة)":"(ابدأ المكالمة: سلّم على صاحبك بجملة قصيرة واسأله كيفه)"}}));
+      ws.send(JSON.stringify({realtimeInput:{text:(S.tokiMem&&S.tokiMem.summary)||(S.tokiLog||[]).length?"(ابدأ المكالمة: سلّم بجملة قصيرة، ذكّره باختصار وين وقفنا المرة الماضية، وابدأ فوراً بنقطة تعليمية جديدة من خطته مع سؤال تدريب)":"(ابدأ المكالمة: سلّم بجملة قصيرة، وابدأ فوراً بأول نقطة تعليمية مناسبة لمستواه مع سؤال تدريب قصير)"}}));
       clearInterval(LV.timer);LV.timer=setInterval(()=>{const left=Math.max(0,LV.limitSec-Math.floor((Date.now()-LV.start)/1000)),el=document.getElementById("vcTime");
         if(el)el.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;if(left<=0)liveFallback("quota")},1000);return}
     const sc=m.serverContent;if(!sc)return;
@@ -4586,6 +4587,8 @@ function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss
 const lvEasy=()=>LV.easy!=null?LV.easy:(S.lvEasy!=null?S.lvEasy:true);
 function lvStyle(){const L=LNAME_EN();
   const base=`This is a live VOICE call with a LEARNER of ${L}, not a fluent speaker. You are their patient friend and teacher. Speak Arabic in a warm Palestinian/Levantine dialect.
+TEACHING STYLE:
+- Every turn teaches one concrete thing and ends with a short practice task that makes the learner use it ("Say: I went to… / Use this word to tell me…"). No small talk without a learning goal.
 TURN-TAKING:
 - Reply immediately. Start every reply with a very short natural reaction (like «آه!», «حلو!», «تمام»), then continue.
 - If the learner interrupts you, stop at once and listen. Answer what they said first. Then, if your previous point was not finished and is still useful, continue it naturally with a short bridge like «المهم، كنت عم بحكيلك…» and pick up exactly where you stopped. Never silently drop what you were saying.`;
@@ -4844,10 +4847,10 @@ HOW TO BE AN EXCELLENT TUTOR:
 - Weave the learner's current study words and grammar (from the profile) naturally into the conversation, and invite them to use them.
 - Every few turns, briefly recall something you taught before and check if they remember it (spaced review).
 - Correct with recasts: repeat their idea correctly and naturally; add a one-line Arabic tip only for important mistakes. Don't over-correct.
-- Ask open, personal questions (why / how / what happened) rather than yes/no questions — one question at a time.
+- Questions are practice tasks, not small talk: each one should make the learner produce the target word or structure ("Use X to tell me…"). One question at a time.
 - If they seem confused or reply in Arabic, simplify, give a tiny example, and encourage them.
 - Notice repeated mistakes and fix the root cause simply.
-- React to what they say like a real, curious friend before teaching anything.`;
+- Keep the friendly reaction to half a line, then teach. Chat is the vehicle; learning is the goal.`;
 const TOKI_EXPLAIN_PLUS=`
 Explain like an expert teacher for Arabic speakers: when helpful, compare with Arabic; mention the typical mistake Arabic speakers make with this point; add a quick pronunciation tip if relevant; end with one short practice question for the learner.`;
 {const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);if(!sc)return r;if(sc.role==="EXPLAIN")return r+TOKI_EXPLAIN_PLUS;return r+learnerBrief()+TOKI_SMART}}
