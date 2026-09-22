@@ -1021,6 +1021,9 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 @media (min-width:1024px){.grpgrid .sqgrid{grid-template-columns:repeat(4,1fr)!important}
   .bnav .nb,.bnav button{font-size:1rem!important;font-weight:700}.bnav .nb svg{width:24px;height:24px}
   .bnav .nb span:not(.orb){display:inline-flex}}
+
+.usdt-amt{background:#FEF3C7;color:#6B4A00;border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:1.05rem}.usdt-amt b{font-size:1.3rem}.usdt-amt small{display:block;opacity:.8}
+.pay-qr{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 10px}.pay-qr img{border-radius:14px;background:#fff;padding:8px;border:1.5px solid var(--line)}.pay-qr small{color:var(--soft)}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5740,10 +5743,10 @@ function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ �
     ${packs.length?`<div class="plans">${packs.map(x=>`<button class="plan" data-act="minpack" data-id="${x.id}" aria-pressed="${x.id===MIN.pack}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${MIN.kind==="energy"?x.minutes+" ⚡":x.minutes+" دقيقة"}</small></button>`).join("")}</div>`:`<p class="muted">ما في باقات متاحة هلأ.</p>`}</section>
   <section class="panel"><h2>2. حوّل المبلغ${pack?` (${+pack.price} ${CFG.CURRENCY})`:""}</h2>
     <div class="row" style="margin-bottom:10px">${CFG.PAYMENT_METHODS.map(x=>`<button class="chipbtn" data-act="minmeth" data-id="${x.id}" aria-pressed="${x.id===MIN.method}">${x.icon} ${esc(x.name)}</button>`).join("")}</div>
-    ${meth?`<div class="paybox">${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}</section>
+    ${meth?`<div class="paybox">${meth.usdt&&pack?`<div class="usdt-amt">المبلغ: <b dir="ltr">${(+pack.price/(+CFG.USD_RATE||3.7)).toFixed(2)} USDT</b><small>(تقريباً ${+pack.price} ${CFG.CURRENCY})</small></div>`:""}${meth.qr?`<div class="pay-qr"><img src="${esc(meth.qr)}" alt="QR" width="200" height="200"><small>امسحه من تطبيق Binance ← Pay</small>${meth.link?`<a class="btn ghost" href="${esc(meth.link)}" target="_blank" rel="noopener">📲 افتح بتطبيق Binance</a>`:""}</div>`:""}${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}</section>
   <section class="panel"><h2>3. أرسل تأكيد التحويل</h2>
     ${pending?`<div class="fb" style="background:var(--sky)">⏳ عندك طلب شحن قيد المراجعة. الدقايق بتنضاف ${esc(CFG.ACTIVATION_TIME)}.</div>`:""}
-    <label class="fld"><span>رقم الحوالة / المرجع</span><input id="minRef" data-keep dir="ltr" autocomplete="off"></label>
+    <label class="fld"><span>${MIN.method==="binance"?"رقم العملية (Order ID أو TxID)":"رقم الحوالة / المرجع"}</span><input id="minRef" data-keep dir="ltr" autocomplete="off"></label>
     <label class="fld"><span>صورة الإيصال (اختياري، لحد 5 ميغا)</span><input id="minFile" type="file" accept="image/*,application/pdf"></label>
     ${MIN.err?`<div class="fb bad">${esc(MIN.err)}</div>`:""}${MIN.msg?`<div class="fb good">${esc(MIN.msg)}</div>`:""}
     <div class="row" style="margin-top:12px"><button class="btn hl" data-act="minsend" ${MIN.busy?"disabled":""}>${MIN.busy?"عم يرسل…":"أرسل طلب الشحن"}</button><a class="btn ghost" href="${wa}" target="_blank" rel="noopener">💬 واتساب</a></div></section>

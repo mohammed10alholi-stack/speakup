@@ -17,6 +17,12 @@ window.APP_CONFIG = {
     { id: "palpay", icon: "📱", name: "محفظة PalPay",
       details: ["رقم المحفظة: 0567385853"] },
     { id: "jawwalpay", icon: "💳", name: "محفظة Jawwal Pay",
-      details: ["رقم المحفظة: 0597210118"] }
-  ]
+      details: ["رقم المحفظة: 0597210118"] },
+    { id: "binance", icon: "🟡", name: "Binance Pay",
+      details: ["Binance Pay ID: 856805052", "اسم الحساب: User-7fc7b", "العملة: USDT"],
+      qr: "binance-qr.png", link: "https://app.binance.com/uni-qr/2NyfLUyk", usdt: true }
+  ],
+
+  // كم شيكل بيساوي الدولار (لحساب المبلغ بالـ USDT). غيّره إذا تغيّر السعر
+  USD_RATE: 3.7
 };
