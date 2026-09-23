@@ -1224,6 +1224,14 @@ body.incall #livecap{display:none!important}
 .ty2 .ty-text .sp,.ty2 .ty-text .sp.k,.ty2 .ty-text .sp.g,.ty2 .ty-text .sp.x{background:none!important;border:none!important;box-shadow:none!important;text-decoration:none!important}
 .ty2 .ty-text .sp::after,.ty2 .ty-text .sp::before{display:none!important}
 .ps-tabs button{font-size:.88rem;padding:8px 6px;white-space:nowrap}
+
+/* ===== أيقونات السماعة والسلحفاة والضو ===== */
+.icx{width:1.45em;height:1.45em;vertical-align:-.32em;display:inline-block;flex:none}
+.has-icx{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.say.has-icx,.chip.has-icx{color:var(--primary)}
+.btn.hl.has-icx .icx{color:#8A5A00}
+.ps-say.has-icx .icx{width:1.35em;height:1.35em;color:var(--primary)}
+.pn-btn.has-icx .icx{color:var(--primary)}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6353,6 +6361,19 @@ tyRender=function(){const t=tyTarget(),ty=TY.typed,kw=tyKey();let out="",ok=0;
   if(ar){h=h.replace(`<div class="ty-ar">${ar}</div>`,"");h=h.replace('</div>\n    <div class="progress">',`</div><p class="ty-ar2">${ar}</p>\n    <div class="progress">`)}
   return h}}
 A.pstab=d=>{PS.mode=d.m;PS_MODE=d.m;go("picspell")};
+/* ================== أيقونات أحلى: سماعة، سلحفاة، ضو ================== */
+const ICX={
+ say:'<svg class="icx" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5a1 1 0 001 1h3l4.2 3.4a.8.8 0 001.3-.6V5.7a.8.8 0 00-1.3-.6L8 8.5H5a1 1 0 00-1 1z" fill="currentColor"/><path d="M16.5 8.8a4.5 4.5 0 010 6.4M19 6.3a8 8 0 010 11.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ slow:'<svg class="icx" viewBox="0 0 26 24" aria-hidden="true"><path d="M3 15.2a9 7.4 0 0118 0z" fill="currentColor"/><path d="M7 15l2-3.4h6l2 3.4M9 11.6L12 8.4l3 3.2" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round" opacity=".7"/><circle cx="22.2" cy="12.6" r="2.6" fill="currentColor"/><circle cx="23.1" cy="12" r=".7" fill="#fff"/><rect x="5" y="15.2" width="3.2" height="3.6" rx="1.4" fill="currentColor"/><rect x="15.4" y="15.2" width="3.2" height="3.6" rx="1.4" fill="currentColor"/><path d="M3.3 14.6L1 15.8l2.3.6z" fill="currentColor"/></svg>',
+ hint:'<svg class="icx" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a6 6 0 00-3.6 10.8c.6.5 1 1.2 1 2v.5h5.2V16c0-.8.4-1.5 1-2A6 6 0 0012 3.2z" fill="currentColor" opacity=".92"/><path d="M9.6 18.4h4.8M10.4 20.6h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 7.2a2.8 2.8 0 00-2.8 2.8" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".8"/></svg>'};
+const ICX_MAP=[["🔊","say"],["🔈","say"],["🐢","slow"],["💡","hint"]];
+function iconify(root){root=root||document;const els=root.querySelectorAll("#view button,#view .chip,#sheet button,#coach button");
+  els.forEach(b=>{if(b.dataset.icx)return;let html=b.innerHTML,ch=false;
+    for(const [e,k] of ICX_MAP){if(html.includes(e)){html=html.split(e).join(ICX[k]);ch=true}}
+    if(ch){b.innerHTML=html;b.dataset.icx="1";b.classList.add("has-icx")}})}
+{const _r=render;render=function(){const out=_r.apply(this,arguments);try{iconify()}catch(e){}return out}}
+{const _ss=showSheet;showSheet=function(){const out=_ss.apply(this,arguments);try{iconify()}catch(e){}return out}}
+setTimeout(()=>{try{iconify()}catch(e){}},0);
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6513,7 +6534,13 @@ window.addEventListener("appinstalled",()=>{INSTALL=null;toast("تم تثبيت 
 function installBtn(){if(isStandalone())return "";
   if(INSTALL)return `<div style="margin-top:12px"><button class="btn ghost" data-act="install">📱 ثبّت التطبيق على جهازك</button></div>`;
   if(isIOS())return `<div style="margin-top:12px"><button class="btn ghost" data-act="iosguide">📱 ثبّت التطبيق على جهازك</button></div>`;return ""}
-if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if("serviceWorker" in navigator&&location.protocol==="https:"){
+  /* لما ينزل تحديث جديد، الموقع بيحدّث حاله مرة وحدة تلقائياً */
+  let swReloaded=false;const hadCtrl=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!hadCtrl||swReloaded)return;swReloaded=true;location.reload()});
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
+    const chk=()=>r.update().catch(()=>{});setInterval(chk,30*60*1000);
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden)chk()})}).catch(()=>{}))}
 
 /* ---------- الاشتراك ---------- */
 async function loadSub(){if(!AUTH.user)return;SUB.loading=true;
