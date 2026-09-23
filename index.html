@@ -1067,6 +1067,9 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .lp-skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
 .lp-skill{background:var(--card);border-radius:18px;padding:14px 8px;text-align:center;box-shadow:var(--elev)}
 .lp-skill span{font-size:1.8rem;display:block}.lp-skill b{display:block;margin-top:4px}.lp-skill small{color:var(--soft)}
+
+.vc-cap.live-cap .ln{display:block;unicode-bidi:plaintext;margin:3px 0;text-align:center;max-width:100%}
+.vc-cap.live-cap .ln[dir="ltr"]{font-weight:600;color:#BFD4FF}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5962,6 +5965,44 @@ const prepCard=(cls="")=>`<button class="plan-hero-btn prep-hero ${cls}" data-ac
   return h.replace('<div class="next-acts">',prepCard("small")+'<div class="next-acts">')}}
 A.prepopen=()=>{PR.exam=prS().exam||"ielts";PR.view=null;PR.task=null;go("prep")};
 {const _go=go;go=function(r){if(route==="prep"&&r!=="prep")prStop();return _go.apply(this,arguments)}}
+/* ================== المكالمة الحقيقية: تثبيت الفهم + نص مرتب + احتساب الخطوة ================== */
+/* 1) توكي ما بينتقل إلا لما يتأكد إنك فهمت */
+{const _ls=lvStyle;lvStyle=function(){return _ls()+`
+MASTERY LOOP (very important in this call):
+- Teach ONE point at a time. After you explain it, ask the learner to use it in a sentence.
+- If they get it wrong, correct them gently and ask them to try the SAME point again with a different example. Do not move on.
+- If they get it right, ask a SECOND, different question on the same point to be sure it wasn't luck.
+- Only after two correct uses, say clearly in Arabic that this point is done, then move to the next point of the lesson.
+- Every few minutes, go back and ask about a point you taught earlier in this call (quick recall).
+- Before ending a topic, ask: "صار واضح؟ جرّب تشرحلي إياها بكلماتك."`}}
+/* 2) النص بالمكالمة: كل سطر باتجاهه الصح، والجمل الإنجليزي ما بتتقلب */
+function capHTML(t){return String(t||"").split(/\n+/).map(l=>{const s=l.trim();if(!s)return"";
+  const ar=(s.match(/[\u0600-\u06FF]/g)||[]).length,en=(s.match(/[A-Za-z]/g)||[]).length;
+  return en>ar*2?`<span class="ln" dir="ltr">${esc(s)}</span>`:`<span class="ln" dir="rtl">${typeof bidiRuns==="function"?bidiRuns(esc(s)):esc(s)}</span>`}).join("")}
+lvCap=function(){if(!TU.cc)return;const el=document.getElementById("vcCap");if(el){el.innerHTML=capHTML(LV.cap||LV.lastCap||"");el.scrollTop=el.scrollHeight}};
+{const _vc=vCall;vCall=function(){const h=_vc();setTimeout(()=>{try{lvCap()}catch(e){}},0);return h}}
+/* 3) الخطوة اللي تخلّصها بالمكالمة بتتعلّم ✓ بخطتك */
+{const _tk=tkLiveLesson;tkLiveLesson=async function(){const ok=await _tk();if(ok)LV.step=(typeof tkStep==="function"?tkStep():null);return ok}}
+async function lvCheckStep(){const step=LV.step;LV.step=null;if(!step||!AI||AIstate!=="ok")return;
+  const log=(S.tokiLog||[]).slice(-24);if(log.length<4)return;
+  const items=(typeof tkStepContent==="function"?tkStepContent(step):"").slice(0,900);
+  try{const r=await AI.json(`You are checking a live speaking lesson between Toki (a ${LNAME_EN()} tutor) and an Arabic-speaking learner (level ${userLv()}).
+LESSON STEP: ${noHtml(step.name)}
+STEP CONTENT:
+${items}
+TRANSCRIPT (most recent turns):
+${log.map(x=>(x.r==="u"?"Learner: ":"Toki: ")+x.t).join("\n")}
+Decide strictly: did the learner PRACTISE most of this step's items and use them correctly at least once each? Reply JSON only:
+{"done": true|false, "covered": <number 0-100>, "note": "<one short Palestinian Arabic line about what still needs work>"}`,{modelTier:"quick"});
+    if(!r)return;
+    if(r.done){if(typeof tkMarkDone==="function")tkMarkDone(step);return}
+    showSheet(`<div class="center">${mascot("smile",70)}<h2>قربت تخلّص الخطوة</h2>
+      <p>«${esc(noHtml(step.name))}» ${r.covered!=null?`— غطيت تقريباً <b>${Math.round(r.covered)}%</b> منها.`:""}</p>
+      <p class="muted">${esc(r.note||"كمّل شوي وبتخلص.")}</p>
+      <div class="row" style="justify-content:center"><button class="btn hl" data-act="tkfocus" data-t="${step.type}" data-id="${esc(String(step.id))}">🎓 كمّل مع توكي</button><button class="btn ghost" data-act="lvdone" data-t="${step.type}" data-id="${esc(String(step.id))}">علّمها مكتملة</button></div></div>`)}
+  catch(e){}}
+A.lvdone=d=>{const it=planItems().find(x=>x.type===d.t&&String(x.id)===String(d.id));$("#sheet").hidden=true;if(it&&typeof tkMarkDone==="function")tkMarkDone(it)};
+{const _stop=liveStop;liveStop=function(){const had=LV.step;_stop.apply(this,arguments);if(had)setTimeout(()=>lvCheckStep(),1200)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
