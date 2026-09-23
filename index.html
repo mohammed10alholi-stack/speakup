@@ -5421,9 +5421,12 @@ async function ctUrl(text){const lang=LANG,k=lang+"|"+text;if(CT.cache[k])return
 const AR_CHARS=/[\u0600-\u06FF]/;
 {const _speak=speak;speak=function(t,o={}){
   if(!CT.on()||!t||String(t).length>300||AR_CHARS.test(t))return _speak(t,o);
-  const my=++CT.seq,text=String(t).trim();if(!o.keep)try{speechSynthesis.cancel()}catch(e){}
+  const my=++CT.seq,text=String(t).trim(),key=LANG+"|"+text;
+  /* ما منستنى أبداً: إذا الصوت الجاهز مش محفوظ، منشغّل صوت الجهاز فوراً ومنجهّز الحلو بالخلفية */
+  if(!CT.cache[key]){_speak(t,o);if(!CT.bad[key])ctUrl(text).then(u=>{if(u&&!CT.pre[u]){const el=new Audio();el.preload="auto";el.src=u;CT.pre[u]=el}}).catch(()=>{});return}
+  if(!o.keep)try{speechSynthesis.cancel()}catch(e){}
   const a=ctEl();try{a.pause()}catch(e){}
-  ctUrl(text).then(url=>{if(my!==CT.seq)return;
+  Promise.resolve(CT.cache[key]).then(url=>{if(my!==CT.seq)return;
     if(!url){_speak(t,o);return}
     let ok=false,done=false;a.onplaying=()=>{ok=true};a.onended=()=>{ok=true;if(done)return;done=true;if(my===CT.seq&&o.onend)o.onend()};a.onerror=()=>{if(ok||done||my!==CT.seq)return;done=true;delete CT.cache[LANG+"|"+text];_speak(t,o)};
     a.src=url;a.playbackRate=o.slow?0.75:Math.min(1.1,Math.max(.7,S.rate||1));try{a.preservesPitch=true}catch(e){}
