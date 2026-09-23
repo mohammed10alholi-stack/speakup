@@ -4986,7 +4986,7 @@ Object.assign(A,{
   h=h.replace('<button class="c-mic ',`<button class="c-ml" data-act="tuml" title="لغة الميكروفون" aria-label="لغة الميكروفون">${TU.micLang==="ar"?"ع":LANGS[LANG].flag}</button><button class="c-mic `);
   return h};VIEWS.tutor=vTutor}
 /* ================== TOKI LIVE — real voice via Gemini Live (daily minutes + auto-fallback) ================== */
-const LV_VER="v35";
+const LV_VER="v36";
 const LV={easy:null,useBal:false,source:"free",on:false,state:"idle",ws:null,ac:null,outAc:null,stream:null,node:null,src:null,playT:0,sources:[],cap:"",userCap:"",detail:null,start:0,timer:null,muted:false,ready:false,sid:null,limitSec:300,status:null,statusAt:0,stLoading:false};
 const liveAvailable=()=>typeof window.getLiveToken==="function";
 const lvIsAdmin=()=>typeof AUTH!=="undefined"&&AUTH.profile&&AUTH.profile.role==="admin";
@@ -5021,6 +5021,7 @@ function lvConnect(tok,full,step){step=step==null?(full?0:2):step;const url=`wss
   ws.onopen=()=>{const sc=TUTOR.find(x=>x.id==="buddy")||TUTOR[0];
     const sys=tuRules(sc)+"\n"+lvStyle();
     const setup={model:"models/"+tok.model,generationConfig:{responseModalities:["AUDIO"]},systemInstruction:{parts:[{text:sys}]}};
+    if(/thinking/i.test(tok.model||""))setup.generationConfig.thinkingConfig={thinkingLevel:"low"};
     if(step<=1){setup.generationConfig.speechConfig={voiceConfig:{prebuiltVoiceConfig:{voiceName:"Puck"}}};setup.inputAudioTranscription={};setup.outputAudioTranscription={}}
     // faster turn-taking: notice the end of the learner's speech sooner
     if(step===0)setup.realtimeInputConfig={automaticActivityDetection:{endOfSpeechSensitivity:"END_SENSITIVITY_HIGH",silenceDurationMs:450,prefixPaddingMs:120}};
