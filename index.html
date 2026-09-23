@@ -6330,7 +6330,7 @@ PARENT.speaking="speakhub";PARENT.readspeak="speakhub";PARENT.quiz="tests";PAREN
   <button class="hub-row" data-act="go" data-r="league"><span class="hub-ic">🏆</span><span class="hub-tx"><b>الدوري الأسبوعي</b><small>نافس المتعلمين على نقاط الأسبوع</small></span><i>›</i></button></div></section>`}}
 /* ---- صفحة «تدرّب» الجديدة ---- */
 VIEWS.practice=function(){const due=dueList().length;
-  const T=[["picspell","🎧","اسمع واكتب","صورة وكلمة وجملة، حرف حرف"],["speakhub","🗣️","احكي","جمل قصيرة ونصوص بالمايك"],["writing","✍️","اكتب","ترتيب، ترجمة، وتصحيح ذكي"],["games","🎮","ألعاب","توصيل، سرعة، رتّب الحروف، ودوري"],["tests","🏁","اختبارات","سريع، امتحان المستوى، وتحديد المستوى"]];
+  const T=[["picspell","🎧","اسمع واكتب","بالصور، جمل، واكتب فوق الجملة"],["speakhub","🗣️","احكي","جمل قصيرة ونصوص بالمايك"],["writing","✍️","اكتب","ترتيب، ترجمة، وتصحيح ذكي"],["games","🎮","ألعاب","توصيل، سرعة، رتّب الحروف، ودوري"],["tests","🏁","اختبارات","سريع، امتحان المستوى، وتحديد المستوى"]];
   return `<div class="hubhead">${mascot("wow",56)}<div><h1>تدرّب</h1><p class="muted">التمارين على قد مستواك ${lvChip(userLv())}</p></div></div>
     ${LANG==="en"&&typeof prepCard==="function"?prepCard():""}
     <button class="plan-hero-btn review" data-act="go" data-r="review"><span class="ph-ic">🔁</span><div><b>مراجعة ذكية</b><small>${due?`${due} كلمة مستحقة اليوم`:"ما في كلمات مستحقة هلأ 👌"}</small></div><i>›</i></button>
