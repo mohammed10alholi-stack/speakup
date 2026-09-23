@@ -1209,6 +1209,21 @@ body.incall #livecap{display:none!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .today{background:linear-gradient(135deg,#1E1B4B,#312E81)!important}}
 [data-theme="dark"] body .bnav{background:rgba(18,26,47,.92)!important;border-color:#243154!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .bnav{background:rgba(18,26,47,.92)!important;border-color:#243154!important}}
+
+/* ===== اكتب فوق الجملة ===== */
+.ty2 .ty-text{font-size:1.9rem;line-height:1.6;font-weight:700;letter-spacing:.01em;text-align:center}
+.ty2 .ty-text .g{color:#CBD2E1}.ty2 .ty-text .k{color:var(--ink)}.ty2 .ty-text .x{color:#EF4444}
+.ty2 .ty-text .g.kw{color:#A5B4FC}.ty2 .ty-text .k.kw{color:#4F46E5}
+.ty2 .ty-text .cur{box-shadow:inset 0 -4px 0 #4F86FF}
+[data-theme="dark"] .ty2 .ty-text .g{color:#3A4766}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ty2 .ty-text .g{color:#3A4766}}
+.ty2 .ty-wrap{border:none!important;background:transparent!important;box-shadow:none!important;padding:8px 0!important}
+.ty-kw{display:flex;justify-content:center;align-items:baseline;gap:10px;margin:6px 0 2px}
+.ty-kw b{color:#4F46E5;font-size:1.15rem}.ty-kw span{color:var(--soft);font-weight:600}
+.ty-ar2{text-align:center;color:var(--soft);margin:4px 0 12px;font-size:1.02rem}
+.ty2 .ty-text .sp,.ty2 .ty-text .sp.k,.ty2 .ty-text .sp.g,.ty2 .ty-text .sp.x{background:none!important;border:none!important;box-shadow:none!important;text-decoration:none!important}
+.ty2 .ty-text .sp::after,.ty2 .ty-text .sp::before{display:none!important}
+.ps-tabs button{font-size:.88rem;padding:8px 6px;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6292,7 +6307,7 @@ PS.mode="pic";let PS_MODE="pic";
 {const _start=psStart;psStart=function(){const m=PS.mode||PS_MODE||"pic";PS_MODE=m;_start();PS.mode=m;if(m==="sent"){PS.stage="sent";render();setTimeout(psSay,350)}}}
 {const _next=A.psnext;A.psnext=()=>{const q=PS.q[PS.i];if(q&&q.sentOnly&&PS.stage==="sent"){const ok=PS.wrong===0;PS.res.push({en:q.ex.slice(0,24)+(q.ex.length>24?"…":""),ok});if(!ok)quietMistake(q.ex,q.ar,"اسمع واكتب");addXP(ok?5:2);save();PS.i++;PS.typed=0;PS.wrong=0;if(PS.i>=PS.q.length)PS.done=true;else PS.stage="sent";render();if(!PS.done){setTimeout(psSay,300);psFocus()}return}_next()}}
 {const _sk=A.psskip;A.psskip=()=>{_sk();if(PS.mode==="sent"&&!PS.done){PS.stage="sent";render()}}}
-{const _v=VIEWS.picspell;VIEWS.picspell=function(){let h=_v();const tabs=`<div class="pr-tabs ps-tabs"><button data-act="psmode" data-m="pic" aria-pressed="${PS.mode!=="sent"}">🖼️ بالصور</button><button data-act="psmode" data-m="sent" aria-pressed="${PS.mode==="sent"}">📝 جمل</button></div>`;
+{const _v=VIEWS.picspell;VIEWS.picspell=function(){let h=_v();const tabs=`<div class="pr-tabs ps-tabs"><button data-act="psmode" data-m="pic" aria-pressed="${PS.mode!=="sent"}">🖼️ بالصور</button><button data-act="psmode" data-m="sent" aria-pressed="${PS.mode==="sent"}">📝 جمل</button><button data-act="go" data-r="typing" aria-pressed="false">👀 اكتب فوقها</button></div>`;
   if(PS.mode==="sent")h=h.replace(/<div class="ps-pic">[\s\S]*?<\/div><p class="ps-ar">/,'<p class="ps-ar ps-ar-big">');
   return h.replace('<section class="panel ps">','<section class="panel ps">'+tabs).replace('<section class="panel center">','<section class="panel center">'+tabs)}}
 A.psmode=d=>{PS.mode=d.m;PS_MODE=d.m;psStart()};
@@ -6315,7 +6330,29 @@ VIEWS.practice=function(){const due=dueList().length;
 if(typeof ICMAP!=="undefined"){ICMAP.speakhub="speaking";ICMAP.tests="exam";ICMAP.picspell="dictation"}
 {const i=PRACT.findIndex(x=>x[0]==="picspell");if(i>=0)PRACT[i]=["picspell","🎧","اسمع واكتب","صورة وكلمة وجملة، حرف حرف"]}
 /* المسارات القديمة (إملاء، أكمل الجملة) بتحوّل للجديد */
-{const _go=go;go=function(r){if(r==="dictation"||r==="typing"){PS.mode=r==="typing"?"sent":"pic";PS_MODE=PS.mode;r="picspell"}return _go.call(this,r)}}
+{const _go=go;go=function(r){if(r==="dictation"){PS.mode="pic";PS_MODE="pic";r="picspell"}return _go.call(this,r)}}
+/* ================== «اكتب فوق الجملة»: الجملة باهتة، وإنت بتكتب فوقها (رجعناه وحسّنّاه) ================== */
+PARENT.typing="practice";
+function tyKey(){const it=TY.item;if(!it||TY.mode==="word")return null;
+  const words=(it.en.match(/[A-Za-z']+/g)||[]).filter(w=>w.length>2);let best=null;
+  for(const w of words){const k=WKEY[w.toLowerCase()],wo=k&&WMAP[k];if(wo&&(!best||w.length>best.w.length))best={w,ar:wo.ar}}
+  if(!best)return null;const i=it.en.search(new RegExp("\\b"+best.w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b"));return i<0?null:Object.assign(best,{s:i,e:i+best.w.length})}
+tyRender=function(){const t=tyTarget(),ty=TY.typed,kw=tyKey();let out="",ok=0;
+  for(let i=0;i<t.length;i++){const c=t[i],typed=ty[i];
+    let cls=typed===undefined?"g":tyNorm(typed)===tyNorm(c)?"k":"x";if(cls==="k")ok++;
+    const hk=kw&&i>=kw.s&&i<kw.e?" kw":"";
+    if(c===" ")out+=`<span class="sp ${cls}"> </span>`;else out+=`<span class="${cls}${hk}${i===ty.length?" cur":""}">${esc(c)}</span>`}
+  return{html:out,ok}};
+{const _vt=VIEWS.typing;VIEWS.typing=function(){let h=_vt();const kw=tyKey();
+  const tabs=`<div class="pr-tabs ps-tabs"><button data-act="pstab" data-m="pic">🖼️ بالصور</button><button data-act="pstab" data-m="sent">📝 جمل</button><button aria-pressed="true">👀 اكتب فوقها</button></div>`;
+  h=h.replace(/<section class="panel">/,`<section class="panel ty2">${tabs}`);
+  h=h.replace(topbar("أكمل الجملة","اسمع، وبعدين اكتبها بكيبورد جهازك — كل حرف صح بيتلون"),topbar("اكتب فوق الجملة","الجملة قدامك باهتة… اكتب فوقها وشوف الحروف بتغمق"));
+  if(kw)h=h.replace('<div class="ty-wrap',`<div class="ty-kw"><b dir="ltr">${esc(kw.w)}</b><span>${esc(kw.ar)}</span></div><div class="ty-wrap`);
+  /* الترجمة تحت الجملة، زي النمط المشهور */
+  const ar=TY.item?esc(TY.item.ar):"";
+  if(ar){h=h.replace(`<div class="ty-ar">${ar}</div>`,"");h=h.replace('</div>\n    <div class="progress">',`</div><p class="ty-ar2">${ar}</p>\n    <div class="progress">`)}
+  return h}}
+A.pstab=d=>{PS.mode=d.m;PS_MODE=d.m;go("picspell")};
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
