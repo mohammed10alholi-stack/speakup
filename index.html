@@ -6539,6 +6539,27 @@ function bumpChips(){document.querySelectorAll("header .chip").forEach(c=>{if(/�
 /* ---- إعداد بالإعدادات ---- */
 {const _vm=VIEWS.me;VIEWS.me=function(){return _vm().replace('<div class="set"><span>الاهتزاز</span>',`<div class="set"><span>🎉 حركات الاحتفال</span>${seg("setfx",S.fx===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div><div class="set"><span>🗣️ صوت التشجيع (Great job!)</span>${seg("setcheer",S.cheerVoice===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div><div class="set"><span>الاهتزاز</span>`)}}
 A.setfx=d=>{S.fx=d.m!=="off";save();render()};A.setcheer=d=>{S.cheerVoice=d.m!=="off";save();render()};
+/* ================== صوت الإلقاء الثابت (Kokoro · صوت 1) لكل اللغات ================== */
+const SA={man:{},loading:{}};
+async function saLoad(lang){if(!lang||SA.man[lang]||SA.loading[lang])return;SA.loading[lang]=true;
+  try{const r=await fetch(`a/${lang}/m.json`,{cache:"no-cache"});if(r.ok){const arr=await r.json();SA.man[lang]=new Set(arr)}}catch(e){}SA.loading[lang]=false}
+async function saHash(lang,text){const b=await crypto.subtle.digest("SHA-1",new TextEncoder().encode(lang+"|"+text));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,12)}
+const saNorm=t=>String(t||"").replace(/\s+/g," ").trim();
+{const _sp=speak;speak=function(t,o={}){const text=saNorm(t),lang=LANG,man=SA.man[lang];
+  if(!man||!text||/[\u0600-\u06FF]/.test(text)||!(window.crypto&&crypto.subtle))return _sp(t,o);
+  const my=++CT.seq;
+  saHash(lang,text).then(h=>{if(my!==CT.seq)return;
+    if(!man.has(h)){_sp(t,o);return}
+    if(!o.keep)try{speechSynthesis.cancel()}catch(e){}
+    const a=ctEl();try{a.pause()}catch(e){}
+    let ok=false,done=false;
+    a.onplaying=()=>{ok=true};
+    a.onended=()=>{ok=true;if(done)return;done=true;if(my===CT.seq&&o.onend)o.onend()};
+    a.onerror=()=>{if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)};
+    a.src=`a/${lang}/${h}.mp3`;a.playbackRate=o.slow?0.75:Math.min(1.1,Math.max(.7,S.rate||1));try{a.preservesPitch=true}catch(e){}
+    const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)})}).catch(()=>_sp(t,o))}}
+saLoad(LANG);
+{const _sw=switchLang;switchLang=function(){const r=_sw.apply(this,arguments);setTimeout(()=>saLoad(LANG),0);return r}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);

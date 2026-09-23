@@ -1,5 +1,5 @@
 // SpeakUp service worker — يخلي الموقع يشتغل كتطبيق ويفتح بسرعة
-const CACHE = "speakup-v87";
+const CACHE = "speakup-v89";
 const CORE = ["./", "./index.html", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -13,6 +13,8 @@ self.addEventListener("fetch", (e) => {
   const u = new URL(req.url);
   if (u.origin === location.origin) {
     if (u.pathname.endsWith("admin.html")) return;
+    // ملفات الصوت: المتصفح بيتعامل معها مباشرة (أسرع وأضمن على الآيفون)
+    if (u.pathname.includes("/a/")) return;
     // الشبكة أولاً عشان التحديثات توصل فوراً، والنسخة المحفوظة لما ما في إنترنت
     e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); return r; })
       .catch(() => caches.match(req).then((r) => r || caches.match("./index.html"))));
