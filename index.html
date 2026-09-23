@@ -1076,6 +1076,29 @@ body.incall #livecap{display:none!important}
 .vc-hear{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;opacity:.85}
 .vc-hear i{width:9px;height:9px;border-radius:50%;background:#EF4444;animation:tkpulse 1.2s infinite}
 .vc-cap .ln{display:block;unicode-bidi:plaintext}
+
+/* ===== شوف، اسمع، واكتب ===== */
+.ps{text-align:center}
+.ps-pic{display:grid;place-items:center;margin:8px 0 2px}.ps-pic .pic{--s:120px}
+.ps-ar{color:var(--soft);margin:0 0 10px}
+.ps-box{display:flex;align-items:center;gap:8px;border:2px solid #86EFAC;background:#F0FDF4;border-radius:14px;padding:12px 10px;cursor:text;transition:border-color .2s}
+.ps-box.sent{border-color:#C4B5FD;background:#F5F3FF}
+[data-theme="dark"] .ps-box{background:rgba(34,197,94,.08)}[data-theme="dark"] .ps-box.sent{background:rgba(139,92,246,.1)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ps-box{background:rgba(34,197,94,.08)}:root:not([data-theme="light"]) .ps-box.sent{background:rgba(139,92,246,.1)}}
+.ps-box.shake{animation:psShake .3s}@keyframes psShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.ps-slots{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:2px 0;font-family:"Rubik",monospace;font-size:1.5rem;letter-spacing:.06em;min-height:2.2em}
+.ps-box.sent .ps-slots{font-size:1.2rem}
+.ps-w{display:inline-flex;white-space:nowrap}.ps-sp{display:inline-block;width:.8em}
+.ps-c{display:inline-block;min-width:.72em;text-align:center;border-bottom:2.5px solid var(--soft);margin:0 1px;line-height:1.35;color:var(--ink)}
+.ps-c.ok{color:#15803D;border-bottom-color:#22C55E;font-weight:700}
+.ps-c.cur{border-bottom-color:var(--primary);animation:psBlink 1s infinite}.ps-c.pun{border-bottom-color:transparent}
+@keyframes psBlink{50%{border-bottom-color:transparent}}
+.ps-say{flex:none;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--card)}
+.ps-hint{color:var(--soft);min-height:1.5em;margin:10px 0 0}
+.ps-in{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;left:50%}
+.ps-done{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#DCFCE7;color:#166534;border-radius:16px;padding:10px 12px;margin-top:12px;font-weight:700}
+[data-theme="dark"] .ps-done{background:rgba(34,197,94,.18);color:#86EFAC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ps-done{background:rgba(34,197,94,.18);color:#86EFAC}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5788,7 +5811,7 @@ VIEWS.learn=function(){let d=null;try{d=rmData()}catch(e){}
 VIEWS.practice=function(){const due=dueList().length;const grp=(t,ids)=>{const it=pickTiles(PRACT,ids);return it.length?`<h2 class="sec">${t}</h2>${grpGrid(it)}`:""};
   return `<div class="hubhead">${mascot("wow",56)}<div><h1>تدرّب</h1><p class="muted">التمارين على قد مستواك ${lvChip(userLv())}</p></div></div>
     <button class="plan-hero-btn review" data-act="go" data-r="review"><span class="ph-ic">🔁</span><div><b>مراجعة ذكية</b><small>${due?`${due} كلمة مستحقة اليوم`:"ما في كلمات مستحقة هلأ 👌"}</small></div><i>›</i></button>
-    ${grp("🎧 استماع",["dictation"])}${grp("🗣️ كلام ونطق",["speaking","readspeak"])}${grp("✍️ كتابة",["writing","typing","spelling"])}${grp("🎮 ألعاب وتحديات",["games","league"])}${grp("🏁 اختبارات",["quiz","exam","placement"])}`};
+    ${grp("🎧 استماع",["dictation"])}${grp("🗣️ كلام ونطق",["speaking","readspeak"])}${grp("✍️ كتابة",["picspell","writing","typing","spelling"])}${grp("🎮 ألعاب وتحديات",["games","league"])}${grp("🏁 اختبارات",["quiz","exam","placement"])}`};
 /* ---- 👤 me: three tabs instead of one long page ---- */
 let ME={tab:"progress"};
 function meTabsInstall(){if(VIEWS.me.__tabs)return;const _vm=VIEWS.me;VIEWS.me=function(){const kids=tplKids(_vm()),T={progress:[],account:[],settings:[]};
@@ -6087,6 +6110,70 @@ JSON only: {"mastered":["item", ...]}`,{modelTier:"quick"});
 /* عدّاد التقدّم على شارة «درس اليوم» */
 {const _vt=VIEWS.tutor;VIEWS.tutor=function(){let h=_vt();if(TU.voice||TU.sc!=="buddy")return h;const it=tkStep();if(!it)return h;const p=tkProg(it);
   return p.all?h.replace('<b>درس اليوم:</b>',`<b>درس اليوم (${p.got}/${p.all}):</b>`):h}}
+/* ================== «شوف، اسمع، واكتب»: صورة + كلمة بمربعات + جملة (زي النمط المشهور) ================== */
+let PS={q:[],i:0,stage:"word",typed:0,wrong:0,shown:false,done:false,res:[],sentShow:false};
+function psPool(){const lv=userLv(),out=[];CATS.filter(c=>c.lv===lv||LVS.indexOf(c.lv)<LVS.indexOf(lv)).forEach(c=>c.w.forEach(w=>{
+  if(!/^[A-Za-z][A-Za-z' -]{1,14}$/.test(w[0])||!emoOf(w[0]))return;
+  const ex=(w[2]||"").trim();if(!ex||ex.length>48||!new RegExp("\\b"+w[0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i").test(ex))return;
+  out.push({en:w[0],ar:w[1],ex})}));return out}
+function psStart(){const pool=shuffle(psPool());PS={q:pool.slice(0,8),i:0,stage:"word",typed:0,wrong:0,shown:false,done:!pool.length,res:[],sentShow:false};render();setTimeout(psSay,350)}
+const psTarget=()=>{const q=PS.q[PS.i];return PS.stage==="word"?q.en:q.ex};
+const psIsLetter=ch=>/[A-Za-z0-9]/.test(ch);
+function psSkipAuto(){const t=psTarget();while(PS.typed<t.length&&!psIsLetter(t[PS.typed]))PS.typed++}
+function psSay(slow){const q=PS.q[PS.i];if(!q)return;speak(PS.stage==="word"?q.en:q.ex,slow?{slow:true}:{})}
+function psSlots(){const t=psTarget();let h="",word="";
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(ch===" "){h+=`<span class="ps-w">${word}</span><span class="ps-sp"></span>`;word="";continue}
+    const typed=i<PS.typed;const cls=psIsLetter(ch)?(typed?"ok":i===PS.typed?"cur":""):"pun";
+    word+=`<span class="ps-c ${cls}">${typed||!psIsLetter(ch)?esc(ch):""}</span>`}
+  return h+`<span class="ps-w">${word}</span>`}
+function vPicSpell(){
+  if(PS.done||!PS.q.length){const ok=PS.res.filter(r=>r.ok).length;
+    return `<section class="panel center">${topbar("شوف، اسمع، واكتب","")}${mascot(ok>=PS.res.length*.7?"happy":"smile",86)}
+      ${PS.q.length?`<h2>${ok} من ${PS.res.length} بدون أخطاء</h2><div class="dr-list">${PS.res.map(r=>`<span class="dr-chip ${r.ok?"ok":"mid"}" dir="ltr">${esc(r.en)}</span>`).join("")}</div>`:`<p>ما لقيت كلمات بصور بمستواك.</p>`}
+      <div class="row" style="justify-content:center"><button class="btn hl" data-act="psagain">🔁 جولة جديدة</button><button class="btn ghost" data-act="go" data-r="practice">رجوع</button></div></section>`}
+  const q=PS.q[PS.i],t=psTarget(),complete=PS.typed>=t.length;
+  return `<section class="panel ps">
+    <div class="spread"><button class="back" data-act="go" data-r="practice" aria-label="رجوع">→</button><div class="progress" style="flex:1;margin:0 10px"><i style="width:${100*(PS.i+(PS.stage==="sent"?.5:0))/PS.q.length}%"></i></div><span class="muted">${PS.i+1}/${PS.q.length}</span></div>
+    <div class="ps-pic">${pic(q.en,120)}</div><p class="ps-ar">${esc(q.ar)}</p>
+    <div class="ps-box ${PS.stage}" data-act="psfocus">
+      <button class="ps-say" data-act="pssay" aria-label="استمع">🔊</button>
+      <div class="ps-slots" dir="ltr">${psSlots()}</div>
+      <button class="ps-say slow" data-act="psslow" aria-label="أبطأ">🐢</button></div>
+    ${PS.stage==="word"&&complete?"":PS.stage==="sent"?`<p class="ps-hint">${PS.sentShow?`<span dir="ltr">${esc(q.ex)}</span>`:`اكتب الجملة اللي سمعتها`}</p>`:`<p class="ps-hint">اسمع الكلمة واكتبها حرف حرف</p>`}
+    <input id="psIn" class="ps-in" data-keep autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" dir="ltr" aria-label="اكتب هون">
+    <div class="row" style="justify-content:center;gap:8px;margin-top:6px"><button class="chip" data-act="pshint">💡 حرف</button>${PS.stage==="sent"?`<button class="chip" data-act="psshow">👁️ ورجيني الجملة</button>`:""}<button class="chip" data-act="psskip">تخطّي</button></div>
+    ${complete?`<div class="ps-done"><span>✔ ${PS.stage==="word"?"صح!":"ممتاز!"}</span><button class="btn good" data-act="psnext">${PS.stage==="word"?"كمّل للجملة ←":"الكلمة الجاية ←"}</button></div>`:""}
+    <p class="muted center" style="font-size:.8rem">اضغط على المربع ليفتح الكيبورد ⌨️</p></section>`}
+VIEWS.picspell=vPicSpell;PARENT.picspell="practice";
+function psKey(ch){const t=psTarget();psSkipAuto();if(PS.typed>=t.length)return;
+  const want=t[PS.typed];
+  if(ch.toLowerCase()===want.toLowerCase()){PS.typed++;psSkipAuto();
+    if(PS.typed>=t.length){if(typeof sfx==="function")sfx("ok");speak(t);render();psFocus()}
+    else psPaint()}
+  else{PS.wrong++;if(typeof sfx==="function")sfx("bad");const b=document.querySelector(".ps-box");if(b){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake")}
+    if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}}}
+function psPaint(){const el=document.querySelector(".ps-slots");if(el)el.innerHTML=psSlots();else{render();psFocus()}}
+function psFocus(){setTimeout(()=>{const el=document.getElementById("psIn");if(el){el.focus({preventScroll:true})}},30)}
+document.addEventListener("input",e=>{if(e.target&&e.target.id==="psIn"){const v=e.target.value;e.target.value="";for(const ch of v)psKey(ch)}},true);
+document.addEventListener("keydown",e=>{if(route!=="picspell"||!e.target||e.target.id!=="psIn")return;if(e.key==="Enter"){const t=psTarget();if(PS.typed>=t.length)A.psnext()}},true);
+Object.assign(A,{
+  psopen:()=>go("picspell"),psagain:()=>psStart(),
+  psfocus:()=>{const el=document.getElementById("psIn");if(el)el.focus({preventScroll:true})},pssay:()=>{psSay();psFocus()},psslow:()=>{psSay(true);psFocus()},
+  pshint:()=>{const t=psTarget();psSkipAuto();if(PS.typed<t.length){PS.wrong++;psKey(t[PS.typed])}},
+  psshow:()=>{PS.sentShow=true;PS.wrong++;render();setTimeout(()=>{PS.sentShow=false;if(route==="picspell")render();psFocus()},2500)},
+  psskip:()=>{const q=PS.q[PS.i];PS.res.push({en:q.en,ok:false});quietMistake(q.en,q.ar,"شوف واكتب");save();PS.i++;PS.stage="word";PS.typed=0;PS.wrong=0;if(PS.i>=PS.q.length)PS.done=true;render();if(!PS.done){setTimeout(psSay,300);psFocus()}},
+  psnext:()=>{const q=PS.q[PS.i];
+    if(PS.stage==="word"){PS.stage="sent";PS.typed=0;render();setTimeout(psSay,300);psFocus();return}
+    const ok=PS.wrong===0;PS.res.push({en:q.en,ok});if(!ok)quietMistake(q.en,q.ar,"شوف واكتب");else{const k=WKEY[q.en.toLowerCase()];if(k&&!S.srs[k])srsAdd(k,1)}
+    addXP(ok?4:2);save();PS.i++;PS.stage="word";PS.typed=0;PS.wrong=0;if(PS.i>=PS.q.length)PS.done=true;render();if(!PS.done){setTimeout(psSay,300);psFocus()}}});
+{const i=PRACT.findIndex(x=>x[0]==="typing");const tile=["picspell","🖼️","شوف، اسمع، واكتب","صورة وكلمة وجملة، حرف حرف"];if(i>=0)PRACT.splice(i,0,tile);else PRACT.push(tile)}
+if(typeof ICMAP!=="undefined")ICMAP.picspell="spelling";
+{const _go=go;go=function(r){const was=route;const out=_go.apply(this,arguments);if(r==="picspell"&&was!=="picspell"&&!PS._starting){PS._starting=true;psStart();PS._starting=false}return out}}
+/* صوت أنثى واضح بالجهاز (والصوت السحابي أصلاً أنثى) */
+{const _vs=voiceScore;voiceScore=function(v){let s=_vs(v);if(s<-100)return s;if((S.voiceGender||"f")==="f"){
+  if(/samantha|ava|allison|susan|zoe|aria|jenny|libby|sonia|serena|karen|moira|tessa|nicky|joelle|michelle|emma|female|google us english/i.test(v.name))s+=30;
+  if(/daniel|guy|ryan|evan|nathan|christopher|brian|fred|alex\b|aaron|arthur|gordon|male/i.test(v.name))s-=15}return s}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6333,8 +6420,8 @@ function enEmpty(){const e=EN.st||{};
     <p class="muted">أو اشحن رصيد ⚡ وكمّل هلأ. الرصيد المشحون ما بينتهي أبداً.</p>
     <div class="row" style="justify-content:center"><button class="btn hl big" data-act="entop">⚡ اشحن رصيد</button></div>
 </div>`)}
-const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,rsopen:1,prepopen:1,propen:1,drstart:0};
-const EN_ROUTES={dictation:1,spelling:1,speaking:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,typing:1};
+const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,rsopen:1,prepopen:1,propen:1,psopen:1,drstart:0};
+const EN_ROUTES={dictation:1,spelling:1,speaking:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,typing:1,picspell:1};
 function gateCheck(act,d){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return false;
   let key=null;
   if(EN_ACTS[act])key=act+":"+(d.id||d.t||d.g||d.lv||"");
