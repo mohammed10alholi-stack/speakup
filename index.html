@@ -1099,6 +1099,12 @@ body.incall #livecap{display:none!important}
 .ps-done{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#DCFCE7;color:#166534;border-radius:16px;padding:10px 12px;margin-top:12px;font-weight:700}
 [data-theme="dark"] .ps-done{background:rgba(34,197,94,.18);color:#86EFAC}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ps-done{background:rgba(34,197,94,.18);color:#86EFAC}}
+
+.hub-list{display:grid;gap:10px;margin-top:10px}
+.hub-row{display:flex;align-items:center;gap:12px;width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:18px;padding:14px;color:var(--ink);font-family:inherit;text-align:start;box-shadow:var(--elev)}
+.hub-ic{flex:none;width:48px;height:48px;border-radius:14px;background:var(--primary-soft);display:grid;place-items:center;font-size:1.5rem}
+.hub-tx{flex:1}.hub-tx b{display:block;font-size:1.05rem}.hub-tx small{color:var(--soft)}.hub-row>i{font-style:normal;font-size:1.4rem;color:var(--soft)}
+.ps-tabs{margin:0 0 10px}.ps-ar-big{font-size:1.15rem;color:var(--ink);margin:10px 0 12px;font-weight:600}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6174,6 +6180,38 @@ if(typeof ICMAP!=="undefined")ICMAP.picspell="spelling";
 {const _vs=voiceScore;voiceScore=function(v){let s=_vs(v);if(s<-100)return s;if((S.voiceGender||"f")==="f"){
   if(/samantha|ava|allison|susan|zoe|aria|jenny|libby|sonia|serena|karen|moira|tessa|nicky|joelle|michelle|emma|female|google us english/i.test(v.name))s+=30;
   if(/daniel|guy|ryan|evan|nathan|christopher|brian|fred|alex\b|aaron|arthur|gordon|male/i.test(v.name))s-=15}return s}}
+/* ================== تدرّب: 7 أقسام واضحة بدل 12 (دمج المكرر) ================== */
+/* ---- «اسمع واكتب»: تبويبين (بالصور / جمل) ---- */
+PS.mode="pic";let PS_MODE="pic";
+{const _pool=psPool;psPool=function(){if(PS_MODE!=="sent")return _pool();const lv=userLv();
+  return shuffle(SENT.filter(s=>(s.lv===lv||LVS.indexOf(s.lv)<LVS.indexOf(lv))&&s.en.length<=60)).map(s=>({en:s.en.split(" ")[0],ar:s.ar,ex:s.en,sentOnly:true}))}}
+{const _start=psStart;psStart=function(){const m=PS.mode||PS_MODE||"pic";PS_MODE=m;_start();PS.mode=m;if(m==="sent"){PS.stage="sent";render();setTimeout(psSay,350)}}}
+{const _next=A.psnext;A.psnext=()=>{const q=PS.q[PS.i];if(q&&q.sentOnly&&PS.stage==="sent"){const ok=PS.wrong===0;PS.res.push({en:q.ex.slice(0,24)+(q.ex.length>24?"…":""),ok});if(!ok)quietMistake(q.ex,q.ar,"اسمع واكتب");addXP(ok?5:2);save();PS.i++;PS.typed=0;PS.wrong=0;if(PS.i>=PS.q.length)PS.done=true;else PS.stage="sent";render();if(!PS.done){setTimeout(psSay,300);psFocus()}return}_next()}}
+{const _sk=A.psskip;A.psskip=()=>{_sk();if(PS.mode==="sent"&&!PS.done){PS.stage="sent";render()}}}
+{const _v=VIEWS.picspell;VIEWS.picspell=function(){let h=_v();const tabs=`<div class="pr-tabs ps-tabs"><button data-act="psmode" data-m="pic" aria-pressed="${PS.mode!=="sent"}">🖼️ بالصور</button><button data-act="psmode" data-m="sent" aria-pressed="${PS.mode==="sent"}">📝 جمل</button></div>`;
+  if(PS.mode==="sent")h=h.replace(/<div class="ps-pic">[\s\S]*?<\/div><p class="ps-ar">/,'<p class="ps-ar ps-ar-big">');
+  return h.replace('<section class="panel ps">','<section class="panel ps">'+tabs).replace('<section class="panel center">','<section class="panel center">'+tabs)}}
+A.psmode=d=>{PS.mode=d.m;PS_MODE=d.m;psStart()};
+/* ---- «احكي»: صفحة وحدة بتبويبين ---- */
+function hubPage(title,sub,icon,items){return `<section class="panel">${topbar(title,sub)}<div class="hub-list">${items.map(x=>`<button class="hub-row" data-act="${x.act||"go"}" data-r="${x.r||""}"><span class="hub-ic">${x.i}</span><span class="hub-tx"><b>${x.t}</b><small>${x.s}</small></span><i>›</i></button>`).join("")}</div></section>`}
+VIEWS.speakhub=()=>hubPage("احكي","المايك بيسمعك وبيقيّمك","🗣️",[{r:"speaking",i:"🎙️",t:"جمل قصيرة",s:"احكي جملة وخود علامة نطق فورية"},{r:"readspeak",i:"📖",t:"نصوص",s:"اقرأ بصوت عالي، والكلمات بتتظلل وإنت بتقرأ"}]);PARENT.speakhub="practice";
+VIEWS.tests=()=>hubPage("اختبارات","قيس مستواك وخود شهادة","🏁",[{r:"quiz",i:"⚡",t:"اختبار سريع",s:"10 أسئلة منوعة من مستواك"},{r:"exam",i:"🎓",t:"امتحان المستوى",s:"انجح وخود شهادة وانتقل للي بعده"},{r:"placement",i:"🧭",t:"اختبار تحديد المستوى",s:"اعرف مستواك من A1 لـ B2"}]);PARENT.tests="practice";
+PARENT.speaking="speakhub";PARENT.readspeak="speakhub";PARENT.quiz="tests";PARENT.exam="tests";PARENT.placement="tests";PARENT.spelling="games";PARENT.league="games";
+/* ---- الألعاب: فيها «رتّب الحروف» والدوري ---- */
+{const _vg=VIEWS.games;VIEWS.games=function(){const h=_vg();return h+`<section class="panel"><h2 class="sec" style="margin-top:0">كمان</h2><div class="hub-list">
+  <button class="hub-row" data-act="go" data-r="spelling"><span class="hub-ic">🔤</span><span class="hub-tx"><b>رتّب الحروف</b><small>ركّب الكلمة من حروفها المبعثرة</small></span><i>›</i></button>
+  <button class="hub-row" data-act="go" data-r="league"><span class="hub-ic">🏆</span><span class="hub-tx"><b>الدوري الأسبوعي</b><small>نافس المتعلمين على نقاط الأسبوع</small></span><i>›</i></button></div></section>`}}
+/* ---- صفحة «تدرّب» الجديدة ---- */
+VIEWS.practice=function(){const due=dueList().length;
+  const T=[["picspell","🎧","اسمع واكتب","صورة وكلمة وجملة، حرف حرف"],["speakhub","🗣️","احكي","جمل قصيرة ونصوص بالمايك"],["writing","✍️","اكتب","ترتيب، ترجمة، وتصحيح ذكي"],["games","🎮","ألعاب","توصيل، سرعة، رتّب الحروف، ودوري"],["tests","🏁","اختبارات","سريع، امتحان المستوى، وتحديد المستوى"]];
+  return `<div class="hubhead">${mascot("wow",56)}<div><h1>تدرّب</h1><p class="muted">التمارين على قد مستواك ${lvChip(userLv())}</p></div></div>
+    ${LANG==="en"&&typeof prepCard==="function"?prepCard():""}
+    <button class="plan-hero-btn review" data-act="go" data-r="review"><span class="ph-ic">🔁</span><div><b>مراجعة ذكية</b><small>${due?`${due} كلمة مستحقة اليوم`:"ما في كلمات مستحقة هلأ 👌"}</small></div><i>›</i></button>
+    <div class="grpgrid n${T.length}">${tileGrid(T)}</div>`};
+if(typeof ICMAP!=="undefined"){ICMAP.speakhub="speaking";ICMAP.tests="exam";ICMAP.picspell="dictation"}
+{const i=PRACT.findIndex(x=>x[0]==="picspell");if(i>=0)PRACT[i]=["picspell","🎧","اسمع واكتب","صورة وكلمة وجملة، حرف حرف"]}
+/* المسارات القديمة (إملاء، أكمل الجملة) بتحوّل للجديد */
+{const _go=go;go=function(r){if(r==="dictation"||r==="typing"){PS.mode=r==="typing"?"sent":"pic";PS_MODE=PS.mode;r="picspell"}return _go.call(this,r)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6421,7 +6459,7 @@ function enEmpty(){const e=EN.st||{};
     <div class="row" style="justify-content:center"><button class="btn hl big" data-act="entop">⚡ اشحن رصيد</button></div>
 </div>`)}
 const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,rsopen:1,prepopen:1,propen:1,psopen:1,drstart:0};
-const EN_ROUTES={dictation:1,spelling:1,speaking:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,typing:1,picspell:1};
+const EN_ROUTES={spelling:1,speaking:1,readspeak:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,picspell:1};
 function gateCheck(act,d){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return false;
   let key=null;
   if(EN_ACTS[act])key=act+":"+(d.id||d.t||d.g||d.lv||"");
