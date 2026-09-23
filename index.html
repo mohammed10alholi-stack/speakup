@@ -1037,6 +1037,7 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .pr-tabs button{flex:1;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:10px;font-weight:700;font-family:inherit}
 .pr-tabs button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
 .prep-hero{background:linear-gradient(135deg,#F472B6,#E11D48 60%,#9F1239)!important;box-shadow:0 14px 30px -16px rgba(225,29,72,.8)!important}
+.prep-hero.small{padding:12px 14px;margin:0 0 12px}.prep-hero.small .ph-ic{width:44px;height:44px;font-size:1.4rem}.prep-hero.small b{font-size:1.05rem}
 .pr-text{background:var(--sky);border-radius:16px;padding:14px;line-height:1.9;font-size:1.02rem;max-height:46vh;overflow-y:auto;margin:10px 0}
 .pr-prompt{background:var(--gold-soft);color:#4A3200;border-radius:16px;padding:14px;line-height:1.8;white-space:pre-wrap;margin:10px 0}
 [data-theme="dark"] .pr-prompt{background:rgba(255,201,64,.14);color:#FFE08A}
@@ -1058,6 +1059,14 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .pr-ph{display:grid;gap:8px;margin-bottom:10px}
 .pr-phi{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 8px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;color:var(--ink);font-family:inherit;text-align:start}
 .pr-phi b{font-size:1.02rem}.pr-phi small{grid-column:1;color:var(--soft)}.pr-phi span{grid-row:1/3;font-size:1.2rem}
+
+.lp-exam{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 16px;margin-bottom:14px;font-size:.95rem}
+.lp-exams{background:linear-gradient(135deg,#FFF1F2,#FFE4E6);border:1.5px solid #FDA4AF;border-radius:26px;padding:20px 16px}
+[data-theme="dark"] .lp-exams{background:rgba(225,29,72,.14);border-color:rgba(225,29,72,.4)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lp-exams{background:rgba(225,29,72,.14);border-color:rgba(225,29,72,.4)}}
+.lp-skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
+.lp-skill{background:var(--card);border-radius:18px;padding:14px 8px;text-align:center;box-shadow:var(--elev)}
+.lp-skill span{font-size:1.8rem;display:block}.lp-skill b{display:block;margin-top:4px}.lp-skill small{color:var(--soft)}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -5944,8 +5953,13 @@ Object.assign(A,{
     r.onend=()=>{if(PR.listening)try{r.start()}catch(e){}};
     try{r.start()}catch(e){}render()}});
 /* add to the practice menu (English only) */
+const prepCard=(cls="")=>`<button class="plan-hero-btn prep-hero ${cls}" data-act="prepopen"><span class="ph-ic">🎓</span><div><b>تحضير IELTS و TOEFL</b><small>قراءة واستماع وكتابة ومحادثة · وتوكي بيصحّحلك ويعطيك تقدير درجتك</small></div><i>›</i></button>`;
+/* فوق بصفحة «تدرّب»، مش بالآخر */
 {const _vp=VIEWS.practice;VIEWS.practice=function(){let h=_vp();if(LANG!=="en")return h;
-  return h.replace('<h2 class="sec">🏁 اختبارات</h2>',`<h2 class="sec">🎓 تحضير الامتحانات الدولية</h2><button class="plan-hero-btn prep-hero" data-act="prepopen"><span class="ph-ic">🎓</span><div><b>IELTS و TOEFL</b><small>المهارات الأربعة، وتوكي بيصحّح الكتابة والمحادثة</small></div><i>›</i></button><h2 class="sec">🏁 اختبارات</h2>`)}}
+  return h.replace('<button class="plan-hero-btn review"',prepCard()+'<button class="plan-hero-btn review"')}}
+/* وبالرئيسية كمان */
+{const _vh=VIEWS.home;VIEWS.home=function(){let h=_vh();if(LANG!=="en")return h;
+  return h.replace('<div class="next-acts">',prepCard("small")+'<div class="next-acts">')}}
 A.prepopen=()=>{PR.exam=prS().exam||"ielts";PR.view=null;PR.task=null;go("prep")};
 {const _go=go;go=function(r){if(route==="prep"&&r!=="prep")prStop();return _go.apply(this,arguments)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
@@ -6056,6 +6070,7 @@ function vAuth(){
     ["🗺️","خطة من مستواك للي بعده","اختبار بيحدد مستواك، وتوكي بيشرحلك شو خلّصت وشو ضايل."],
     ["🔤","من الحروف للطلاقة","ابدأ من أول حرف، ونطق بصوت طبيعي، وتمرين نطق بالمايك."],
     ["📚",`${Math.floor(ALL.length/50)*50}+ كلمة وقصص ومحادثات`,"كلمات بالصور والصوت، وقصص، ومواقف حقيقية، وألعاب."],
+    ["🎓","تحضير IELTS و TOEFL","تدرّب على المهارات الأربعة، وتوكي بيصحّح كتابتك ومحادثتك ويعطيك تقدير درجتك."],
     ["🎓","شهادة باسمك","لكل مستوى بتخلّصه، امتحان وشهادة بتقدر تشاركها."]];
   return `<section class="lp-hero"><div class="lp-hero-in">
       <div class="lp-copy">
@@ -6063,6 +6078,7 @@ function vAuth(){
         <h1>تعلّم <span class="lp-hl">7 لغات</span><br>وإنت بتحكيها</h1>
         <p>توكي، معلمك الذكي، بيحكي معك بصوتك زي الصاحب، بيصحّحلك كل غلطة، وبيشرحلك بالعربي. كل يوم ${LAND.energy||20} ⚡ ببلاش.</p>
         <div class="lp-flags">${Object.keys(LANGS).map(k=>`<span title="${LANGS[k].name}">${LANGS[k].fimg||LANGS[k].flag}</span>`).join("")}</div>
+        <div class="lp-exam">🎓 <b>وفيه قسم كامل لتحضير IELTS و TOEFL</b></div>
         <div class="lp-cta"><button class="btn hl big" data-act="landgo" data-m="signup">ابدأ مجاناً ←</button><button class="btn ghost big lp-ghost" data-act="landgo" data-m="login">عندي حساب</button></div>
         <small class="lp-note">بدون بطاقة، وبدون اشتراك. بتسجّل بإيميلك وبتبلّش فوراً.</small>
         ${pendingRef()?`<p class="lp-ref">🤝 صديقك دعاك! سجّل وبتاخد هدية</p>`:""}
@@ -6073,6 +6089,9 @@ function vAuth(){
         <div class="lp-bub toki"><b>✏️ توكي: الصح هيك</b><span class="en-line">I <u>went</u> to school yesterday</span><small>مع «yesterday» منستعمل الماضي 😉</small></div>
       </div></div></section>
     <section class="lp-langs"><h2>اختار اللغة اللي بتحلم فيها</h2><div class="lp-lgrid">${Object.keys(LANGS).map(k=>`<button class="lp-lang" data-act="landgo" data-m="signup"><span class="lp-lf">${LANGS[k].fimg||LANGS[k].flag}</span><b>${LANGS[k].name}</b><small dir="auto">${HI[k]||""}</small></button>`).join("")}</div></section>
+    <section class="lp-sec lp-exams"><h2>🎓 رايح على IELTS أو TOEFL؟</h2>
+      <p class="muted center">تدرّب على <b>المهارات الأربعة</b> بنفس شكل الامتحان، وتوكي بيصحّحلك الكتابة والمحادثة ويعطيك <b>تقدير درجتك</b> ونصايح محددة.</p>
+      <div class="lp-skills">${[["📖","القراءة","نصوص وأسئلة بوقت محدد"],["🎧","الاستماع","اسمع وجاوب"],["✍️","الكتابة","تصحيح حسب معايير الامتحان"],["🎙️","المحادثة","احكي بالمايك وخود تقييم"]].map(x=>`<div class="lp-skill"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join("")}</div></section>
     <section class="lp-sec"><h2>ليش SpeakUp مختلف؟</h2><div class="lp-feats">${feats.map(f=>`<div class="lp-feat"><span>${f[0]}</span><b>${f[1]}</b><p>${f[2]}</p></div>`).join("")}</div></section>
     <section class="lp-sec"><h2>3 خطوات وبتبلّش</h2><div class="lp-steps"><div><i>1</i><b>سجّل ببلاش</b><span>بإيميلك، خلال ثواني.</span></div><div><i>2</i><b>اعمل اختبار المستوى</b><span>7 دقايق، وتوكي بيعملك خطة.</span></div><div><i>3</i><b>احكي كل يوم</b><span>10 دقايق باليوم بتفرق معك.</span></div></div></section>
     <section class="panel authcard" id="authcard">${AUTH.err?`<div class="fb bad" style="margin:0 0 12px">${esc(AUTH.err)}</div>`:""}${AUTH.msg?`<div class="fb good" style="margin:0 0 12px">${esc(AUTH.msg)}</div>`:""}${form}</section>
