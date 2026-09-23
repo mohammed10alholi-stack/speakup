@@ -6043,6 +6043,50 @@ DEPTH AND VARIETY IN SPEECH:
     cap.classList.add("vc-hearing");cap.innerHTML=`<span class="vc-hear"><i></i> بسمعك… احكي بوضوح</span><span class="ln" dir="ltr">${esc(t||"…")}</span>`;
     _sl(null);return}
   return _sl(t)}}
+/* ================== تتبّع العناصر المتقنة: اللي أخذته وأكّدته ما بيتكرر ================== */
+const tkKey=it=>it?LANG+":"+it.type+":"+it.id:"";
+const tkGot=it=>{const k=tkKey(it);return (S.prog&&S.prog[k])||[]};
+function tkAddGot(it,arr){if(!it||!arr||!arr.length)return 0;const k=tkKey(it);S.prog=S.prog||{};
+  const cur=S.prog[k]||[],low=cur.map(x=>x.toLowerCase());let n=0;
+  arr.forEach(x=>{x=String(x||"").trim().slice(0,60);if(!x||low.includes(x.toLowerCase()))return;cur.push(x);low.push(x.toLowerCase());n++;
+    if(it.type==="cat"){const c=CATS.find(y=>y.id===it.id),w=c&&c.w.find(y=>y[0].toLowerCase()===x.toLowerCase());
+      if(w){S.known[c.id+":"+w[0]]=1;const kk=WKEY[w[0].toLowerCase()];if(kk)srsAdd(kk,1)}}});
+  S.prog[k]=cur.slice(-60);if(n){addXP(2*n);save()}return n}
+function tkItems(it){if(!it)return[];
+  if(it.type==="cat"){const c=CATS.find(x=>x.id===it.id);return c?c.w.map(w=>w[0]):[]}
+  if(it.type==="lesson"){const l=LESSONS.find(x=>x.id===it.id);return l?(l.ex||[]).map(e=>e[0]):[]}
+  if(it.type==="abc"){const g=abcData().groups.find(x=>x.id===it.id);return g?g.L.map(x=>x[0].split(" ")[0]):[]}
+  if(it.type==="dialog"){const d=DIALOGS.find(x=>x.id===it.id);return d?(d.l||[]).map(x=>x[1]):[]}
+  if(it.type==="story"){const s=STORIES.find(x=>x.id===it.id);return s?(s.q||[]).map(q=>q[0]):[]}
+  return[]}
+const tkProg=it=>{const all=tkItems(it).length,got=tkGot(it).length;return {got:Math.min(got,all||got),all}};
+/* المتقن ما بينعرض بالدرس، وبينحكى صراحة لتوكي إنه ممنوع يعيده */
+{const _c=tkStepContent;tkStepContent=function(it){let t=_c(it);const got=tkGot(it);
+  if(got.length)t=t.split("\n").filter(l=>!got.some(g=>l.toLowerCase().startsWith(g.toLowerCase()+" ")||l.toLowerCase().startsWith(g.toLowerCase()+"="))).join("\n");
+  return t}}
+{const _b=tkLessonBlock;tkLessonBlock=function(){let b=_b();if(!b)return b;const it=tkStep();const got=tkGot(it),p=tkProg(it);
+  return b+`\nPROGRESS IN THIS STEP: ${p.got}${p.all?" / "+p.all:""} items already mastered.`+
+   (got.length?`\nALREADY MASTERED — NEVER teach, explain or drill these again (the learner used each one correctly twice): ${got.join(", ")}.\nIf the learner brings one up, just confirm briefly and move to a new item.`:"")+
+   `\nWhen the learner uses a new item correctly TWICE, confirm in Arabic that it is done ("خلّصناها ✓") and put the hidden tag [[got: <the item(s), comma separated>]] at the very end of that message. Never show that tag in a voice call — in a call just say it in words.`}}
+/* بالشات: بنقرأ الوسم وبنعلّم العناصر */
+{const _st=stripTag;stripTag=t=>{t=String(t||"");const m=t.match(/\[\[got:([^\]]*)\]\]/i);
+  if(m){TU.gotItems=(TU.gotItems||[]).concat(m[1].split(/[,؛،]/).map(x=>x.trim()).filter(Boolean))}
+  return _st(t.replace(/\[\[got:[^\]]*\]\]/gi,""))}}
+{const _ts=tuSend;tuSend=async function(t){const step=TU.sc==="buddy"?tkStep():null;TU.gotItems=[];await _ts(t);
+  if(step&&TU.gotItems&&TU.gotItems.length){const n=tkAddGot(step,TU.gotItems);TU.gotItems=[];
+    if(n){const p=tkProg(step);toast(`✓ خلّصت ${n} من خطوتك${p.all?` (${p.got} من ${p.all})`:""}`);render()}}}}
+/* بالمكالمة: بعد ما تخلص، منسأل توكي شو أتقنه المشترك فعلاً */
+{const _chk=lvCheckStep;lvCheckStep=async function(){const step=LV.step;
+  if(step&&AI&&AIstate==="ok"){const log=(S.tokiLog||[]).slice(-24);
+    if(log.length>=4){try{const r=await AI.json(`From this ${LNAME_EN()} lesson transcript, list ONLY the items of the step that the learner USED CORRECTLY at least twice (mastered). Items of the step: ${tkItems(step).join(", ")}
+TRANSCRIPT:
+${log.map(x=>(x.r==="u"?"Learner: ":"Toki: ")+x.t).join("\n")}
+JSON only: {"mastered":["item", ...]}`,{modelTier:"quick"});
+      if(r&&r.mastered&&r.mastered.length){const n=tkAddGot(step,r.mastered);if(n){const p=tkProg(step);toast(`✓ ${n} عناصر خلّصتها بالمكالمة${p.all?` (${p.got} من ${p.all})`:""}`)}}}catch(e){}}}
+  return _chk.apply(this,arguments)}}
+/* عدّاد التقدّم على شارة «درس اليوم» */
+{const _vt=VIEWS.tutor;VIEWS.tutor=function(){let h=_vt();if(TU.voice||TU.sc!=="buddy")return h;const it=tkStep();if(!it)return h;const p=tkProg(it);
+  return p.all?h.replace('<b>درس اليوم:</b>',`<b>درس اليوم (${p.got}/${p.all}):</b>`):h}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
