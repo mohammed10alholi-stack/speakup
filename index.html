@@ -1070,6 +1070,12 @@ body.guest #instcard{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 
 .vc-cap.live-cap .ln{display:block;unicode-bidi:plaintext;margin:3px 0;text-align:center;max-width:100%}
 .vc-cap.live-cap .ln[dir="ltr"]{font-weight:600;color:#BFD4FF}
+
+body.incall #livecap{display:none!important}
+.vc-cap.vc-hearing{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:52px}
+.vc-hear{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;opacity:.85}
+.vc-hear i{width:9px;height:9px;border-radius:50%;background:#EF4444;animation:tkpulse 1.2s infinite}
+.vc-cap .ln{display:block;unicode-bidi:plaintext}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6029,6 +6035,13 @@ DEPTH AND VARIETY IN SPEECH:
 - Never repeat the same opener, praise word or example twice in this call. If you catch yourself repeating, change angle.
 - Read the learner's intent even when their words are broken or half Arabic; restate your guess briefly and keep going instead of asking them to repeat.
 - If they ask you something, answer it first, then return to the lesson.`}}
+/* ================== إصلاح تراكب شريط المايك بشاشة المكالمة ================== */
+{const _sl=setLive;setLive=function(t){const cap=document.getElementById("vcCap");
+  if(document.body.classList.contains("incall")&&cap){
+    if(t===null){cap.classList.remove("vc-hearing");if(!TU.live)cap.innerHTML="";_sl(null);return}
+    cap.classList.add("vc-hearing");cap.innerHTML=`<span class="vc-hear"><i></i> بسمعك… احكي بوضوح</span><span class="ln" dir="ltr">${esc(t||"…")}</span>`;
+    _sl(null);return}
+  return _sl(t)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
