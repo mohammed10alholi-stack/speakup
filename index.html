@@ -6003,6 +6003,32 @@ Decide strictly: did the learner PRACTISE most of this step's items and use them
   catch(e){}}
 A.lvdone=d=>{const it=planItems().find(x=>x.type===d.t&&String(x.id)===String(d.id));$("#sheet").hidden=true;if(it&&typeof tkMarkDone==="function")tkMarkDone(it)};
 {const _stop=liveStop;liveStop=function(){const had=LV.step;_stop.apply(this,arguments);if(had)setTimeout(()=>lvCheckStep(),1200)}}
+/* ================== توكي أعمق وأذكى: شرح حقيقي، بدون تكرار، وبيفهم قصدك ================== */
+const TOKI_DEPTH=`
+HOW TO EXPLAIN (this is what makes you good, not just correct):
+- Never answer with a bare rule. For every point give: (1) the rule in ONE clear Arabic line, (2) WHY it works that way, (3) a contrast with Arabic when it helps ("بالعربي منقول… بس بالإنجليزي…"), (4) the specific trap Arabic speakers fall into here, (5) two short examples that differ from each other.
+- Prefer one point explained deeply over three points listed shallowly.
+- When the learner's sentence is wrong, first work out WHY they wrote it that way (usually translating from Arabic) and address that cause, not only the symptom.
+- Use a concrete image, mini-story or comparison when a rule is abstract. Make it memorable, not academic.
+NEVER REPEAT YOURSELF:
+- Do not reuse an opening you used before in this conversation ("حلو!", "برافو!", "ممتاز!"). Vary your reactions, examples and sentence shapes every turn.
+- Never give the same example sentence twice. Never re-explain a point the memory shows the learner already mastered, unless they ask or you are deliberately reviewing.
+- If you notice you are about to say something close to your previous message, change the angle instead: give a harder example, switch to a real-life situation, or ask them to teach it back to you.
+UNDERSTAND WHAT THEY ACTUALLY MEAN:
+- The learner writes Palestinian Arabic, English, or a mix, often with typos and voice-typing errors. Read for intent, not literal words.
+- If their message is genuinely ambiguous, restate your best guess in half a line ("قصدك…؟") and answer it — don't stop and interrogate them.
+- If they ask a question, answer THAT question first, before continuing your lesson plan.
+- If they seem tired, frustrated or bored, drop the plan for a moment, react like a human, and make the next step lighter.`;
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc);return sc&&sc.id==="buddy"?r+TOKI_DEPTH:r}}
+/* ألغي سقف الأسطر المتشدّد، وخليه يشرح لما يلزم */
+{const _tr2=tuRules;tuRules=function(sc){return _tr2(sc).replace("- Max 6 short lines. No markdown headings, no bullet lists.","- Keep it tight: 4-9 short lines. Go longer only when you are explaining a new rule in depth. No markdown headings, no bullet lists.")}}
+/* ونفس الروح بالمكالمة الصوتية */
+{const _ls=lvStyle;lvStyle=function(){return _ls()+`
+DEPTH AND VARIETY IN SPEECH:
+- Explain the WHY behind every rule, compare with Arabic, and name the trap Arabic speakers fall into. One point explained well beats a list.
+- Never repeat the same opener, praise word or example twice in this call. If you catch yourself repeating, change angle.
+- Read the learner's intent even when their words are broken or half Arabic; restate your guess briefly and keep going instead of asking them to repeat.
+- If they ask you something, answer it first, then return to the lesson.`}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6015,9 +6041,9 @@ const daysLeft=()=>AUTH.profile&&AUTH.profile.plan_until?Math.ceil((new Date(AUT
 function aiLockedMsg(){return AUTH.user&&isPremium()?`<p class="muted">عم بجهّز المعلم الذكي…</p>`:`<div class="fb bad">🔒 المعلم الذكي والتصحيح والقصص الذكية للمشتركين فقط.<div style="margin-top:8px"><button class="btn hl" data-act="go" data-r="subscribe">اشترك وافتحها</button></div></div>`}
 
 /* ---------- AI عبر Edge Function ---------- */
-async function callAI(system,messages,signal){
+async function callAI(system,messages,signal,o){
   const {data:{session}}=await sb.auth.getSession();if(!session)throw{code:"not_granted"};
-  let r;try{r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",signal,headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify({system,messages,max_tokens:1200,charge:(()=>{const c=!!window.__aiCharge;window.__aiCharge=false;return c})()})})}
+  let r;try{r=await fetch(CFG.SUPABASE_URL+"/functions/v1/tutor",{method:"POST",signal,headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:CFG.SUPABASE_ANON_KEY},body:JSON.stringify({system,messages,max_tokens:1200,tier:(o&&o.modelTier)||"",charge:(()=>{const c=!!window.__aiCharge;window.__aiCharge=false;return c})()})})}
   catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};throw{code:"upstream_error"}}
   window.__aiCharge=false;const d=await r.json().catch(()=>({}));
   if(r.status===402&&d.error==="no_energy"){if(d.energy)enSet(d.energy);enEmpty();throw{code:"no_energy"}}
@@ -6029,7 +6055,7 @@ window.liveApi=async(action,extra)=>{const {data:{session}}=await sb.auth.getSes
 window.getLiveToken=x=>window.liveApi("live_token",x);
 const aiShim=async(input,opts={})=>{let system,messages;
   if(typeof input==="string")messages=[{role:"user",content:input}];else{system=input[0].content;messages=input.slice(1)}
-  const text=await callAI(system,messages,opts.signal);if(!text)throw{code:"empty_completion"};opts.onText&&opts.onText({text,delta:text});return{text,truncated:false}};
+  const text=await callAI(system,messages,opts.signal,opts);if(!text)throw{code:"empty_completion"};opts.onText&&opts.onText({text,delta:text});return{text,truncated:false}};
 aiShim.json=async(prompt,opts={})=>{const {text}=await aiShim(prompt+"\n\nReturn raw JSON only, with no code fences.",opts);
   const s=text.replace(/```json|```/g,"");const a=s.indexOf("{"),b=s.lastIndexOf("}");try{return JSON.parse(s.slice(a,b+1))}catch(e){throw{code:"invalid_json"}}};
 AIERR.ai_not_configured="المعلم الذكي مش مفعّل على الموقع حالياً.";
