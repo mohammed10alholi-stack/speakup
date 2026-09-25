@@ -449,6 +449,8 @@ body.playing #toast,body.chatmode .tc-acts button.loading{opacity:.5;animation:t
 .rd-cur{background:#FFF1B8;border-radius:6px;box-shadow:0 0 0 2px #FFE08A;transition:background .25s}
 [data-theme="dark"] .rd-cur{background:rgba(255,201,64,.22);box-shadow:0 0 0 2px rgba(255,201,64,.35)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rd-cur{background:rgba(255,201,64,.22);box-shadow:0 0 0 2px rgba(255,201,64,.35)}}
+#offline-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:45;background:#334155;color:#fff;border-radius:14px;padding:8px 14px;font-size:.85rem;max-width:92vw;text-align:center;box-shadow:0 10px 24px -12px rgba(0,0,0,.5)}
+.off-card .progress{margin:10px 0 4px}
 #toast{bottom:auto!important;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 /* ===== games v2 ===== */
@@ -6835,6 +6837,30 @@ speakSeq=function(items,done){const id=++seqId;try{speechSynthesis.cancel()}catc
   const next=()=>{if(id!==seqId)return;if(i>=items.length){done&&done();return}const it=items[i++];it.start&&it.start();speak(it.t,{keep:true,pitch:it.pitch,alt:it.alt,onend:()=>setTimeout(next,120)})};next()};
 
 {const _r=render;render=function(){const o=_r.apply(this,arguments);if(route==="reading"&&R.playing&&R.rdCur)setTimeout(()=>{try{if(R.playing&&R.rdCur&&!document.querySelector(".rd-cur"))rdMark(R.rdCur,R.rdItems,true)}catch(e){}},60);return o}}
+/* ================== بدون نت: تنزيل أصوات اللغة + شريط حالة ================== */
+const OFF={busy:false,done:0,total:0,ready:{}};
+function offKey(){return "su_off_"+LANG}
+async function offDownload(){if(OFF.busy)return;if(!("serviceWorker" in navigator)||!navigator.serviceWorker.controller){toast("ثبّت الموقع أو افتحه من الرابط الأصلي أول");return}
+  await saLoad(LANG);const man=SA.man[LANG];if(!man||!man.size){toast("ما في أصوات لهاللغة");return}
+  const urls=[...man].map(h=>new URL(`a/${LANG}/${h}.mp3`,location.href).href);
+  OFF.busy=true;OFF.done=0;OFF.total=urls.length;render();
+  const ch=new MessageChannel();ch.port1.onmessage=ev=>{const d=ev.data||{};OFF.done=d.done;OFF.total=d.total;
+    const bar=document.getElementById("offBar");if(bar)bar.style.width=Math.round(100*d.done/d.total)+"%";const t=document.getElementById("offTxt");if(t)t.textContent=`${d.done} من ${d.total}`;
+    if(d.finished){OFF.busy=false;try{localStorage.setItem(offKey(),String(Date.now()))}catch(e){}toast(d.fail?`✅ خلص التنزيل (${d.fail} ما نزلوا، بيكمّلوا لحالهم بعدين)`:"✅ جاهز! هاللغة بتشتغل بدون نت");try{sfx("win")}catch(e){}render()}};
+  navigator.serviceWorker.controller.postMessage({type:"dl-audio",urls},[ch.port2])}
+function offCard(){let when=null;try{when=localStorage.getItem(offKey())}catch(e){}
+  return `<section class="panel off-card"><div class="spread"><h2 style="margin:0">📥 التعلّم بدون نت</h2>${when?`<span class="lv-chip ok">✅ جاهز</span>`:""}</div>
+    <p class="muted">نزّل أصوات <b>${esc((LANGS[LANG]||{}).name||LANG)}</b> على جهازك (تقريباً 10 ميغا)، وبعدها الدروس والتمارين والقصص بتشتغل <b>حتى لو النت قطع</b>. توكي والتصحيح الذكي بيضلّوا بدهم نت.</p>
+    ${OFF.busy?`<div class="progress"><i id="offBar" style="width:${OFF.total?Math.round(100*OFF.done/OFF.total):0}%"></i></div><p class="muted center" id="offTxt">${OFF.done} من ${OFF.total}</p>`
+      :`<button class="btn ${when?"ghost":"hl"} wide" data-act="offdl">${when?"🔄 حدّث التنزيل":"📥 نزّل للاستخدام بدون نت"}</button>`}</section>`}
+A.offdl=()=>offDownload();
+setTimeout(()=>{if(typeof meTabsInstall==="function")try{meTabsInstall()}catch(e){}const _vm=VIEWS.me;VIEWS.me=function(){let h=_vm();if(typeof ME!=="undefined"&&ME.tab==="settings")h=h.replace('<div class="me-body me-settings">','<div class="me-body me-settings">'+offCard());return h}},20);
+/* شريط «بدون نت» */
+function offBanner(){let b=document.getElementById("offline-banner");if(navigator.onLine){if(b)b.remove();return}
+  if(!b){b=document.createElement("div");b.id="offline-banner";b.textContent="📴 ما في نت — الدروس والتمارين شغّالة، وتوكي بيرجع لما يرجع النت";document.body.appendChild(b)}}
+addEventListener("online",offBanner);addEventListener("offline",offBanner);setTimeout(offBanner,0);
+/* إذا ما في نت، الأشياء اللي بدها سيرفر بتعطي رسالة واضحة */
+{const _ai=AI;if(typeof _ai==="function"){AI=async function(){if(!navigator.onLine){toast("📴 توكي بيحتاج نت");throw{code:"offline"}}return _ai.apply(this,arguments)};Object.assign(AI,_ai);AI.json=async function(){if(!navigator.onLine){toast("📴 توكي بيحتاج نت");throw{code:"offline"}}return _ai.json.apply(this,arguments)}}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6995,7 +7021,7 @@ window.addEventListener("appinstalled",()=>{INSTALL=null;toast("تم تثبيت 
 function installBtn(){if(isStandalone())return "";
   if(INSTALL)return `<div style="margin-top:12px"><button class="btn ghost" data-act="install">📱 ثبّت التطبيق على جهازك</button></div>`;
   if(isIOS())return `<div style="margin-top:12px"><button class="btn ghost" data-act="iosguide">📱 ثبّت التطبيق على جهازك</button></div>`;return ""}
-if("serviceWorker" in navigator&&location.protocol==="https:"){
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
   /* لما ينزل تحديث جديد، الموقع بيحدّث حاله مرة وحدة تلقائياً */
   let swReloaded=false;const hadCtrl=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!hadCtrl||swReloaded)return;swReloaded=true;location.reload()});
