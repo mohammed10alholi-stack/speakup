@@ -1471,6 +1471,17 @@ svg.toki.tk-poke{animation:tkPoke .7s cubic-bezier(.3,1.7,.4,1)!important}
 [data-theme="dark"] .chest-tx b{color:#FED7AA}[data-theme="dark"] .chest-tx small{color:#FDBA74}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chest:not(.done){background:linear-gradient(135deg,rgba(251,146,60,.2),rgba(251,146,60,.08));border-color:rgba(251,146,60,.35)}:root:not([data-theme="light"]) .chest-tx b{color:#FED7AA}:root:not([data-theme="light"]) .chest-tx small{color:#FDBA74}}
 @media (prefers-reduced-motion:reduce){.ic3d,.chest-img,.chest-go{animation:none!important}}
+
+/* ===== مواقف تمثيلية ===== */
+.rp-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (min-width:700px){.rp-list{grid-template-columns:repeat(3,1fr)}}
+.rp-card{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:14px 8px;color:var(--ink);font-family:inherit;box-shadow:var(--elev)}
+.rp-ic .ic3d{width:44px;height:44px}.rp-tx b{display:block}.rp-tx small{display:block;color:var(--soft);font-size:.8rem}.rp-st{color:#F5A300!important;margin-top:2px}
+.rp-bar{background:var(--card);border-bottom:1px solid var(--line);padding:8px 12px}
+.rp-top{display:flex;align-items:center;gap:8px}.rp-top b{flex:1;display:flex;align-items:center;gap:6px}.rp-top span{font-weight:800;color:var(--primary)}
+.rp-goals{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rp-g{font-size:.8rem;background:var(--sky);border-radius:999px;padding:4px 10px;color:var(--soft)}.rp-g.ok{background:var(--good-bg);color:var(--good-d);font-weight:700}
+.btn.sm{padding:6px 12px;font-size:.85rem}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6861,6 +6872,72 @@ function offBanner(){let b=document.getElementById("offline-banner");if(navigato
 addEventListener("online",offBanner);addEventListener("offline",offBanner);setTimeout(offBanner,0);
 /* إذا ما في نت، الأشياء اللي بدها سيرفر بتعطي رسالة واضحة */
 {const _ai=AI;if(typeof _ai==="function"){AI=async function(){if(!navigator.onLine){toast("📴 توكي بيحتاج نت");throw{code:"offline"}}return _ai.apply(this,arguments)};Object.assign(AI,_ai);AI.json=async function(){if(!navigator.onLine){toast("📴 توكي بيحتاج نت");throw{code:"offline"}}return _ai.json.apply(this,arguments)}}}
+/* ================== 🎭 مواقف تمثيلية مع توكي: أهداف، تقدّم، وتقييم بالآخر ================== */
+const RP=[
+ {k:"interview",e:"💼",t:"مقابلة شغل",who:"مسؤول التوظيف",lv:"A2",role:"a friendly but professional HR manager interviewing the learner for an office job in English.",o:["عرّف عن حالك وعن خبرتك","احكي ليش بدك هالوظيفة","اسأل سؤال واحد عن الشغل"]},
+ {k:"airport",e:"✈️",t:"بالمطار",who:"موظف تسجيل الوصول",lv:"A2",role:"an airline check-in agent at the airport speaking English.",o:["اطلب مقعد جنب الشباك","اسأل عن وزن الشنطة المسموح","اسأل عن رقم بوابة الصعود"]},
+ {k:"doctor",e:"🩺",t:"عند الدكتور",who:"الدكتور",lv:"A2",role:"a kind family doctor speaking English with a patient.",o:["اشرح شو بيوجعك ومن إمتى","جاوب عن أسئلة الدكتور","اسأل كيف تاخد الدوا"]},
+ {k:"restaurant",e:"🍽️",t:"بالمطعم",who:"النادل",lv:"A1",role:"a cheerful waiter in a restaurant speaking English.",o:["اطلب أكل وشرب","اسأل عن طبق نباتي أو حار","اطلب الحساب"]},
+ {k:"shop",e:"🛍️",t:"تسوق وفصال",who:"صاحب المحل",lv:"A2",role:"a clothes shop owner speaking English who likes to bargain.",o:["اسأل عن مقاس ولون","فاصل على السعر","ادفع واطلب كيس"]},
+ {k:"hotel",e:"🏨",t:"بالفندق",who:"موظف الاستقبال",lv:"A2",role:"a hotel receptionist speaking English.",o:["احجز غرفة لليلتين","اسأل إذا الفطور مشمول","اشتكي من مشكلة بالغرفة"]},
+ {k:"taxi",e:"🚕",t:"بالتاكسي",who:"السواق",lv:"A1",role:"a chatty taxi driver speaking English.",o:["احكي وين رايح","اسأل قديش الأجرة","اطلب منه يوقف قبل بشوي"]},
+ {k:"neighbor",e:"👋",t:"جار جديد",who:"جارك الجديد",lv:"A1",role:"a new neighbour who just moved in next door, speaking English.",o:["عرّف عن حالك","اسأله عن حاله وشغله","اعزمه على قهوة"]},
+ {k:"bank",e:"🏦",t:"بالبنك",who:"موظف البنك",lv:"B1",role:"a bank employee speaking English.",o:["اطلب تفتح حساب","اسأل عن رسوم التحويل","اسأل شو الأوراق المطلوبة"]},
+ {k:"support",e:"☎️",t:"خدمة العملاء",who:"موظف خدمة العملاء",lv:"B1",role:"a customer service agent on the phone speaking English; the learner's online order arrived damaged.",o:["اشرح المشكلة بوضوح","أعطِ رقم الطلب","اطلب حل واضح (استبدال أو استرجاع)"]},
+ {k:"uni",e:"🎓",t:"أول يوم بالجامعة",who:"المرشد الأكاديمي",lv:"A2",role:"a university student advisor on the first day of term, speaking English.",o:["اسأل وين محاضرتك","اسأل عن المكتبة","اطلب تسجّل بمادة"]},
+ {k:"rent",e:"🏠",t:"استئجار شقة",who:"صاحب الشقة",lv:"B1",role:"a landlord showing an apartment for rent, speaking English.",o:["اسأل عن الإيجار والتأمين","اسأل عن المصاريف (كهربا، مي)","اتفق على موعد للزيارة"]}];
+RP.forEach(r=>{if(!TUTOR.find(x=>x.id==="rp_"+r.k))TUTOR.push({id:"rp_"+r.k,name:r.t,icon:r.e,role:`You are ${r.role} This is a role-play. Stay fully in character.`,start:`🎭 **${r.t}**: أنا ${r.who}. حاول تحقق الأهداف اللي فوق وإنت بتحكي معي. يلا، إنت بتبلّش! 😊`,rp:r.k})});
+TU.rp=TU.rp||{};
+const rpOf=id=>RP.find(r=>"rp_"+r.k===id);
+const rpState=id=>(TU.rp[id]=TU.rp[id]||{got:[false,false,false],done:false});
+/* تعليمات إضافية: الأهداف + الوسم المخفي */
+{const _tr=tuRules;tuRules=function(sc){const r=_tr(sc),rp=sc&&sc.rp&&RP.find(x=>x.k===sc.rp);if(!rp)return r;const st=rpState(sc.id);
+  return r+`
+ROLE-PLAY MISSION. The learner has 3 goals (in Arabic): ${rp.o.map((x,i)=>`${i+1}) ${x}`).join("  ")}.
+Already achieved: ${st.got.map((g,i)=>g?i+1:null).filter(Boolean).join(", ")||"none"}.
+- Keep the scene moving naturally so the learner gets chances to achieve the remaining goals, but never do them for the learner.
+- When the learner achieves a goal in ${LNAME_EN()}, add the hidden tag [[obj:N]] (N = goal number) at the very end of your message.
+- If the learner is stuck or writes in Arabic, give ONE short hint line in Arabic starting with "💡" showing what they could say, then continue in character.
+- When all 3 goals are achieved, wrap the scene up in character in one line and add [[obj:done]].`}}
+{const _st=stripTag;stripTag=t=>{t=String(t||"");const ms=t.match(/\[\[obj:[^\]]*\]\]/g);if(ms&&rpOf(TU.sc)){const st=rpState(TU.sc);ms.forEach(m=>{const v=m.slice(6,-2);if(v==="done")st.done=true;else{const n=+v;if(n>=1&&n<=3&&!st.got[n-1]){st.got[n-1]=true;TU.rpNew=n}}})}
+  return _st(t.replace(/\[\[obj:[^\]]*\]\]/g,""))}}
+{const _ts=tuSend;tuSend=async function(t){TU.rpNew=0;await _ts(t);const rp=rpOf(TU.sc);if(!rp)return;const st=rpState(TU.sc);
+  if(TU.rpNew){try{sfx("combo")}catch(e){}toast(`🎯 حققت الهدف: ${rp.o[TU.rpNew-1]}`);TU.rpNew=0}
+  if(st.got.every(Boolean)&&!st.evald){st.done=true;render();setTimeout(()=>A.rpeval(),900)}else render()}}
+/* شريط الأهداف فوق الشات */
+{const _vt=VIEWS.tutor;VIEWS.tutor=function(){let h=_vt();const rp=rpOf(TU.sc);if(!rp||TU.voice)return h;const st=rpState(TU.sc),n=st.got.filter(Boolean).length;
+  const bar=`<div class="rp-bar"><div class="rp-top"><b>${twImg(rp.e,"ic3d sm")} ${esc(rp.t)}</b><span>${n}/3 🎯</span><button class="btn sm ${n===3?"hl":"ghost"}" data-act="rpeval">🏁 قيّمني</button></div>
+    <div class="rp-goals">${rp.o.map((o,i)=>`<span class="rp-g ${st.got[i]?"ok":""}">${st.got[i]?"✅":"⬜"} ${esc(o)}</span>`).join("")}</div></div>`;
+  return h.replace(/(<div class="tc-sub"[\s\S]*?<\/div>)/,`$1${bar}`)}}
+/* التقييم بالآخر */
+A.rpeval=async()=>{const rp=rpOf(TU.sc);if(!rp)return;const st=rpState(TU.sc);const msgs=tuMsgs().filter(m=>m.content);const turns=msgs.filter(m=>m.role==="user").length;
+  if(turns<2){toast("احكي كم رسالة أول، وبعدين بقيّمك 😊");return}
+  if(!AI||AIstate!=="ok"){toast("التقييم بيحتاج نت");return}
+  showSheet(`<div class="center">${mascot("think",70)}<p>توكي عم يقيّم أداءك…</p></div>`);
+  try{const r=await AI.json(`You are a ${LNAME_EN()} speaking coach. Evaluate this role-play by an Arabic-speaking learner (CEFR ${userLv()}). Scene: ${rp.role} Goals: ${rp.o.join(" | ")}. Goals achieved: ${st.got.filter(Boolean).length}/3.
+TRANSCRIPT:
+${msgs.slice(-24).map(m=>(m.role==="user"?"Learner: ":"Partner: ")+stripTag(m.content)).join("\n")}
+Reply JSON only: {"stars":1|2|3,"scores":{"fluency":0-10,"vocabulary":0-10,"grammar":0-10,"task":0-10},"strengths":["<2 short Palestinian Arabic lines>"],"tips":["<3 short Palestinian Arabic tips, each with a ${LNAME_EN()} example>"],"better":"<rewrite ONE weak learner sentence in better ${LNAME_EN()}>"}`,{modelTier:"quick"});
+    if(!r||!r.scores)throw 0;st.evald=true;S.rpBest=S.rpBest||{};S.rpBest[rp.k]=Math.max(S.rpBest[rp.k]||0,r.stars||1);addXP(15+(r.stars||1)*5);save();
+    const lab={fluency:"الطلاقة",vocabulary:"المفردات",grammar:"القواعد",task:"إنجاز المهمة"};
+    showSheet(`<div class="center rp-res">${twImg(rp.e,"ic3d chest-big")}<h2>${"⭐".repeat(r.stars||1)}${"☆".repeat(3-(r.stars||1))}</h2><p class="muted">${esc(rp.t)} · ${st.got.filter(Boolean).length}/3 أهداف</p></div>
+      <div class="pr-crit">${Object.entries(r.scores).map(([k,v])=>`<div><b>${lab[k]||k}</b><span>${v}/10</span></div>`).join("")}</div>
+      <h3 class="sec">✅ اللي عملته منيح</h3><ul class="pr-ul">${(r.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+      <h3 class="sec">💡 نصايح</h3><ul class="pr-ul">${(r.tips||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+      ${r.better?`<h3 class="sec">✨ جملة أقوى</h3><div class="pr-text" dir="ltr">${esc(r.better)}</div>`:""}
+      <div class="row" style="justify-content:center"><button class="btn hl" data-act="rpagain" data-k="${rp.k}">🔁 من جديد</button><button class="btn ghost" data-act="go" data-r="roleplay">موقف ثاني</button></div>`);
+    try{sfx("win");confetti()}catch(e){}}catch(e){showSheet(`<div class="center"><p>ما قدرت أقيّم هلأ، جرّب كمان شوي.</p></div>`)}};
+async function rpKickoff(id){const sc=TUTOR.find(x=>x.id===id);if(!sc||!AI||AIstate!=="ok")return;
+  try{const r=await AI([{role:"system",content:tuRules(sc)},{role:"user",content:"(Start the scene: say your first line in character, 1-2 short sentences, then wait for the learner.)"}],{modelTier:"quick"});
+    const txt=r&&r.text;if(txt&&TU.sc===id){tuMsgs().push({role:"assistant",content:txt});render()}}catch(e){}}
+A.rpopen=d=>{const id="rp_"+d.k;TU.sc=id;TU.voice=false;TU.rp[id]={got:[false,false,false],done:false};TU.msgs[id]=null;go("tutor");rpKickoff(id)};
+A.rpagain=d=>{const s=document.getElementById("sheet");if(s)s.hidden=true;A.rpopen(d)};
+/* صفحة المواقف */
+VIEWS.roleplay=()=>`<section class="panel">${topbar("🎭 مواقف تمثيلية","توكي بيلعب دور، وإنت بتحكي وبتحقق الأهداف")}
+  <div class="rp-list">${RP.map(r=>{const b=(S.rpBest||{})[r.k]||0;return `<button class="rp-card" data-act="rpopen" data-k="${r.k}"><span class="rp-ic">${twImg(r.e,"ic3d")}</span><span class="rp-tx"><b>${esc(r.t)}</b><small>توكي: ${esc(r.who)} · ${r.lv}</small><small class="rp-st">${b?"⭐".repeat(b)+"☆".repeat(3-b):"جديد ✨"}</small></span></button>`}).join("")}</div></section>`;
+PARENT.roleplay="practice";
+if(typeof ICON3D!=="undefined")ICON3D.roleplay="🎭";
+{const _vp=VIEWS.practice;VIEWS.practice=function(){let h=_vp();return h.replace('<div class="grpgrid n5">','<div class="grpgrid n6">').replace(/(<div class="grpgrid n6"><div class="sqgrid">)/,`$1<button class="sq" data-act="go" data-r="roleplay"><span class="ic"></span><b>مواقف تمثيلية</b><small>مقابلة شغل، مطار، دكتور… وتوكي بيقيّمك</small></button>`)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
