@@ -451,6 +451,8 @@ body.playing #toast,body.chatmode .tc-acts button.loading{opacity:.5;animation:t
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rd-cur{background:rgba(255,201,64,.22);box-shadow:0 0 0 2px rgba(255,201,64,.35)}}
 #offline-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:45;background:#334155;color:#fff;border-radius:14px;padding:8px 14px;font-size:.85rem;max-width:92vw;text-align:center;box-shadow:0 10px 24px -12px rgba(0,0,0,.5)}
 .off-card .progress{margin:10px 0 4px}
+.push-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid #C7D2FE;border-radius:20px;padding:10px 12px;margin:0 0 12px;box-shadow:var(--elev)}
+.push-card>div:nth-child(2){flex:1}.push-card b{display:block}.push-card small{color:var(--soft)}.push-ic .ic3d{width:36px;height:36px}.push-acts{display:flex;flex-direction:column;gap:6px}
 #toast{bottom:auto!important;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 /* ===== games v2 ===== */
@@ -6938,6 +6940,41 @@ VIEWS.roleplay=()=>`<section class="panel">${topbar("🎭 مواقف تمثيل�
 PARENT.roleplay="practice";
 if(typeof ICON3D!=="undefined")ICON3D.roleplay="🎭";
 {const _vp=VIEWS.practice;VIEWS.practice=function(){let h=_vp();return h.replace('<div class="grpgrid n5">','<div class="grpgrid n6">').replace(/(<div class="grpgrid n6"><div class="sqgrid">)/,`$1<button class="sq" data-act="go" data-r="roleplay"><span class="ic"></span><b>مواقف تمثيلية</b><small>مقابلة شغل، مطار، دكتور… وتوكي بيقيّمك</small></button>`)}}
+/* ================== 🔔 تذكيرات على الجوال ================== */
+const PUSH={busy:false};
+const pushOK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const pIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent);
+const pStandalone=()=>(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+
+function pushState(){if(typeof AUTH==="undefined"||!AUTH.user)return "nouser";if(!pushOK())return pIOS()&&!pStandalone()?"ios-install":"nosupport";
+  if(Notification.permission==="denied")return "denied";return S.pushOn&&Notification.permission==="granted"?"on":"off"}
+const b64u=s=>{const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)))};
+A.pushon=async()=>{if(PUSH.busy)return;const st=pushState();
+  if(st==="ios-install"){showSheet(`<div class="center">${mascot("happy",70)}<h2>🔔 التذكيرات عالآيفون</h2><p>عشان توصلك تذكيرات، لازم <b>تثبّت الموقع عالشاشة الرئيسية</b> أول:</p><p>زر المشاركة <b>⬆️</b> تحت ← <b>«إضافة إلى الشاشة الرئيسية»</b>، وبعدين افتحه من الأيقونة وفعّل التذكيرات.</p></div>`);return}
+  if(st==="denied"){toast("التذكيرات مسكّرة من إعدادات الجوال للموقع، فعّلها من هناك");return}
+  PUSH.busy=true;render();
+  try{const perm=await Notification.requestPermission();if(perm!=="granted"){toast("ما في مشكلة، بتقدر تفعّلها بعدين");throw 0}
+    const reg=await navigator.serviceWorker.ready;const r=await window.liveApi("push_key");if(!r||!r.key)throw new Error("key");
+    let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(r.key)});
+    const j=sub.toJSON();const {error}=await sb.from("push_subs").upsert({endpoint:j.endpoint,user_id:AUTH.user.id,p256dh:j.keys.p256dh,auth:j.keys.auth,lang:LANG,tz:-new Date().getTimezoneOffset()});
+    if(error)throw error;S.pushOn=true;save();try{sfx("win")}catch(e){}toast("🔔 تمام! توكي رح يذكّرك إذا نسيت تدرس");
+  }catch(e){if(e&&e!==0)toast("ما زبط تفعيل التذكيرات هلأ، جرّب بعدين")}
+  PUSH.busy=false;render()};
+A.pushoff=async()=>{try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await sb.from("push_subs").delete().eq("endpoint",sub.endpoint);await sub.unsubscribe()}}catch(e){}
+  S.pushOn=false;save();toast("🔕 وقّفنا التذكيرات");render()};
+A.pushtest=async()=>{const r=await window.liveApi("push_test");toast(r&&r.sent?"📨 انبعت إشعار تجربة":"ما انبعت، تأكد إنك مفعّل التذكيرات")};
+A.pushlater=()=>{S.pushAskedAt=Date.now();save();render()};
+function pushCard(){const st=pushState();if(st==="on"||st==="nouser"||st==="nosupport"||st==="denied")return "";
+  if(S.pushAskedAt&&Date.now()-S.pushAskedAt<5*864e5)return "";
+  return `<section class="push-card"><span class="push-ic">${twImg("🔔","ic3d")}</span><div><b>خلّي توكي يذكّرك</b><small>تذكير لطيف إذا نسيت تدرس، عشان ما تنقطع سلسلتك 🔥</small></div>
+    <div class="push-acts"><button class="btn hl sm" data-act="pushon" ${PUSH.busy?"disabled":""}>${PUSH.busy?"…":"فعّل"}</button><button class="btn ghost sm" data-act="pushlater">بعدين</button></div></section>`}
+{const _vh=VIEWS.home;VIEWS.home=function(){let h=_vh();const c=pushCard();return c?h.replace('<div class="h3-rows','<div class="push-wrap">'+c+'</div><div class="h3-rows'):h}}
+/* بالإعدادات */
+setTimeout(()=>{const _vm=VIEWS.me;VIEWS.me=function(){let h=_vm();if(typeof ME==="undefined"||ME.tab!=="settings")return h;const st=pushState();if(st==="nouser")return h;
+  const row=`<section class="panel"><div class="spread"><h2 style="margin:0">🔔 التذكيرات</h2>${st==="on"?`<span class="lv-chip ok">✅ شغّالة</span>`:""}</div>
+    <p class="muted">${st==="on"?"توكي بيذكّرك الساعة 7 المسا إذا ما درست اليوم، وإذا غبت كم يوم.":st==="denied"?"التذكيرات مسكّرة من إعدادات الجوال. فعّلها للموقع من إعدادات المتصفح.":st==="ios-install"?"عالآيفون لازم تثبّت الموقع عالشاشة الرئيسية أول.":st==="nosupport"?"جهازك أو متصفحك ما بيدعم التذكيرات.":"فعّلها عشان ما تنقطع سلسلتك."}</p>
+    ${st==="on"?`<div class="row"><button class="btn ghost" data-act="pushtest">📨 جرّب إشعار</button><button class="btn ghost" data-act="pushoff">🔕 وقّفها</button></div>`:st==="off"||st==="ios-install"?`<button class="btn hl wide" data-act="pushon">🔔 فعّل التذكيرات</button>`:""}</section>`;
+  return h.replace('<div class="me-body me-settings">','<div class="me-body me-settings">'+row)}},30);
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);

@@ -1,5 +1,5 @@
 // SpeakUp service worker — يخلي الموقع يشتغل كتطبيق، يفتح بسرعة، ويشتغل بدون نت
-const CACHE = "speakup-v99";
+const CACHE = "speakup-v100";
 const AUDIO = "speakup-audio-v1";   // الأصوات: بتضل محفوظة حتى مع التحديثات
 const CDN = "speakup-cdn-v1";       // الأيقونات والخطوط
 const CORE = ["./", "./index.html", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png"];
@@ -64,4 +64,14 @@ self.addEventListener("message", (e) => {
     await Promise.all([worker(), worker(), worker(), worker()]);
     if (port) port.postMessage({ done: N, total: N, fail, finished: true });
   })());
+});
+// 🔔 إشعارات التذكير
+self.addEventListener("push", (e) => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch (x) { d = { title: "SpeakUp", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "SpeakUp", { body: d.body || "", icon: "icon-192.png", badge: "icon-192.png", dir: "rtl", lang: "ar", tag: "speakup-reminder", renotify: true, data: { url: d.url || "./" } }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "./";
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((cs) => { for (const c of cs) { if ("focus" in c) return c.focus(); } return self.clients.openWindow(url); }));
 });

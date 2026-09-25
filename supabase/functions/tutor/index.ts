@@ -65,11 +65,60 @@ async function claude(system: string | undefined, messages: { role: string; cont
   return { text: (d.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("") };
 }
 
+
+// ---------- 🔔 Web Push ----------
+async function pushLib(): Promise<any> { return (await import("npm:web-push@3.6.7")).default; }
+async function vapidKeys(admin: any) {
+  const { data } = await admin.from("push_keys").select("*").eq("id", 1).maybeSingle();
+  if (data) return data;
+  const wp = await pushLib(); const k = wp.generateVAPIDKeys();
+  const row = { id: 1, public_key: k.publicKey, private_key: k.privateKey, cron_key: crypto.randomUUID().replace(/-/g, "") };
+  await admin.from("push_keys").insert(row);
+  return row;
+}
+const PUSH_MSG = {
+  streak: [["🔥 سلسلتك بخطر!", "5 دقايق مع توكي وبتحافظ عليها 💙"], ["🔥 لا تخلّي الشعلة تنطفي", "درس صغير هلأ وبتضل السلسلة شغّالة"]],
+  miss: [["💙 توكي مشتاقلك", "كلماتك بتستناك… يلا درس صغير؟"], ["👋 وينك؟", "رجعنالك تمرين قصير على قدّك، جرّبه"], ["🎁 هدية اليوم بتستناك", "افتح الصندوق وكمّل من وين وقفت"]],
+};
+async function pushSend(admin: any, subs: any[], pick: (s: any) => [string, string] | null) {
+  const keys = await vapidKeys(admin), wp = await pushLib();
+  wp.setVapidDetails("mailto:support@speakup-ar.com", keys.public_key, keys.private_key);
+  let sent = 0, removed = 0;
+  for (const s of subs) {
+    const m = pick(s); if (!m) continue;
+    try {
+      await wp.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify({ title: m[0], body: m[1], url: "./" }), { TTL: 3600 });
+      sent++; if (s._day) await admin.from("push_subs").update({ last_sent: s._day }).eq("endpoint", s.endpoint);
+    } catch (e: any) { if (e && (e.statusCode === 404 || e.statusCode === 410)) { await admin.from("push_subs").delete().eq("endpoint", s.endpoint); removed++; } else console.error("push", e?.statusCode, String(e?.body || e).slice(0, 200)); }
+  }
+  return { sent, removed };
+}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
   try {
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    // ---- 🔔 كل ساعة: تذكيرات للي ما درسوا اليوم (الجدولة من قاعدة البيانات) ----
+    const early = await req.clone().json().catch(() => ({}));
+    if (early.action === "push_cron") {
+      const keys = await vapidKeys(admin);
+      if ((req.headers.get("x-cron-key") || "") !== keys.cron_key) return json({ error: "forbidden" }, 403);
+      const { data: subs } = await admin.from("push_subs").select("endpoint,p256dh,auth,user_id,tz,last_sent").limit(5000);
+      const ids = [...new Set((subs || []).map((x: any) => x.user_id))];
+      const { data: profs } = ids.length ? await admin.from("profiles").select("id,updated_at").in("id", ids) : { data: [] };
+      const last: Record<string, number> = {}; (profs || []).forEach((p: any) => last[p.id] = new Date(p.updated_at).getTime());
+      const r = await pushSend(admin, subs || [], (sb: any) => {
+        const loc = new Date(Date.now() + (sb.tz || 0) * 60000), day = loc.toISOString().slice(0, 10), hour = loc.getUTCHours();
+        if (sb.last_sent === day) return null;
+        const act = last[sb.user_id] ? new Date(last[sb.user_id] + (sb.tz || 0) * 60000).toISOString().slice(0, 10) : "";
+        const idle = act ? Math.round((Date.parse(day) - Date.parse(act)) / 864e5) : 99;
+        sb._day = day;
+        if (idle === 1 && hour === 19) return PUSH_MSG.streak[Math.floor(Math.random() * PUSH_MSG.streak.length)] as [string, string];
+        if (idle >= 2 && idle <= 14 && hour === 12) return PUSH_MSG.miss[Math.floor(Math.random() * PUSH_MSG.miss.length)] as [string, string];
+        return null;
+      });
+      return json({ ok: true, ...r });
+    }
     const token = (req.headers.get("Authorization") || "").replace("Bearer ", "");
     const { data: { user }, error } = await admin.auth.getUser(token);
     if (error || !user) return json({ error: "unauthorized" }, 401);
@@ -80,6 +129,12 @@ Deno.serve(async (req) => {
     if (!Deno.env.get("GEMINI_API_KEY") && !Deno.env.get("ANTHROPIC_API_KEY")) return json({ error: "ai_not_configured" }, 503);
 
     const body = await req.json().catch(() => ({}));
+    if (body.action === "push_key") { const k = await vapidKeys(admin); return json({ key: k.public_key }); }
+    if (body.action === "push_test") {
+      const { data: subs } = await admin.from("push_subs").select("endpoint,p256dh,auth").eq("user_id", user.id);
+      const r = await pushSend(admin, subs || [], () => ["🔔 تجربة من SpeakUp", "الإشعارات شغّالة! توكي رح يذكّرك تكمّل 💙"]);
+      return json({ ok: true, ...r });
+    }
 
     // ---- high-quality pronunciation: generate once with Gemini TTS, store publicly, reuse for everyone ----
     if (body.action === "tts") {
