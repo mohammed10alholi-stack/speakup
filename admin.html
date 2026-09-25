@@ -33,6 +33,13 @@ input.in,select.in{border:1.5px solid var(--line);border-radius:12px;padding:8px
 .legend{display:flex;gap:14px;font-size:.85rem;color:var(--soft)}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px}
 .lb{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:6px 0}.lb>div{background:var(--sky);border-radius:99px;height:10px;overflow:hidden}.lb i{display:block;height:100%;background:var(--primary);border-radius:99px}.lb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .login{max-width:400px;margin:60px auto}.login label{display:block;margin:10px 0}.login input{width:100%}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:6px 0 16px}
+.kpi{background:var(--sky,#F3F6FF);border-radius:16px;padding:12px}.kpi b{display:block;font-size:1.5rem}.kpi span{font-weight:700}.kpi small{display:block;color:#6B7280;margin-top:2px}
+.kpi.good{background:#ECFDF5}.kpi.bad{background:#FEF2F2}.kpi.warn{background:#FFFBEB}
+.hbar{display:grid;grid-template-columns:120px 1fr 44px;align-items:center;gap:8px;margin:6px 0}.hbar i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#6D5BFF,#4F86FF)}.hbar b{text-align:end}
+.panel.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:700px){.panel.two{grid-template-columns:1fr}}
+.chart .day span{display:block;font-size:.65rem;color:#9CA3AF;text-align:center}
 </style>
 </head>
 <body>
@@ -46,7 +53,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fmt=d=>d?new Date(d).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"—";
 const cur=CFG.CURRENCY||"";
-let ST={user:null,prof:null,ready:false,tab:"req",filter:"pending",reqs:[],users:[],plans:[],coupons:[],settings:{},stats:null,an:null,anDays:30,q:"",err:null,msg:null,busy:false};
+let ST={user:null,prof:null,ready:false,tab:"dash",filter:"pending",reqs:[],users:[],plans:[],coupons:[],settings:{},stats:null,an:null,anDays:30,q:"",err:null,msg:null,busy:false};
 const METHOD=id=>(CFG.PAYMENT_METHODS.find(m=>m.id===id)||{name:id}).name;
 const active=u=>u.plan_until&&new Date(u.plan_until)>new Date();
 
@@ -59,6 +66,7 @@ async function load(){
     sb.from("plans").select("*").order("sort")]);
   const [c,g,an]=await Promise.all([sb.from("coupons").select("*").order("created_at",{ascending:false}),sb.rpc("admin_get_settings"),sb.rpc("admin_analytics",{days:ST.anDays})]);
   ST.an=an.error?{error:an.error.message}:an.data;
+  try{const dd=await sb.rpc("admin_dash",{days:ST.anDays});ST.dash=dd.error?{error:dd.error.message}:dd.data}catch(e){ST.dash={error:String(e)}}
   try{const lu=await sb.rpc("admin_live_usage");ST.live=lu.error?{error:lu.error.message}:lu.data}catch(e){ST.live={error:String(e)}}
   try{let q=sb.from("minute_orders").select("*, profiles(full_name,email,phone)").order("created_at",{ascending:false}).limit(100);if((ST.mfilter||"pending")!=="all")q=q.eq("status",ST.mfilter||"pending");
     const [mo,mp]=await Promise.all([q,sb.from("minute_packs").select("*").order("sort")]);ST.min=mo.error||mp.error?{error:(mo.error||mp.error).message}:{orders:mo.data||[],packs:mp.data||[]}}catch(e){ST.min={error:String(e)}}
@@ -75,9 +83,26 @@ function vMain(){const s=ST.stats||{};
     <div><b>${s.pending??"—"}</b><span>طلبات بانتظارك</span></div><div><b>${s.active??"—"}</b><span>مشترك فعّال</span></div>
     <div><b>${s.users??"—"}</b><span>كل المستخدمين</span></div><div><b>${s.new_week??"—"}</b><span>جدد هالأسبوع</span></div>
     <div><b>${s.revenue_month!=null?+s.revenue_month+" "+cur:"—"}</b><span>دخل هالشهر</span></div><div><b>${s.revenue_total!=null?+s.revenue_total+" "+cur:"—"}</b><span>الدخل الكلي</span></div></div>
-  <div class="tabs" style="margin-bottom:12px">${[["req","💳 طلبات الدفع"],["min","💳 الشحن"+(ST.live&&ST.live.pending_orders?` (${ST.live.pending_orders})`:"")],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
+  <div class="tabs" style="margin-bottom:12px">${[["dash","📈 لوحة الأرقام"],["req","💳 طلبات الدفع"],["min","💳 الشحن"+(ST.live&&ST.live.pending_orders?` (${ST.live.pending_orders})`:"")],["an","📊 الإحصائيات"],["users","👥 المستخدمين"],["plans","📦 الخطط والأسعار"],["coupons","🏷️ أكواد الخصم"],["settings","⚙️ الإعدادات"]].map(([k,l])=>`<button data-a="tab" data-v="${k}" aria-pressed="${ST.tab===k}">${l}</button>`).join("")}
     <button data-a="reload">🔄 تحديث</button><button data-a="backup">⬇️ نسخة احتياطية</button></div>
-  ${ST.tab==="min"?vMin():ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
+  ${ST.tab==="dash"?vDash():ST.tab==="min"?vMin():ST.tab==="an"?vAn():ST.tab==="req"?vReqs():ST.tab==="users"?vUsers():ST.tab==="coupons"?vCoupons():ST.tab==="settings"?vSettings():vPlans()}`}
+
+function vDash(){const a=ST.dash;if(!a)return `<div class="panel">جاري التحميل…</div>`;
+  if(a.error)return `<div class="panel"><div class="fb bad">لوحة الأرقام مش جاهزة: شغّل ملف <b>upgrade-v13.sql</b> في Supabase ← SQL Editor.</div></div>`;
+  const cur=(window.CFG&&CFG.CURRENCY)||"₪",n=x=>(+x||0).toLocaleString("en"),pct=(x,y)=>y?Math.round(100*x/y):0,d=a.daily||[];
+  const card=(v,l,sub,cls)=>`<div class="kpi ${cls||""}"><b>${v}</b><span>${l}</span>${sub?`<small>${sub}</small>`:""}</div>`;
+  const bars=(obj,names)=>{const e=Object.entries(obj||{}).sort((x,y)=>y[1]-x[1]),mx=Math.max(1,...e.map(x=>x[1]));return e.map(([k,v])=>`<div class="hbar"><span>${esc((names&&names[k])||k)}</span><i style="width:${Math.round(100*v/mx)}%"></i><b>${v}</b></div>`).join("")||`<p class="muted">ما في بيانات لسا.</p>`};
+  const LN={en:"🇬🇧 الإنجليزي",tr:"🇹🇷 التركي",es:"🇪🇸 الإسباني",de:"🇩🇪 الألماني",fr:"🇫🇷 الفرنسي",it:"🇮🇹 الإيطالي",zh:"🇨🇳 الصيني"};
+  const M=ST.dashM||"signups",ML={signups:"تسجيلات",visits:"زيارات",ai_users:"نشطين مع توكي",revenue:"دخل"},mx=Math.max(1,...d.map(r=>+r[M]||0));
+  return `<div class="panel"><div class="row" style="margin-bottom:12px"><b>الفترة:</b>${[[7,"أسبوع"],[30,"شهر"],[90,"3 شهور"]].map(([k,l])=>`<button class="btn ${ST.anDays===k?"":"ghost"} sm" data-a="andays" data-v="${k}">${l}</button>`).join("")}</div>
+    <h3>👥 المستخدمين</h3><div class="kpis">${card(n(a.users_total),"كل المشتركين")}${card(n(a.new_period),"جدد بالفترة",`اليوم: ${n(a.new_today)}`)}${card(n(a.active_today),"نشطين اليوم")}${card(n(a.active_7d),"نشطين آخر 7 أيام",`آخر 30 يوم: ${n(a.active_30d)}`)}</div>
+    <h3>🔁 الرجوع (الأهم)</h3><div class="kpis">${card((a.ret_d1??"—")+"%","رجعوا بعد يوم",`من اللي سجّلوا آخر شهر`,+a.ret_d1>=40?"good":+a.ret_d1<20?"bad":"")}${card((a.ret_d7??"—")+"%","رجعوا بعد أسبوع","",+a.ret_d7>=20?"good":+a.ret_d7<8?"bad":"")}${card(pct(a.new_period,a.visits_period)+"%","من الزوار سجّلوا",`${n(a.visits_period)} زيارة`)}</div>
+    <h3>💰 الدخل</h3><div class="kpis">${card(n(a.revenue_period)+" "+cur,"دخل الفترة",`🔋 طاقة: ${n(a.rev_energy)} · ⭐ نجوم: ${n(a.rev_stars)}`,"good")}${card(n(a.buyers_period),"دفعوا بالفترة",`${pct(a.buyers_period,a.new_period)}% من الجدد`)}${card(n(a.revenue_all)+" "+cur,"الدخل الكلي")}${card(n(a.orders_pending),"طلبات شحن معلّقة","",+a.orders_pending?"warn":"")}</div>
+    <h3>🤖 الاستخدام</h3><div class="kpis">${card(n(a.ai_calls_period),"رسالة لتوكي",`${n(a.ai_users_period)} مستخدم`)}${card(n(a.live_min_period),"دقيقة مكالمة حقيقية")}${card(n(a.stars_earned_period),"⭐ نجوم اتكسبت بالتعلّم")}</div></div>
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📅 يومياً</h3><div class="row">${Object.entries(ML).map(([k,l])=>`<button class="btn ${M===k?"":"ghost"} sm" data-a="dashm" data-v="${k}">${l}</button>`).join("")}</div></div>
+    <div class="chart">${d.map(r=>`<div class="day" title="${r.d}: ${r[M]}"><div class="stack"><i style="height:${Math.round(100*(+r[M]||0)/mx)}%;background:#6D5BFF"></i></div><span>${String(r.d).slice(8,10)}</span></div>`).join("")}</div></div>
+  <div class="panel two"><div><h3>🌍 اللغات</h3>${bars(a.langs,LN)}</div><div><h3>🎚️ المستويات</h3>${bars(a.levels)}</div></div>
+  <div class="panel two"><div><h3>🔗 من وين بيجوا الزوار</h3>${(a.sources||[]).map(x=>`<div class="hbar"><span>${esc(x.s)}</span><i style="width:${Math.round(100*x.n/Math.max(1,...(a.sources||[]).map(y=>y.n)))}%"></i><b>${x.n}</b></div>`).join("")||`<p class="muted">ما في زيارات لسا.</p>`}</div><div><h3>📱 الأجهزة</h3>${bars(a.devices,{mobile:"📱 جوال",desktop:"💻 كمبيوتر",app:"📲 التطبيق"})}</div></div>`}
 function vReqs(){return `<div class="panel"><div class="row" style="margin-bottom:10px">${[["pending","⏳ معلّقة"],["approved","✅ مقبولة"],["rejected","❌ مرفوضة"],["all","الكل"]].map(([k,l])=>`<button class="btn ${ST.filter===k?"":"ghost"} sm" data-a="filter" data-v="${k}">${l}</button>`).join("")}</div>
   ${ST.reqs.length?`<div class="scroll"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الخطة</th><th>الطريقة</th><th>المرجع</th><th>الإيصال</th><th>الحالة</th><th></th></tr></thead><tbody>
   ${ST.reqs.map(r=>`<tr><td>${fmt(r.created_at)}</td><td>${esc(r.profiles?.full_name||"")}<br><span class="muted en">${esc(r.profiles?.email||"")}</span><br><span class="muted en">${esc(r.profiles?.phone||"")}</span></td>
@@ -168,6 +193,7 @@ const act={
   login:async()=>{const {error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});if(error){ST.err="الإيميل أو كلمة السر غلط.";render()}},
   logout:()=>sb.auth.signOut(),
   tab:v=>{ST.tab=v;ST.msg=null;render()},
+  dashm:v=>{ST.dashM=v;render()},
   filter:v=>{ST.filter=v;load()},
   reload:()=>{ST.msg=null;load()},
   search:()=>{ST.q=$("#q").value;load()},
