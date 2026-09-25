@@ -1,5 +1,5 @@
 // SpeakUp service worker — يخلي الموقع يشتغل كتطبيق، يفتح بسرعة، ويشتغل بدون نت
-const CACHE = "speakup-v101";
+const CACHE = "speakup-v102";
 const AUDIO = "speakup-audio-v1";   // الأصوات: بتضل محفوظة حتى مع التحديثات
 const CDN = "speakup-cdn-v1";       // الأيقونات والخطوط
 const CORE = ["./", "./index.html", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png"];
