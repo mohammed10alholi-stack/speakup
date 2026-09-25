@@ -1352,6 +1352,9 @@ body.incall #livecap{display:none!important}
 /* مسار التعلّم: شارة النوع ما تطلع برا الشاشة */
 .path-node .kind,.pnode .kind,span.kind{max-width:calc(100vw - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #view{overflow-x:clip}
+
+/* الترحيب: بدون مستطيل وراء توكي */
+:root:not(#_) body .greet{background:transparent!important;border:none!important;box-shadow:none!important}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6052,7 +6055,7 @@ const tplKids=html=>{const t=document.createElement("template");t.innerHTML=html
     main.push(el.outerHTML);
     if(/\btoday\b/.test(cls)){
       main.push(`<div class="next-acts">${st?`<button class="btn hl" data-act="tkfocus" data-t="${st.type}" data-id="${esc(String(st.id))}">🎓 علّمني يا توكي</button>`:""}<button class="btn ghost" data-act="go" data-r="plan">🗺️ خطتي</button></div>`);
-      if(due)main.push(`<button class="home-due" data-act="go" data-r="review"><span>🔁</span><div><b>عندك ${due} كلمة بدها مراجعة</b><small>دقيقتين وبتثبت بذاكرتك</small></div><i>›</i></button>`)}}
+      if(due&&!/بدها مراجعة/.test(main.join("")))main.push(`<button class="home-due" data-act="go" data-r="review"><span>🔁</span><div><b>عندك ${due} كلمة بدها مراجعة</b><small>دقيقتين وبتثبت بذاكرتك</small></div><i>›</i></button>`)}}
   return `<div class="home-grid"><div class="hg-main">${main.join("")}</div><div class="hg-side">${side.join("")}</div></div>`}}
 /* ---- 📚 learn: grouped ---- */
 VIEWS.learn=function(){let d=null;try{d=rmData()}catch(e){}
