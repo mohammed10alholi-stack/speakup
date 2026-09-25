@@ -1381,6 +1381,60 @@ body.incall #livecap{display:none!important}
 [data-theme="dark"] .chip.chip-xp{background:rgba(251,146,60,.14)!important;color:#FDBA74!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.chip-en{background:rgba(16,185,129,.14)!important;color:#6EE7B7!important}:root:not([data-theme="light"]) .chip.chip-xp{background:rgba(251,146,60,.14)!important;color:#FDBA74!important}:root:not([data-theme="light"]){--h3-track:rgba(255,255,255,.1)}}
 [data-theme="dark"]{--h3-track:rgba(255,255,255,.1)}
+
+/* ===== نجوم توكي بالشريط ===== */
+.chip.c-stars{display:inline-flex;align-items:center;gap:2px;border:none;font-family:inherit;font-weight:800;color:#B45309;background:linear-gradient(135deg,#FFF7D6,#FFE7A3);cursor:pointer;position:relative;overflow:hidden}
+.chip.c-stars .hic{color:#F5A300;filter:drop-shadow(0 0 4px rgba(255,193,7,.6));animation:starGlow 2.4s ease-in-out infinite}
+.chip-plus{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#F5A300;color:#fff;font-size:.9rem;line-height:1;margin-inline-start:4px;font-weight:900}
+.chip.c-stars::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);transform:translateX(-120%);animation:chipShine 4s ease-in-out infinite}
+@keyframes chipShine{0%,70%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes starGlow{50%{transform:scale(1.12) rotate(8deg)}}
+[data-theme="dark"] .chip.c-stars{background:rgba(245,163,0,.16);color:#FCD34D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.c-stars{background:rgba(245,163,0,.16);color:#FCD34D}}
+header .chip{padding-inline:8px!important;font-size:.86rem!important;gap:2px}
+header .chip .hic{width:1.25em;height:1.25em;margin-inline-end:2px}
+.chip-plus{width:16px!important;height:16px!important;font-size:.8rem!important}
+@media (max-width:420px){header .top-in,header .bar,header>div{gap:5px!important}#langbtn{width:36px!important;height:36px!important;padding:0!important}}
+:root:not(#_) .h3-hero .h3-acts .btn.ghost{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.35)!important;color:#fff!important}
+.chip.c-streak{animation:none}
+/* ===== أجواء تفاعلية ===== */
+.h3-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 55%,#C026D3 100%)!important;border:none!important;color:#fff;box-shadow:0 22px 44px -22px rgba(91,33,182,.75)!important}
+.h3-hero>*:not(.blob){position:relative;z-index:1}
+.h3-hero .blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.35;z-index:0;animation:blobMove 12s ease-in-out infinite}
+.h3-hero .b1{width:180px;height:180px;background:#60A5FA;top:-60px;left:-40px}
+.h3-hero .b2{width:140px;height:140px;background:#F472B6;bottom:-50px;right:-30px;animation-delay:-4s}
+.h3-hero .b3{width:90px;height:90px;background:#FDE68A;top:40%;left:45%;opacity:.2;animation-delay:-8s}
+@keyframes blobMove{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,14px) scale(1.1)}66%{transform:translate(-14px,10px) scale(.95)}}
+.h3-hero .h3-gtx small{color:rgba(255,255,255,.8)!important}.h3-hero .h3-gtx b{color:#fff}
+.h3-hero .h3-goal circle:first-child{stroke:rgba(255,255,255,.22)}.h3-hero .h3-goal circle:last-child{stroke:#FFD166;filter:drop-shadow(0 0 6px rgba(255,209,102,.8))}
+.h3-hero .h3-goal b{color:#fff}
+.h3-hero .h3-next{background:rgba(255,255,255,.14)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22)}
+.h3-hero .h3-next small{color:rgba(255,255,255,.75)!important}.h3-hero .h3-next b{color:#fff}
+.h3-hero .h3-ni{background:rgba(255,255,255,.9)!important}
+.h3-hero .h3-acts .btn.hl{position:relative;overflow:hidden;box-shadow:0 10px 22px -10px rgba(255,201,64,.9)}
+.h3-hero .h3-acts .btn.hl::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.65) 50%,transparent 70%);transform:translateX(-120%);animation:chipShine 3.2s ease-in-out infinite}
+.h3-hero .h3-acts .btn.ghost{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.35)!important;color:#fff!important}
+.h3-tip{grid-column:1/-1;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.14);border-radius:14px;padding:8px 12px;font-size:.9rem}
+.h3-tip p{margin:0;transition:opacity .35s,transform .35s}.h3-tip p.out{opacity:0;transform:translateY(-6px)}
+[data-theme="dark"] .h3-hero{background:linear-gradient(135deg,#312E81,#5B21B6 55%,#86198F)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .h3-hero{background:linear-gradient(135deg,#312E81,#5B21B6 55%,#86198F)!important}}
+/* دخول ناعم للعناصر + ضغط تفاعلي */
+.fx-in,.hg-side>*,.h3-rows>*,.hub-list>*,.sqgrid>*{animation:riseIn .55s cubic-bezier(.2,.8,.2,1) both}
+.h3-hero{animation-delay:.06s}.h3-rows{animation-delay:.12s}.hg-side>*:nth-child(2){animation-delay:.18s}.hg-side>*:nth-child(3){animation-delay:.22s}
+.sqgrid>*:nth-child(2){animation-delay:.05s}.sqgrid>*:nth-child(3){animation-delay:.1s}.sqgrid>*:nth-child(4){animation-delay:.15s}.sqgrid>*:nth-child(5){animation-delay:.2s}.sqgrid>*:nth-child(6){animation-delay:.25s}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.btn,.hub-row,.sq,.quest,.chip,.plan-hero-btn,.opt{transition:transform .15s ease,box-shadow .2s ease}
+.btn:active,.hub-row:active,.sq:active,.quest:active,.chip:active,.plan-hero-btn:active,.opt:active{transform:scale(.96)}
+@media (hover:hover){.hub-row:hover,.sq:hover,.plan-hero-btn:hover{transform:translateY(-2px)}}
+/* توكي حي: بيرمش وبيطفو */
+svg.toki .eyes{transform-origin:center 52%;animation:tkBlink 5s infinite}
+@keyframes tkBlink{0%,93%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.h3-top svg.toki,.hubhead svg.toki,.rm-teacher svg.toki{animation:tkFloat 3.4s ease-in-out infinite}
+@keyframes tkFloat{50%{transform:translateY(-5px) rotate(-2deg)}}
+/* أشرطة التقدّم بتتعبّى */
+.quest .qbar i,.progress i{animation:barFill .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes barFill{from{width:0}}
+@media (prefers-reduced-motion:reduce){.fx-in,.hg-side>*,.h3-rows>*,.hub-list>*,.sqgrid>*,.h3-hero .blob,svg.toki .eyes,.h3-top svg.toki,.hubhead svg.toki,.chip.c-stars::after,.chip.c-stars .hic,.h3-hero .h3-acts .btn.hl::after,.quest .qbar i,.progress i{animation:none!important}}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -2249,7 +2303,7 @@ Object.assign(DICT,{"the":"الـ (أداة تعريف)","a":"أداة تنكي�
 
 /* ================== STATE ================== */
 let KEY="daftari-en-v2";
-const DEF={xp:0,streak:0,last:null,today:{d:null,xp:0},goal:10,xpScaled3:1,accent:"en-US",rate:0.92,theme:"auto",level:null,known:{},srs:{},mistakes:[],done:{},best:0,st:{speak:0,review:0,games:0,chat:0},ach:{}};
+const DEF={xp:0,streak:0,last:null,today:{d:null,xp:0},goal:30,accent:"en-US",rate:0.92,theme:"auto",level:null,known:{},srs:{},mistakes:[],done:{},best:0,st:{speak:0,review:0,games:0,chat:0},ach:{}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{
   const raw=localStorage.getItem(KEY);
@@ -6650,8 +6704,8 @@ VIEWS.home=function(){const due=dueList().length,tx=todayXP(),g=S.goal||30,pct=M
 /* ================== مستواك الحقيقي فوق + نقاط أهدى (÷3) ================== */
 function xpPts(n){return Math.max(1,Math.round(n/3))}
 /* ترحيل لمرة وحدة: النقاط القديمة ÷3 عشان تتماشى مع النظام الجديد */
-function xpMigrate(){if(!S||S.xpScaled3)return;S.xp=Math.round((S.xp||0)/3);if(S.today)S.today.xp=Math.round((S.today.xp||0)/3);if(S.week)S.week.xp=Math.round((S.week.xp||0)/3);
-  S.goal=({15:5,30:10,60:20,100:35})[S.goal]||Math.max(5,Math.round((S.goal||30)/3));S.xpScaled3=1;try{save()}catch(e){}}
+function xpMigrate(){if(!S||S.xpv3)return;S.xp=Math.round((S.xp||0)/3);if(S.today)S.today.xp=Math.round((S.today.xp||0)/3);if(S.week)S.week.xp=Math.round((S.week.xp||0)/3);
+  S.goal=({15:5,30:10,60:20,100:35})[S.goal]||Math.max(5,Math.round((S.goal||30)/3));S.xpv3=1;S.xpScaled3=1;try{save()}catch(e){}}
 HI.lv='<svg class="hic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h4v-4h4v-4h4V7h6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 3.5l3.5 3.5-3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 {const _h=header;header=function(){xpMigrate();const r=_h.apply(this,arguments);
   const x=document.getElementById("xp");if(x){x.textContent=userLv();const c=x.closest(".chip");if(c){c.title="مستواك";c.dataset.act="go";c.dataset.r="plan";c.classList.add("c-lv");c.classList.remove("chip-xp");
@@ -6665,6 +6719,24 @@ xpMigrate();setTimeout(()=>{try{header()}catch(e){}},0);
 /* الأرقام اللي بتطير والاحتفال بنفس الوحدة الجديدة */
 {const _f=floatXP;floatXP=function(n){return _f(xpPts(n))}}
 {const _c=celebrate;celebrate=function(n,t){return _c(xpPts(n),t)}}
+/* ================== نجوم توكي بالشريط + أجواء تفاعلية ================== */
+function starsChip(){if(typeof AUTH==="undefined"||!AUTH.user)return;const hd=document.querySelector("header .chips")||document.querySelector("header");if(!hd)return;
+  let c=document.getElementById("starchip");const n=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60);
+  const html=`${HI.star}<b>${n}</b><span class="chip-plus" aria-hidden="true">+</span>`;
+  if(!c){c=document.createElement("button");c.id="starchip";c.className="chip c-stars";c.dataset.act="starsbuy";c.title="نجوم توكي: اشحن";c.setAttribute("aria-label",`نجوم توكي ${n}، اضغط للشحن`);
+    const lv=hd.querySelector(".c-lv");if(lv&&lv.parentNode)lv.parentNode.insertBefore(c,lv.nextSibling);else hd.appendChild(c)}
+  if(c.innerHTML!==html)c.innerHTML=html}
+A.starsbuy=()=>{if(typeof MIN!=="undefined")MIN.kind="minutes";go("minutes")};
+{const _ci=chipIcons;chipIcons=function(){_ci();try{starsChip()}catch(e){}}}
+{const _h=header;header=function(){const r=_h.apply(this,arguments);try{starsChip()}catch(e){}return r}}
+/* نصايح توكي بتتبدّل بالرئيسية */
+const TK_TIPS=["جملة وحدة بصوت عالي أحسن من عشر كلمات بصمت 🎙️","راجع كلماتك قبل ما تنساها، دقيقتين بيكفوا 🔁","احكي مع توكي 3 رسائل اليوم وبتكسب نجمة ⭐","الغلط جزء من التعلّم، توكي معك 💙","كل يوم ورا بعض بيكبّر شعلتك 🔥"];
+let tkTipI=0,tkTipT=null;
+{const _vh=VIEWS.home;VIEWS.home=function(){let h=_vh();
+  h=h.replace('<div class="h3-top">','<div class="h3-top fx-in">').replace('<section class="h3-hero">','<section class="h3-hero fx-in"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>');
+  h=h.replace('</section>\n   <div class="h3-rows">',`<div class="h3-tip"><span>💡</span><p id="tkTip">${TK_TIPS[tkTipI%TK_TIPS.length]}</p></div></section>\n   <div class="h3-rows fx-in">`);
+  clearInterval(tkTipT);tkTipT=setInterval(()=>{const el=document.getElementById("tkTip");if(!el){clearInterval(tkTipT);return}el.classList.add("out");setTimeout(()=>{tkTipI++;el.textContent=TK_TIPS[tkTipI%TK_TIPS.length];el.classList.remove("out")},350)},6000);
+  return h}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
