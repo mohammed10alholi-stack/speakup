@@ -1493,6 +1493,9 @@ svg.toki.tk-poke{animation:tkPoke .7s cubic-bezier(.3,1.7,.4,1)!important}
 :root:not(#_) .abc-card .abc-acts .pn-btn::after{content:"جرّب تلفظها";font-size:.85rem}
 :root:not(#_) .abc-card .abc-acts .pn-btn.on{background:rgba(239,68,68,.1)!important;color:#EF4444}
 :root:not(#_) .abc-card .abc-acts .pn-btn.on::after{content:"عم بسمعك…"}
+
+/* آخر بطاقة لحالها ما تضل معلّقة عالجنب: بتتوسّط */
+:root:not(#_) .abc-grid>.abc-card:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 6px)}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
