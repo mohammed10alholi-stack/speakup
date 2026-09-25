@@ -1347,6 +1347,10 @@ body.incall #livecap{display:none!important}
 .fx-streak b{font-size:1.1rem}.fx-streak small{color:var(--soft)}
 .fx-bump{animation:fxBump .5s cubic-bezier(.3,1.8,.5,1)}@keyframes fxBump{50%{transform:scale(1.25)}}
 @media (prefers-reduced-motion:reduce){.fx-xp,.fx-spark,.fx-pop,.fx-shake,.fx-combo,.fx-cele-card,.fx-streak,.fx-bump,.fx-stars{animation:none!important}}
+
+/* مسار التعلّم: شارة النوع ما تطلع برا الشاشة */
+.path-node .kind,.pnode .kind,span.kind{max-width:calc(100vw - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view{overflow-x:clip}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6560,6 +6564,10 @@ const saNorm=t=>String(t||"").replace(/\s+/g," ").trim();
     const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)})}).catch(()=>_sp(t,o))}}
 saLoad(LANG);
 {const _sw=switchLang;switchLang=function(){const r=_sw.apply(this,arguments);setTimeout(()=>saLoad(LANG),0);return r}}
+/* الصوت الجاهز صار يغطي كل المحتوى: ما عاد في داعي نطلب أصوات Google بالخلفية للحروف */
+{const _pl=ctPreload;ctPreload=function(){if(SA.man[LANG])return;return _pl.apply(this,arguments)}}
+{const _ph=ctPwHtml;ctPwHtml=function(){if(SA.man[LANG])return `<b>✅ أصوات الحروف جاهزة</b><small>كل الحروف والكلمات صار إلها صوت طبيعي جاهز، ما في داعي تجهّز إشي.</small>`;return _ph.apply(this,arguments)}}
+{const _pw=ctPrewarm;ctPrewarm=function(){if(SA.man[LANG]){toast("✅ الأصوات جاهزة أصلاً");return}return _pw.apply(this,arguments)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
