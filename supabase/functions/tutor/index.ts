@@ -85,17 +85,21 @@ Deno.serve(async (req) => {
     if (body.action === "tts") {
       const LN: Record<string, string> = { en: "English (American)", tr: "Turkish", es: "Spanish (Spain)", de: "German", fr: "French", zh: "Mandarin Chinese", it: "Italian" };
       const lang = String(body.lang || ""), text = String(body.text || "").trim();
-      if (!LN[lang] || !text || text.length > 300) return json({ error: "bad_request" }, 400);
+      // «mix-xx» = رد توكي: عربي فلسطيني مخلوط مع لغة xx، بصوت توكي الحقيقي
+      const mix = lang.startsWith("mix-") ? lang.slice(4) : "";
+      if ((!LN[lang] && !LN[mix]) || !text || text.length > (mix ? 1200 : 300)) return json({ error: "bad_request" }, 400);
       const key = (Deno.env.get("GEMINI_API_KEY") || "").trim();
       if (!key) return json({ error: "ai_not_configured" }, 503);
-      const voice = "Kore";
+      const voice = mix ? "Puck" : "Kore";
       const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`v2|${lang}|${voice}|${text}`));
       const hash = [...new Uint8Array(hashBuf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-      const path = `${lang}/${hash}.wav`;
+      const path = `${mix ? "mix" : lang}/${hash}.wav`;
       const pub = admin.storage.from("tts").getPublicUrl(path).data.publicUrl;
       const head = await fetch(pub, { method: "HEAD" }).catch(() => null);
       if (head && head.ok) return json({ url: pub });
-      const prompt = `You are a warm, friendly native ${LN[lang]} teacher. Read this aloud in ${LN[lang]} with a clear, natural native accent and a normal, lively pace (not slow, not robotic). Where you see "…", make only a very short pause. Say exactly this text and nothing else: ${text}`;
+      const prompt = mix
+        ? `You are Toki, a warm, upbeat language tutor talking to an Arabic-speaking friend. Read this message aloud naturally: speak the Arabic parts in a friendly Palestinian Levantine dialect, and the ${LN[mix]} words and sentences with a clear native ${LN[mix]} accent. Keep a lively, conversational pace. Skip emojis and symbols. Say exactly this text and nothing else: ${text}`
+        : `You are a warm, friendly native ${LN[lang]} teacher. Read this aloud in ${LN[lang]} with a clear, natural native accent and a normal, lively pace (not slow, not robotic). Where you see "…", make only a very short pause. Say exactly this text and nothing else: ${text}`;
       let pcm: Uint8Array | null = null, detail = "";
       for (const model of [Deno.env.get("TTS_MODEL"), "gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"].filter(Boolean) as string[]) {
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {

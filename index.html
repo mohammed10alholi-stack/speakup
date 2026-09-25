@@ -442,7 +442,8 @@ body.chatmode main{padding:0;max-width:760px}
 .vp-orb{display:inline-grid;place-items:center;width:120px;height:120px;border-radius:50%;background:var(--primary-soft);transition:transform .2s}
 .vp-orb.speak{animation:vpSpeak 1s ease-in-out infinite}.vp-orb.listen{box-shadow:0 0 0 0 rgba(255,90,95,.4);animation:vpListen 1.4s infinite}
 @keyframes vpSpeak{50%{transform:scale(1.07)}}@keyframes vpListen{0%{box-shadow:0 0 0 0 rgba(255,90,95,.35)}100%{box-shadow:0 0 0 26px rgba(255,90,95,0)}}
-body.playing #toast,body.chatmode #toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px))}
+body.playing #toast,body.chatmode .tc-acts button.loading{opacity:.5;animation:tkpulse 1s infinite}
+#toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 /* ===== games v2 ===== */
 .gm-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.gm-head h2{flex:1;margin:0}
@@ -1360,7 +1361,7 @@ body.incall #livecap{display:none!important}
 <header class="top"><div class="bar">
   <div class="brand"><span class="logo" id="logo"></span><b class="en">SpeakUp</b><small>تعلّم الإنجليزي بثقة</small></div>
   <button class="langbtn" id="langbtn" data-act="langsheet" aria-label="اللغة">🇬🇧</button>
-  <span class="chip c-xp" title="نقاط">⭐ <span id="xp">0</span></span>
+  <span class="chip c-xp" title="نقاط">✨ <span id="xp">0</span></span>
   <span class="chip c-streak" title="أيام متتالية">🔥 <span id="streak">0</span></span>
   <span class="chip c-goal" title="هدف اليوم">🎯 <span id="goal">0%</span></span>
   <button class="chip c-min" id="minchip" data-act="go" data-r="minutes" title="رصيد دقائق الصوت الحقيقي" hidden>⚡ <span id="minbal">0</span> د</button>
@@ -3058,7 +3059,7 @@ function vHome(){
     ${nx?`<button class="today-next" data-act="openpath" data-t="${nx.type}" data-id="${nx.id}"><span class="ni">${nx.icon}</span><span class="nt"><small>كمّل من وين وقفت · ${nx.kind}</small><b>${esc(nx.name)}</b></span><span class="play">▶</span></button>`
       :`<button class="today-next" data-act="go" data-r="exam"><span class="ni">🎓</span><span class="nt"><small>خلصت المسار!</small><b>اعمل امتحان المستوى</b></span><span class="play">▶</span></button>`}
   </section>
-  <div class="kpis"><div class="k k1"><span>🔥</span><b>${S.streak}</b><small>يوم ورا بعض</small></div><div class="k k2"><span>⭐</span><b>${S.xp}</b><small>نقطة</small></div><div class="k k3"><span>📚</span><b>${knownCount()}</b><small>كلمة حفظتها</small></div></div>
+  <div class="kpis"><div class="k k1"><span>🔥</span><b>${S.streak}</b><small>يوم ورا بعض</small></div><div class="k k2"><span>✨</span><b>${S.xp}</b><small>نقطة</small></div><div class="k k3"><span>📚</span><b>${knownCount()}</b><small>كلمة حفظتها</small></div></div>
   ${questsCard()}
   <h2 class="sec">تدرّب بسرعة</h2>
   <div class="sqgrid nowide">${quick.map(a=>`<button class="sq" data-act="go" data-r="${a[0]}"><span class="ic">${a[1]}</span><b>${a[2]}</b><small>${a[3]}</small>${a[0]==="review"&&due?`<i class="badge-n">${due}</i>`:""}</button>`).join("")}</div>
@@ -3128,7 +3129,7 @@ function addXP(n){touchDay();
   S.xp+=n;S.today.xp+=n;const wk=isoWeek();if(!S.week||S.week.id!==wk)S.week={id:wk,xp:0};S.week.xp+=n;
   save();header();
   const after=rankOf(S.xp),goalNow=!wasGoal&&todayXP()>=S.goal;
-  if(answer){sfx("ok");if(route!=="player"&&route!=="tutor")react(true,extra||`+${n} ⭐`);else if(extra&&route==="player")toast(extra)}else{sfx("win");toast("+"+n+" ⭐")}
+  if(answer){sfx("ok");if(route!=="player"&&route!=="tutor")react(true,extra||`+${n} ✨`);else if(extra&&route==="player")toast(extra)}else{sfx("win");toast("+"+n+" ✨")}
   if(after!==before){setTimeout(()=>{confetti();sfx("win");toast(`${after[2]} لقب جديد: ${after[1]}`)},700)}
   else if(goalNow){setTimeout(()=>{confetti();sfx("win");toast("🎯 حققت هدف اليوم!")},700)}
   checkAch()}
@@ -3147,7 +3148,7 @@ function dailyState(){const t=dayStr(new Date());
     S.daily={d:t,base:qCounters(),ids:pickd,claimed:false};save()}
   return S.daily}
 function questList(){const d=dailyState(),c=qCounters(),g=Math.max(10,Math.round(S.goal*0.6));
-  return [["xp",`اكسب ${g} نقطة`,g,"⭐","home",todayXP()]].concat(d.ids.map(id=>{const q=QUESTS.find(x=>x[0]===id);return [q[0],q[1],q[2],q[3],q[4],c[id]-(d.base[id]||0)]}))}
+  return [["xp",`اكسب ${g} نقطة`,g,"✨","home",todayXP()]].concat(d.ids.map(id=>{const q=QUESTS.find(x=>x[0]===id);return [q[0],q[1],q[2],q[3],q[4],c[id]-(d.base[id]||0)]}))}
 function questsCard(){const qs=questList(),done=qs.filter(q=>q[5]>=q[2]).length,all=done===qs.length,d=S.daily;
   return `<h2 class="sec">مهمات اليوم</h2><section class="quests">${qs.map(q=>{const p=Math.min(1,q[5]/q[2]);return `<button class="quest ${p>=1?"done":""}" data-act="go" data-r="${q[4]}"><span class="qi">${p>=1?"✅":q[3]}</span><span class="qt"><b>${q[1]}</b><span class="qbar"><i style="width:${Math.round(p*100)}%"></i></span></span><span class="qn">${Math.min(q[5],q[2])}/${q[2]}</span></button>`}).join("")}
     <div class="chest ${all&&!d.claimed?"ready":""} ${d.claimed?"open":""}">${d.claimed?`<span class="cb">🎁</span><div><b>فتحت صندوق اليوم</b><span class="muted">ارجع بكرة لمهمات جديدة</span></div>`:all?`<span class="cb">🎁</span><div><b>الصندوق جاهز!</b><span class="muted">خلصت كل المهمات</span></div><button class="btn hl" data-act="chest">افتح</button>`:`<span class="cb">🔒</span><div><b>صندوق الهدايا</b><span class="muted">خلّص ${qs.length-done} مهمات كمان وافتحه</span></div>`}</div></section>`}
@@ -3162,13 +3163,13 @@ function streakCard(){const days=new Set(S.days||[]),fr=new Set(S.frozen||[]),t=
 /* ---------- weekly league (online version fills LG) ---------- */
 let LG={rows:null,me:null,loading:false,err:null};
 function vLeague(){const head=topbar("🏆 الدوري الأسبوعي","ترتيب المتعلمين حسب نقاط هالأسبوع. بيبدأ من جديد كل يوم اثنين.");
-  if(typeof leagueLoad!=="function")return `<section class="panel">${head}<div class="center">${mascot("smile",90)}<p>الدوري بيشتغل بالنسخة المنشورة من الموقع، مع باقي المشتركين.</p><p>نقاطك هالأسبوع: <b>${S.week&&S.week.id===isoWeek()?S.week.xp:0}</b> ⭐</p></div></section>`;
+  if(typeof leagueLoad!=="function")return `<section class="panel">${head}<div class="center">${mascot("smile",90)}<p>الدوري بيشتغل بالنسخة المنشورة من الموقع، مع باقي المشتركين.</p><p>نقاطك هالأسبوع: <b>${S.week&&S.week.id===isoWeek()?S.week.xp:0}</b> ✨</p></div></section>`;
   if(LG.rows===null&&!LG.loading)leagueLoad();
   if(!LG.rows)return `<section class="panel">${head}<p class="muted">${LG.err||"جاري التحميل…"}</p></section>`;
   const medal=i=>["🥇","🥈","🥉"][i]||(i+1);
   return `<section class="panel">${head}
     ${LG.me&&LG.me.rank?`<div class="myrank">${mascot(LG.me.rank<=3?"wow":"happy",54)}<div><b>ترتيبك: #${LG.me.rank}</b><span class="muted">${LG.me.xp} نقطة هالأسبوع</span></div></div>`:`<div class="myrank">${mascot("smile",54)}<div><b>لسا ما دخلت الدوري</b><span class="muted">اكسب أي نقطة هالأسبوع وبتنضاف للترتيب</span></div></div>`}
-    <ol class="league">${LG.rows.map((r,i)=>`<li class="${r.me?"me":""} ${i<3?"top":""}"><span class="pos">${medal(i)}</span><span class="nm"><bdi>${esc(r.name)}</bdi>${r.me?" (إنت)":""}</span><b>${r.xp} ⭐</b></li>`).join("")||`<p class="muted">ما في حدا بالدوري لسا هالأسبوع. كن الأول!</p>`}</ol>
+    <ol class="league">${LG.rows.map((r,i)=>`<li class="${r.me?"me":""} ${i<3?"top":""}"><span class="pos">${medal(i)}</span><span class="nm"><bdi>${esc(r.name)}</bdi>${r.me?" (إنت)":""}</span><b>${r.xp} ✨</b></li>`).join("")||`<p class="muted">ما في حدا بالدوري لسا هالأسبوع. كن الأول!</p>`}</ol>
     <label class="agree"><input type="checkbox" data-act="leaguehide" ${S.hideLeague?"checked":""}> أخفي اسمي بالدوري</label></section>`}
 
 /* ---------- share card (story image) ---------- */
@@ -3182,7 +3183,7 @@ async function drawShare(){try{await document.fonts.load('800 60px "Rubik"')}cat
   const rk=rankOf(S.xp);g.font=`700 44px ${F}`;g.fillStyle="#FFE28A";g.fillText(`${rk[2]} ${rk[1]}  ·  مستوى ${userLv()}`,W/2,900);g.direction="ltr";
   const box=(x,y,emo,val,lbl)=>{g.fillStyle="#fff";const r=40,w=440,h=260;g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.fill();
     g.font=`400 70px ${F}`;g.fillText(emo,x+w/2,y+95);g.fillStyle="#1F2433";g.font=`800 84px ${F}`;g.fillText(String(val),x+w/2,y+185);g.fillStyle="#6B7389";g.direction="rtl";g.font=`700 36px ${F}`;g.fillText(lbl,x+w/2,y+235);g.direction="ltr"};
-  box(80,990,"🔥",S.streak,"يوم ورا بعض");box(560,990,"⭐",S.xp,"نقطة");box(80,1290,"📚",knownCount(),"كلمة حفظتها");box(560,1290,"🎓",Object.keys(S.certs||{}).length,"شهادة");
+  box(80,990,"🔥",S.streak,"يوم ورا بعض");box(560,990,"✨",S.xp,"نقطة");box(80,1290,"📚",knownCount(),"كلمة حفظتها");box(560,1290,"🎓",Object.keys(S.certs||{}).length,"شهادة");
   g.fillStyle="#FFC940";g.beginPath();g.moveTo(200,1640);g.arcTo(880,1640,880,1760,50);g.arcTo(880,1760,200,1760,50);g.arcTo(200,1760,200,1640,50);g.arcTo(200,1640,880,1640,50);g.fill();
   g.fillStyle="#3A2A00";g.direction="rtl";g.font=`800 50px ${F}`;g.fillText("تعال اتعلّم معي 👇",W/2,1718);g.direction="ltr";
   g.fillStyle="#fff";g.font=`700 34px ${F}`;g.fillText(shareLink().replace(/^https?:\/\//,"").replace(/\?.*$/,""),W/2,1840);
@@ -6513,7 +6514,7 @@ function whoosh(t0,d,vol,from,to){const a=ac();if(!a)return;const n=a.sampleRate
   else if(k==="tap"){tone(1200,0,.04,"triangle",.015)}}}
 /* ---- حركات ---- */
 function fxLayer(){let l=document.getElementById("fxl");if(!l){l=document.createElement("div");l.id="fxl";l.setAttribute("aria-hidden","true");document.body.appendChild(l)}return l}
-function floatXP(n){if(!FX.on())return;const el=document.createElement("div");el.className="fx-xp";el.textContent="+"+n+" ⭐";
+function floatXP(n){if(!FX.on())return;const el=document.createElement("div");el.className="fx-xp";el.textContent="+"+n+" ✨";
   el.style.left=Math.max(30,Math.min(innerWidth-60,FX.last.x))+"px";el.style.top=Math.max(80,FX.last.y-10)+"px";fxLayer().appendChild(el);setTimeout(()=>el.remove(),1100)}
 function popEl(ok){const el=FX.last.el;if(!el||!FX.on())return;const c=ok?"fx-pop":"fx-shake";el.classList.remove("fx-pop","fx-shake");void el.offsetWidth;el.classList.add(c);setTimeout(()=>el.classList.remove(c),600)}
 function sparkles(x,y,n){if(!FX.on())return;const L=fxLayer();for(let i=0;i<(n||10);i++){const s=document.createElement("i");s.className="fx-spark";const a=Math.random()*Math.PI*2,d=30+Math.random()*50;
@@ -6521,7 +6522,7 @@ function sparkles(x,y,n){if(!FX.on())return;const L=fxLayer();for(let i=0;i<(n||
 const CHEER_AR=["كفو!","إنت نار!","ولا غلطة!","ما في منك!","عفارم!","مكمّل صح!"],CHEER_EN=["Awesome!","You're on fire!","Great job!","Amazing!","Keep it up!"];
 function comboBadge(n){if(!FX.on())return;const el=document.createElement("div");el.className="fx-combo";el.innerHTML=`<span>🔥 ${n}</span><b>${pick(CHEER_AR)}</b>`;fxLayer().appendChild(el);setTimeout(()=>el.remove(),1700)}
 function celebrate(n,title){if(!FX.on())return;const el=document.createElement("div");el.className="fx-cele";
-  el.innerHTML=`<div class="fx-cele-card">${mascot("wow",96)}<h2>${title||pick(["برافو! خلّصت 🎉","ممتاز! كمّلها 👏","عمل رائع! 🌟"])}</h2><div class="fx-cele-xp">+<span>0</span> ⭐</div><div class="fx-stars">⭐⭐⭐</div><button class="btn hl" data-act="fxclose">كمّل</button></div>`;
+  el.innerHTML=`<div class="fx-cele-card">${mascot("wow",96)}<h2>${title||pick(["برافو! خلّصت 🎉","ممتاز! كمّلها 👏","عمل رائع! 🌟"])}</h2><div class="fx-cele-xp">+<span>0</span> ✨</div><div class="fx-stars">🌟🌟🌟</div><button class="btn hl" data-act="fxclose">كمّل</button></div>`;
   document.body.appendChild(el);requestAnimationFrame(()=>el.classList.add("show"));
   const sp=el.querySelector(".fx-cele-xp span"),t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/800);sp.textContent=Math.round(n*k);if(k<1)requestAnimationFrame(f)})(t0);
   try{confetti()}catch(e){}const off=()=>{el.classList.remove("show");setTimeout(()=>el.remove(),300)};el.addEventListener("click",off);setTimeout(off,3200)}
@@ -6539,7 +6540,7 @@ function cheerVoice(){if(!FX.on()||S.sound===false||S.cheerVoice===false||LANG!=
   return r}}
 {const _am=addMistake;addMistake=function(){const r=_am.apply(this,arguments);try{popEl(false)}catch(e){}return r}}
 function streakPop(n){if(!FX.on())return;const el=document.createElement("div");el.className="fx-streak";el.innerHTML=`<span class="fx-flame">🔥</span><b>${n} أيام ورا بعض!</b><small>سلسلتك عم تكبر</small>`;fxLayer().appendChild(el);setTimeout(()=>el.remove(),2600)}
-function bumpChips(){document.querySelectorAll("header .chip").forEach(c=>{if(/⭐/.test(c.textContent)){c.classList.remove("fx-bump");void c.offsetWidth;c.classList.add("fx-bump")}})}
+function bumpChips(){document.querySelectorAll("header .chip").forEach(c=>{if(/✨/.test(c.textContent)){c.classList.remove("fx-bump");void c.offsetWidth;c.classList.add("fx-bump")}})}
 /* ---- إعداد بالإعدادات ---- */
 {const _vm=VIEWS.me;VIEWS.me=function(){return _vm().replace('<div class="set"><span>الاهتزاز</span>',`<div class="set"><span>🎉 حركات الاحتفال</span>${seg("setfx",S.fx===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div><div class="set"><span>🗣️ صوت التشجيع (Great job!)</span>${seg("setcheer",S.cheerVoice===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div><div class="set"><span>الاهتزاز</span>`)}}
 A.setfx=d=>{S.fx=d.m!=="off";save();render()};A.setcheer=d=>{S.cheerVoice=d.m!=="off";save();render()};
@@ -6568,6 +6569,19 @@ saLoad(LANG);
 {const _pl=ctPreload;ctPreload=function(){if(SA.man[LANG])return;return _pl.apply(this,arguments)}}
 {const _ph=ctPwHtml;ctPwHtml=function(){if(SA.man[LANG])return `<b>✅ أصوات الحروف جاهزة</b><small>كل الحروف والكلمات صار إلها صوت طبيعي جاهز، ما في داعي تجهّز إشي.</small>`;return _ph.apply(this,arguments)}}
 {const _pw=ctPrewarm;ctPrewarm=function(){if(SA.man[LANG]){toast("✅ الأصوات جاهزة أصلاً");return}return _pw.apply(this,arguments)}}
+/* ================== رد توكي بصوت توكي الحقيقي (Puck) ================== */
+const TKV={cache:{}};
+const tkvClean=t=>String(t||"").replace(/\[\[[^\]]*\]\]/g,"").replace(/[*_`#>|]/g,"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,"").replace(/\s+/g," ").trim();
+async function tokiVoiceUrl(text){if(typeof window.liveApi!=="function")return null;const t=tkvClean(text);if(!t||t.length>1200)return null;
+  const k=LANG+"|"+t;if(TKV.cache[k])return TKV.cache[k];
+  try{const r=await Promise.race([window.liveApi("tts",{text:t,lang:"mix-"+LANG}),new Promise(res=>setTimeout(()=>res({error:"timeout"}),20000))]);
+    if(r&&r.url)return TKV.cache[k]=r.url}catch(e){}return null}
+{const _say=A.tusay;A.tusay=async d=>{const m=tuMsgs()[+d.i];if(!m)return;
+  const btn=document.querySelector(`[data-act="tusay"][data-i="${d.i}"]`);if(btn)btn.classList.add("loading");
+  const url=await tokiVoiceUrl(stripTag(m.content));if(btn)btn.classList.remove("loading");
+  if(!url){_say(d);return}
+  try{speechSynthesis.cancel()}catch(e){}const a=ctEl();try{a.pause()}catch(e){}CT.seq++;
+  a.onended=null;a.onerror=()=>_say(d);a.src=url;a.playbackRate=1;const p=a.play();if(p&&p.catch)p.catch(()=>_say(d))}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
@@ -6820,8 +6834,9 @@ function enEmpty(){const e=EN.st||{};
     <p class="muted">أو اشحن رصيد ⚡ وكمّل هلأ. الرصيد المشحون ما بينتهي أبداً.</p>
     <div class="row" style="justify-content:center"><button class="btn hl big" data-act="entop">⚡ اشحن رصيد</button></div>
 </div>`)}
-const EN_ACTS={wcat:1,gopen:1,dopen:1,ropen:1,exopen:1,openpath:1,abcopen:1,gstart:1,qstart:1,rsopen:1,prepopen:1,propen:1,psopen:1,drstart:0};
-const EN_ROUTES={spelling:1,speaking:1,readspeak:1,writing:1,review:1,verbs:1,phrases:1,quiz:1,picspell:1};
+/* الدروس والتمارين صارت مجانية بالكامل؛ الطاقة بس لشات توكي والتصحيح الذكي (بتنخصم بالسيرفر) */
+const EN_ACTS={};
+const EN_ROUTES={};
 function gateCheck(act,d){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return false;
   let key=null;
   if(EN_ACTS[act])key=act+":"+(d.id||d.t||d.g||d.lv||"");
@@ -6907,19 +6922,19 @@ async function loadMin(){if(!AUTH.user)return;
     sb.from("profiles").select("live_balance_sec").eq("id",AUTH.user.id).maybeSingle()]);
   MIN.packs=p.data||[];MIN.orders=o.data||[];MIN.bal=(b.data&&b.data.live_balance_sec)||0;if(AUTH.profile){AUTH.profile.live_balance_sec=MIN.bal;header()}
   {const k=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind);if(!k.find(x=>x.id===MIN.pack))MIN.pack=k[0]?k[0].id:null}enLoad();if(!MIN.method)MIN.method=CFG.PAYMENT_METHODS[0].id;if(route==="minutes")render()}
-function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p>سجّل دخول أول.</p></section>`;
-  if(MIN.packs===null){loadMin();return `<section class="panel">${topbar("⚡ دقائق صوت توكي","")}<p class="muted">جاري التحميل…</p></section>`}
+function vMinutes(){if(!AUTH.user)return `<section class="panel">${topbar("⭐ نجوم توكي","")}<p>سجّل دخول أول.</p></section>`;
+  if(MIN.packs===null){loadMin();return `<section class="panel">${topbar("⭐ نجوم توكي","")}<p class="muted">جاري التحميل…</p></section>`}
   const packs=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind),pack=packs.find(x=>x.id===MIN.pack),meth=CFG.PAYMENT_METHODS.find(x=>x.id===MIN.method),pending=MIN.orders.find(o=>o.status==="pending");
-  const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت شحن ${MIN.kind==="energy"?"طاقة":"دقائق صوت"} (${pack?pack.name:""}) على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
-  return `<section class="panel">${topbar("💳 اشحن رصيدك","طاقة للتعلّم ⚡ أو دقائق صوت توكي الحقيقي 🎙️")}${seg("minkind",MIN.kind,[["energy","⚡ طاقة"],["minutes","🎙️ دقائق صوت"]])}
-    ${MIN.kind==="energy"?`<div class="minbal">${mascot("happy",70)}<div><small>طاقتك هلأ</small><b>${enLeft()} ⚡</b><span>${EN.st?`مجاني: ${EN.st.free_left} من ${EN.st.quota} · مشحون: ${EN.st.balance}. كل درس أو تمرين أو رسالة لتوكي بـ ⚡ وحدة، والمشحون ما بينتهي.`:""}</span></div></div>`:`<div class="minbal">${mascot("happy",70)}<div><small>رصيد دقائق الصوت</small><b>${Math.floor(MIN.bal/60)} دقيقة</b><span>بتنخصم بس لما تخلص دقايقك المجانية اليومية، وعلى الوقت اللي حكيته فعلاً.</span></div></div>`}</section>
+  const wa=`https://wa.me/${CFG.WHATSAPP}?text=${encodeURIComponent(`مرحبا، حوّلت شحن ${MIN.kind==="energy"?"طاقة":"نجوم توكي"} (${pack?pack.name:""}) على ${CFG.APP_NAME}. إيميلي: ${AUTH.user.email}`)}`;
+  return `<section class="panel">${topbar("💳 اشحن رصيدك","طاقة لشات توكي ⚡ أو نجوم لتوكي الحقيقي ⭐")}${seg("minkind",MIN.kind,[["energy","⚡ طاقة"],["minutes","⭐ نجوم توكي"]])}
+    ${MIN.kind==="energy"?`<div class="minbal">${mascot("happy",70)}<div><small>طاقتك هلأ</small><b>${enLeft()} ⚡</b><span>${EN.st?`مجاني: ${EN.st.free_left} من ${EN.st.quota} · مشحون: ${EN.st.balance}. كل درس أو تمرين أو رسالة لتوكي بـ ⚡ وحدة، والمشحون ما بينتهي.`:""}</span></div></div>`:`<div class="minbal">${mascot("happy",70)}<div><small>رصيد نجوم توكي</small><b>${Math.floor(MIN.bal/60)} ⭐</b><span>كل نجمة = دقيقة مكالمة مع توكي الحقيقي. بتنخصم بس بعد دقايقك المجانية اليومية، وعلى الوقت اللي حكيته فعلاً. وبتكسب نجوم كمان وإنت بتتعلم!</span></div></div>`}</section>
   <section class="panel"><h2>1. اختار الباقة</h2>
     ${packs.length?`<div class="plans">${packs.map(x=>`<button class="plan" data-act="minpack" data-id="${x.id}" aria-pressed="${x.id===MIN.pack}"><b>${esc(x.name)}</b><span class="price">${+x.price} ${CFG.CURRENCY}</span><small>${MIN.kind==="energy"?x.minutes+" ⚡":x.minutes+" دقيقة"}</small></button>`).join("")}</div>`:`<p class="muted">ما في باقات متاحة هلأ.</p>`}</section>
   <section class="panel"><h2>2. حوّل المبلغ${pack?` (${+pack.price} ${CFG.CURRENCY})`:""}</h2>
     <div class="row" style="margin-bottom:10px">${CFG.PAYMENT_METHODS.map(x=>`<button class="chipbtn" data-act="minmeth" data-id="${x.id}" aria-pressed="${x.id===MIN.method}">${x.icon} ${esc(x.name)}</button>`).join("")}</div>
     ${meth?`<div class="paybox">${meth.usdt&&pack?`<div class="usdt-amt">المبلغ: <b dir="ltr">${(+pack.price/(+CFG.USD_RATE||3.7)).toFixed(2)} USDT</b><small>(تقريباً ${+pack.price} ${CFG.CURRENCY})</small></div>`:""}${meth.qr?`<div class="pay-qr"><img src="${esc(meth.qr)}" alt="QR" width="200" height="200"><small>امسحه من تطبيق Binance ← Pay</small>${meth.link?`<a class="btn ghost" href="${esc(meth.link)}" target="_blank" rel="noopener">📲 افتح بتطبيق Binance</a>`:""}</div>`:""}${meth.details.map(l=>`<div class="spread"><span>${esc(l)}</span><button class="say" data-act="copy" data-t="${esc(l.split(":").slice(1).join(":").trim()||l)}">نسخ</button></div>`).join("")}</div>`:""}</section>
   <section class="panel"><h2>3. أرسل تأكيد التحويل</h2>
-    ${pending?`<div class="fb" style="background:var(--sky)">⏳ عندك طلب شحن قيد المراجعة. الدقايق بتنضاف ${esc(CFG.ACTIVATION_TIME)}.</div>`:""}
+    ${pending?`<div class="fb" style="background:var(--sky)">⏳ عندك طلب شحن قيد المراجعة. النجوم بتنضاف ${esc(CFG.ACTIVATION_TIME)}.</div>`:""}
     <label class="fld"><span>${MIN.method==="binance"?"رقم العملية (Order ID أو TxID)":"رقم الحوالة / المرجع"}</span><input id="minRef" data-keep dir="ltr" autocomplete="off"></label>
     <label class="fld"><span>صورة الإيصال (اختياري، لحد 5 ميغا)</span><input id="minFile" type="file" accept="image/*,application/pdf"></label>
     ${MIN.err?`<div class="fb bad">${esc(MIN.err)}</div>`:""}${MIN.msg?`<div class="fb good">${esc(MIN.msg)}</div>`:""}
@@ -6942,7 +6957,7 @@ VIEWS.minutes=vMinutes;PARENT.minutes="me";
 {const _hd=header;header=function(){_hd();const c=document.getElementById("minchip");if(!c)return;const on=!!(AUTH.user&&AUTH.profile);c.hidden=!on;if(on){c.innerHTML=`⚡ <span id="minbal">${enLeft()}</span>`;c.title="طاقتك";c.classList.toggle("low",EN.st&&!EN.st.unlimited&&enLeft()<=3)}}}
 Object.assign(A,{minkind:d=>{MIN.kind=d.m;MIN.pack=null;MIN.packs&&(()=>{const k=MIN.packs.filter(x=>(x.kind||"minutes")===MIN.kind);MIN.pack=k[0]?k[0].id:null})();render()},entop:()=>{const sh=$("#sheet");if(sh)sh.hidden=true;MIN.kind="energy";MIN.packs=null;go("minutes")},enclose:()=>{$("#sheet").hidden=true},minpack:d=>{MIN.pack=+d.id;render()},minmeth:d=>{MIN.method=d.id;render()},minsend:minSend,minreload:()=>{MIN.packs=null;render()}});
 {const _vm3=VIEWS.me;VIEWS.me=function(){let h=_vm3();if(!AUTH.user)return h;const m=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60);
-  return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="entop"><span class="lf">⚡</span><b>طاقتك: ${enLeft()}</b><span>اشحن ›</span></button><button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">🎙️</span><b>دقائق صوت توكي: ${m} د</b><span>اشحن ›</span></button><section class="rankcard">`)}}
+  return h.replace('<section class="rankcard">',`<button class="lang-strip" data-act="entop"><span class="lf">⚡</span><b>طاقتك: ${enLeft()}</b><span>اشحن ›</span></button><button class="lang-strip" data-act="go" data-r="minutes"><span class="lf">⭐</span><b>نجوم توكي: ${m} ⭐</b><span>اشحن ›</span></button><section class="rankcard">`)}}
 /* subscription page is gone → top-up */
 VIEWS.subscribe=()=>{MIN.kind="energy";return vMinutes()};PARENT.subscribe="me";
 /* Toki chat: each message spends ⚡ on the server */
@@ -6987,6 +7002,17 @@ Object.assign(A,{iosguide:()=>iosGuide(),instno:()=>{try{localStorage.setItem("s
 setTimeout(()=>{if(route==="home"||!AUTH.user)instShow()},3500);
 window.addEventListener("beforeinstallprompt",()=>setTimeout(()=>{if(route==="home"||!AUTH.user)instShow()},3500));
 window.addEventListener("appinstalled",()=>{try{localStorage.setItem("su_installed","1")}catch(e){}instHide()});
+
+/* ---------- ⭐ نجوم توكي: بتنكسب بالتعلّم ---------- */
+async function earnStar(reason,ref,label){S.starClaims=S.starClaims||{};const k=reason+":"+ref;if(S.starClaims[k])return;S.starClaims[k]=1;save();
+  try{const {data,error}=await sb.rpc("earn_stars",{reason,ref});if(error||!data||!data.ok||!data.added)return;
+    if(AUTH.profile)AUTH.profile.live_balance_sec=data.balance_sec;header();
+    try{sfx("win")}catch(e){}toast(`⭐ ربحت ${data.added} ${data.added>1?"نجوم":"نجمة"} توكي! ${label||""}`)}catch(e){}}
+function checkStars(){if(!AUTH.user||!AUTH.profile||AUTH.profile.role==="admin")return;const d=dayStr(new Date());
+  if(todayXP()>=S.goal)earnStar("goal",d,"(خلّصت هدف اليوم)");
+  if(S.streak>0&&S.streak%7===0)earnStar("streak",d,`(${S.streak} يوم ورا بعض)`);
+  Object.keys(S.certs||{}).forEach(lv=>earnStar("level",lv,`(نجحت بمستوى ${lv})`))}
+{const _ax=addXP;addXP=function(){const r=_ax.apply(this,arguments);setTimeout(checkStars,1500);return r}}
 
 </script>
 </body>
