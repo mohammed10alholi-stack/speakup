@@ -453,6 +453,9 @@ body.playing #toast,body.chatmode .tc-acts button.loading{opacity:.5;animation:t
 .off-card .progress{margin:10px 0 4px}
 .push-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid #C7D2FE;border-radius:20px;padding:10px 12px;margin:0 0 12px;box-shadow:var(--elev)}
 .push-card>div:nth-child(2){flex:1}.push-card b{display:block}.push-card small{color:var(--soft)}.push-ic .ic3d{width:36px;height:36px}.push-acts{display:flex;flex-direction:column;gap:6px}
+.boot-splash{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:22vh}.boot-splash svg{animation:tkFloat 1.6s ease-in-out infinite}.boot-splash b{font-size:1.4rem;color:var(--primary)}
+.boot-dots{display:flex;gap:6px}.boot-dots span{width:8px;height:8px;border-radius:50%;background:var(--primary);opacity:.3;animation:bootDot 1s infinite}.boot-dots span:nth-child(2){animation-delay:.15s}.boot-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bootDot{50%{opacity:1;transform:translateY(-4px)}}
 #toast{bottom:auto!important;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 /* ===== games v2 ===== */
@@ -7260,7 +7263,22 @@ async function syncNow(){if(!AUTH.user)return;clearTimeout(syncT);try{const c=bu
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")syncNow();else if(AUTH.user)refreshProfile().then(()=>{refreshAI();render()})});
 
 async function refreshProfile(){if(!AUTH.user)return;const {data}=await sb.from("profiles").select("*").eq("id",AUTH.user.id).single();if(data)AUTH.profile=data}
+/* فتح فوري: من البيانات المحفوظة على الجهاز، والسيرفر بيتحدّث بالخلفية */
+function fastBoot(){try{const k=Object.keys(localStorage).find(x=>/^sb-.*-auth-token$/.test(x));if(!k)return;
+  const tok=JSON.parse(localStorage.getItem(k)||"null");const u=tok&&(tok.user||(tok.currentSession&&tok.currentSession.user));if(!u||!u.id)return;
+  if(tok.expires_at&&tok.expires_at*1000<Date.now()-7*864e5)return;
+  const prof=JSON.parse(localStorage.getItem("su_prof:"+u.id)||"null");if(!prof)return;
+  const key="daftari-en-v2:"+u.id;let local=null;try{local=JSON.parse(localStorage.getItem(key)||"null")}catch(e){}if(!local)return;
+  AUTH.user=u;AUTH.uid=u.id;AUTH.profile=prof;KEY=key;META={cur:"en",picked:false};loadMeta();
+  S=Object.assign(JSON.parse(JSON.stringify(DEF)),local);S.st=Object.assign({},DEF.st,S.st);if(S.done&&S.done.placed)META.picked=true;
+  if(META.cur&&META.cur!=="en"&&LANGS[META.cur])switchLang(META.cur,{silent:true});
+  refreshAI();AUTH.ready=true;AUTH.fast=u.id;route="home";applyTheme();render()}catch(e){}}
 async function onSession(session){
+  const keepRoute=AUTH.fast&&session&&session.user&&session.user.id===AUTH.fast?route:null;
+  await onSessionCore(session);
+  if(keepRoute&&keepRoute!=="home"&&typeof VIEWS!=="undefined"&&VIEWS[keepRoute]){route=keepRoute;render()}
+  AUTH.fast=null}
+async function onSessionCore(session){
   AUTH.user=session?session.user:null;
   if(LANG!=="en"){applyContent("en");LANG="en"}
   META={cur:"en",picked:false};SRV_STATES={};
@@ -7269,6 +7287,7 @@ async function onSession(session){
     const {data,error}=await sb.from("profiles").select("*").eq("id",AUTH.user.id).single();
     if(error){AUTH.err="تعذّر تحميل الحساب، حدّث الصفحة.";}
     AUTH.profile=data||null;
+    try{if(data){const c=Object.assign({},data);delete c.progress;localStorage.setItem("su_prof:"+AUTH.user.id,JSON.stringify(c))}}catch(e){}
     let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
     let raw=data&&data.progress&&Object.keys(data.progress).length?data.progress:null;
     if(raw&&raw.v===2){SRV_STATES=raw.st||{};if(raw.meta)Object.assign(META,raw.meta);raw=SRV_STATES.en||null}
@@ -7305,7 +7324,7 @@ const FAQ=[["الموقع مجاني فعلاً؟","آه! كل يوم بتاخد
   ["هل المعلم الذكي بيحكي بصوت؟","آه، في وضع محادثة صوتية: بتحكي وبيرد عليك بصوت وبيصحّحلك أخطاءك بالعربي."],
   ["بقدر أشارك حسابي مع حدا؟","لا، كل حساب لشخص واحد. التفاصيل بصفحة الشروط."]];
 function vAuth(){
-  if(!AUTH.ready)return `<section class="panel center" style="margin-top:40px"><div style="font-size:2.4rem">📘</div><p class="muted">جاري التحميل…</p></section>`;
+  if(!AUTH.ready)return `<section class="boot-splash">${mascot("happy",92)}<b>SpeakUp</b><i class="boot-dots"><span></span><span></span><span></span></i></section>`;
   if(AUTH.page==="terms")return `<section class="panel"><button class="btn ghost" data-act="authpage" data-p="">→ رجوع</button>${termsHTML()}</section>`;
   if(LAND.plans===null&&!LAND.loading)loadLanding();
   const m=AUTH.mode,b=AUTH.busy?"disabled":"",tr=LAND.trial;let form;
@@ -7600,7 +7619,7 @@ VIEWS.subscribe=()=>{MIN.kind="energy";return vMinutes()};PARENT.subscribe="me";
   window.__aiCharge=true;try{await _ts9(t)}finally{window.__aiCharge=false;setTimeout(enLoad,400)}}}
 
 /* ---------- التشغيل ---------- */
-applyTheme();render();
+applyTheme();fastBoot();if(!AUTH.ready)render();
 sb.auth.onAuthStateChange((ev,session)=>{
   if(ev==="PASSWORD_RECOVERY"){AUTH.recovery=true}
   const uid=session&&session.user?session.user.id:null;
