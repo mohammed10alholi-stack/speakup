@@ -443,6 +443,9 @@ body.chatmode main{padding:0;max-width:760px}
 .vp-orb.speak{animation:vpSpeak 1s ease-in-out infinite}.vp-orb.listen{box-shadow:0 0 0 0 rgba(255,90,95,.4);animation:vpListen 1.4s infinite}
 @keyframes vpSpeak{50%{transform:scale(1.07)}}@keyframes vpListen{0%{box-shadow:0 0 0 0 rgba(255,90,95,.35)}100%{box-shadow:0 0 0 26px rgba(255,90,95,0)}}
 body.playing #toast,body.chatmode .tc-acts button.loading{opacity:.5;animation:tkpulse 1s infinite}
+.chip.c-lv{color:#1D4ED8!important;background:#EAF1FF!important;font-weight:800;cursor:pointer}
+[data-theme="dark"] .chip.c-lv{color:#A9C2FF!important;background:rgba(96,140,255,.16)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.c-lv{color:#A9C2FF!important;background:rgba(96,140,255,.16)!important}}
 #toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px))}
 @media (prefers-reduced-motion:reduce){.ply-card.enter,.ply-fb,.msg,.vp-orb{animation:none!important}}
 /* ===== games v2 ===== */
@@ -2246,7 +2249,7 @@ Object.assign(DICT,{"the":"الـ (أداة تعريف)","a":"أداة تنكي�
 
 /* ================== STATE ================== */
 let KEY="daftari-en-v2";
-const DEF={xp:0,streak:0,last:null,today:{d:null,xp:0},goal:30,accent:"en-US",rate:0.92,theme:"auto",level:null,known:{},srs:{},mistakes:[],done:{},best:0,st:{speak:0,review:0,games:0,chat:0},ach:{}};
+const DEF={xp:0,streak:0,last:null,today:{d:null,xp:0},goal:10,xpScaled3:1,accent:"en-US",rate:0.92,theme:"auto",level:null,known:{},srs:{},mistakes:[],done:{},best:0,st:{speak:0,review:0,games:0,chat:0},ach:{}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{
   const raw=localStorage.getItem(KEY);
@@ -2331,7 +2334,7 @@ const aiMissing=()=>aiLockedMsg();
 
 /* ================== ACHIEVEMENTS ================== */
 function achState(){const k=knownCount(),les=LESSONS.filter(l=>S.done["g:"+l.id]).length,st=STORIES.filter(s=>S.done["s:"+s.id]).length,dg=DIALOGS.filter(d=>S.done["d:"+d.id]).length;
-  return{first_word:k>=1,w50:k>=50,w150:k>=150,w300:k>=300,streak3:S.streak>=3,streak7:S.streak>=7,streak30:S.streak>=30,xp500:S.xp>=500,xp2000:S.xp>=2000,perfect:S.best>=10,lessons5:les>=5,alllessons:les>=LESSONS.length,story1:st>=1,allstories:st>=STORIES.length,dialog3:dg>=3,speak10:S.st.speak>=10,chat:S.st.chat>=1,placed:!!S.done.placed,review50:S.st.review>=50,games10:S.st.games>=10,cert:!!(S.certs&&Object.keys(S.certs).length)}}
+  return{first_word:k>=1,w50:k>=50,w150:k>=150,w300:k>=300,streak3:S.streak>=3,streak7:S.streak>=7,streak30:S.streak>=30,xp500:S.xp>=170,xp2000:S.xp>=700,perfect:S.best>=10,lessons5:les>=5,alllessons:les>=LESSONS.length,story1:st>=1,allstories:st>=STORIES.length,dialog3:dg>=3,speak10:S.st.speak>=10,chat:S.st.chat>=1,placed:!!S.done.placed,review50:S.st.review>=50,games10:S.st.games>=10,cert:!!(S.certs&&Object.keys(S.certs).length)}}
 function checkAch(){const s=achState();let changed=false;ACH.forEach(a=>{if(s[a[0]]&&!S.ach[a[0]]){S.ach[a[0]]=Date.now();changed=true;setTimeout(()=>toast("🏆 إنجاز جديد: "+a[1]),900)}});if(changed)save()}
 /* ================== ROUTING ================== */
 let route="home";
@@ -2402,7 +2405,7 @@ function vMe(){
   <section class="panel"><h2>الإعدادات</h2>
     <div class="set"><span>اختبار المستوى</span><button class="btn ghost" data-act="plretake">أعِد الاختبار</button></div>
     <div class="set"><label for="setLv">مستواي</label><select id="setLv" data-set="level">${LVS.map(l=>`<option ${userLv()===l?"selected":""}>${l}</option>`).join("")}</select></div>
-    <div class="set"><label for="setGoal">هدف يومي</label><select id="setGoal" data-set="goal">${[[15,"خفيف (15)"],[30,"عادي (30)"],[60,"جدّي (60)"],[100,"مكثّف (100)"]].map(([v,l])=>`<option value="${v}" ${S.goal==v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="set"><label for="setGoal">هدف يومي</label><select id="setGoal" data-set="goal">${[[5,"خفيف (5)"],[10,"عادي (10)"],[20,"جدّي (20)"],[35,"مكثّف (35)"]].map(([v,l])=>`<option value="${v}" ${S.goal==v?"selected":""}>${l}</option>`).join("")}</select></div>
     <div class="set"><label for="setAcc">لهجة الصوت</label><select id="setAcc" data-set="accent"><option value="en-US" ${S.accent==="en-US"?"selected":""}>أمريكية</option><option value="en-GB" ${S.accent==="en-GB"?"selected":""}>بريطانية</option></select></div>
     <div class="set"><label for="setRate">سرعة الصوت</label><input type="range" id="setRate" data-set="rate" min="0.6" max="1.2" step="0.05" value="${S.rate}"></div>
     <div class="set"><span>المظهر</span>${seg("theme",S.theme,[["auto","تلقائي"],["light","نهاري"],["dark","ليلي"]])}</div>
@@ -3136,7 +3139,7 @@ function react(ok,extra){let el=document.getElementById("react");if(!el){el=docu
   setTimeout(()=>document.querySelectorAll("main .toki").forEach(t=>{t.classList.remove("t-jump","t-shake");void t.getBoundingClientRect();t.classList.add(ok?"t-jump":"t-shake")}),40)}
 
 /* ---------- ranks ---------- */
-const RANKS=[[0,"مبتدئ","🌱"],[100,"مستكشف","🧭"],[300,"متحدث","💬"],[700,"واثق","💪"],[1500,"طليق","🚀"],[3000,"سفير الإنجليزي","👑"]];
+const RANKS=[[0,"مبتدئ","🌱"],[35,"مستكشف","🧭"],[100,"متحدث","💬"],[250,"واثق","💪"],[500,"طليق","🚀"],[1000,"سفير الإنجليزي","👑"]];
 function rankOf(x){let r=RANKS[0];for(const k of RANKS)if(x>=k[0])r=k;return r}
 function nextRank(x){return RANKS.find(k=>k[0]>x)||null}
 
@@ -3151,6 +3154,7 @@ function touchDay(){const t=dayStr(new Date());if(S.today.d!==t)S.today={d:t,xp:
 function addXP(n){touchDay();
   const answer=n<=12;let extra="";
   if(answer){COMBO++;if(COMBO>=3){n*=2;extra=`🔥 ${COMBO} ورا بعض — نقاط ×2`;if(COMBO===3||COMBO%5===0)setTimeout(()=>sfx("combo"),160)}}
+  n=xpPts(n);
   const before=rankOf(S.xp),wasGoal=todayXP()>=S.goal;
   S.xp+=n;S.today.xp+=n;const wk=isoWeek();if(!S.week||S.week.id!==wk)S.week={id:wk,xp:0};S.week.xp+=n;
   save();header();
@@ -3247,7 +3251,7 @@ function vMe(){const got=ACH.filter(a=>S.ach[a[0]]).length,rk=rankOf(S.xp),nr=ne
     <div class="set"><span>الاهتزاز</span>${seg("setvibe",S.vibe===false?"off":"on",[["on","تشغيل"],["off","إيقاف"]])}</div>
     ${typeof vAccountPanel==="function"?`<div class="set"><span>اختبار المستوى</span><button class="btn ghost" data-act="plretake">أعِد الاختبار</button></div>`:""}
     <div class="set"><label for="setLv">مستواي</label><select id="setLv" data-set="level">${LVS.map(l=>`<option ${userLv()===l?"selected":""}>${l}</option>`).join("")}</select></div>
-    <div class="set"><label for="setGoal">هدف يومي</label><select id="setGoal" data-set="goal">${[[15,"خفيف (15)"],[30,"عادي (30)"],[60,"جدّي (60)"],[100,"مكثّف (100)"]].map(([v,l])=>`<option value="${v}" ${S.goal==v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="set"><label for="setGoal">هدف يومي</label><select id="setGoal" data-set="goal">${[[5,"خفيف (5)"],[10,"عادي (10)"],[20,"جدّي (20)"],[35,"مكثّف (35)"]].map(([v,l])=>`<option value="${v}" ${S.goal==v?"selected":""}>${l}</option>`).join("")}</select></div>
     <div class="set"><label for="setAcc">لهجة الصوت</label><select id="setAcc" data-set="accent"><option value="en-US" ${S.accent==="en-US"?"selected":""}>أمريكية</option><option value="en-GB" ${S.accent==="en-GB"?"selected":""}>بريطانية</option></select></div>
     <div class="set"><label for="setRate">سرعة الصوت</label><input type="range" id="setRate" data-set="rate" min="0.6" max="1.2" step="0.05" value="${S.rate}"></div>
     <div class="set"><span>المظهر</span>${seg("theme",S.theme,[["auto","تلقائي"],["light","نهاري"],["dark","ليلي"]])}</div>
@@ -6643,6 +6647,24 @@ VIEWS.home=function(){const due=dueList().length,tx=todayXP(),g=S.goal||30,pct=M
      ${LANG==="en"?`<button class="hub-row" data-act="prepopen"><span class="hub-ic">🎓</span><span class="hub-tx"><b>تحضير IELTS و TOEFL</b><small>المهارات الأربعة وتقدير درجتك</small></span><i>›</i></button>`:""}
    </div></div>
    <div class="hg-side">${quests.q?`<h2 class="sec">مهمات اليوم</h2>${quests.q}`:""}${quests.w?`<h2 class="sec">كلمة اليوم</h2>${quests.w}`:""}</div></div>`};
+/* ================== مستواك الحقيقي فوق + نقاط أهدى (÷3) ================== */
+function xpPts(n){return Math.max(1,Math.round(n/3))}
+/* ترحيل لمرة وحدة: النقاط القديمة ÷3 عشان تتماشى مع النظام الجديد */
+function xpMigrate(){if(!S||S.xpScaled3)return;S.xp=Math.round((S.xp||0)/3);if(S.today)S.today.xp=Math.round((S.today.xp||0)/3);if(S.week)S.week.xp=Math.round((S.week.xp||0)/3);
+  S.goal=({15:5,30:10,60:20,100:35})[S.goal]||Math.max(5,Math.round((S.goal||30)/3));S.xpScaled3=1;try{save()}catch(e){}}
+HI.lv='<svg class="hic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19h4v-4h4v-4h4V7h6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 3.5l3.5 3.5-3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+{const _h=header;header=function(){xpMigrate();const r=_h.apply(this,arguments);
+  const x=document.getElementById("xp");if(x){x.textContent=userLv();const c=x.closest(".chip");if(c){c.title="مستواك";c.dataset.act="go";c.dataset.r="plan";c.classList.add("c-lv");c.classList.remove("chip-xp");
+    const old=c.querySelector(".hic");if(!old||c.dataset.hic!=="lv"){if(old)old.remove();c.insertAdjacentHTML("afterbegin",HI.lv);c.dataset.hic="lv"}
+    c.childNodes.forEach(n=>{if(n.nodeType===3&&/🏅|✨|⭐/.test(n.textContent))n.textContent=""})}}
+  return r}}
+/* chipIcons ما يغيّر شريحة المستوى */
+{const _ci=chipIcons;chipIcons=function(){const c=document.querySelector("header .c-lv");const keep=c&&c.innerHTML;_ci();if(c&&keep&&c.dataset.hic!=="lv"){c.innerHTML=keep;c.dataset.hic="lv"}if(c)c.classList.remove("chip-xp")}}
+xpMigrate();setTimeout(()=>{try{header()}catch(e){}},0);
+{const _sw=switchLang;switchLang=function(){const r=_sw.apply(this,arguments);setTimeout(()=>{xpMigrate();try{header()}catch(e){}},0);return r}}
+/* الأرقام اللي بتطير والاحتفال بنفس الوحدة الجديدة */
+{const _f=floatXP;floatXP=function(n){return _f(xpPts(n))}}
+{const _c=celebrate;celebrate=function(n,t){return _c(xpPts(n),t)}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
