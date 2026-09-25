@@ -1484,6 +1484,15 @@ svg.toki.tk-poke{animation:tkPoke .7s cubic-bezier(.3,1.7,.4,1)!important}
 .rp-goals{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .rp-g{font-size:.8rem;background:var(--sky);border-radius:999px;padding:4px 10px;color:var(--soft)}.rp-g.ok{background:var(--good-bg);color:var(--good-d);font-weight:700}
 .btn.sm{padding:6px 12px;font-size:.85rem}
+
+/* ===== بطاقة الحرف: الحرف والمايك ببطاقة وحدة ===== */
+:root:not(#_) .abc-card{background:var(--card);border:1.5px solid var(--line);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--elev)}
+:root:not(#_) .abc-card .abc-tile{border:none!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;flex:1}
+:root:not(#_) .abc-card .abc-acts{border-top:1px solid var(--line);padding:0;margin:0;display:flex;gap:0}
+:root:not(#_) .abc-card .abc-acts .pn-btn{flex:1;width:auto!important;height:42px;border:none!important;border-radius:0!important;background:transparent!important;color:var(--primary);font-family:inherit;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:6px}
+:root:not(#_) .abc-card .abc-acts .pn-btn::after{content:"جرّب تلفظها";font-size:.85rem}
+:root:not(#_) .abc-card .abc-acts .pn-btn.on{background:rgba(239,68,68,.1)!important;color:#EF4444}
+:root:not(#_) .abc-card .abc-acts .pn-btn.on::after{content:"عم بسمعك…"}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -6919,7 +6928,13 @@ const saNorm=t=>String(t||"").replace(/\s+/g," ").trim();
     a.onended=()=>{ok=true;if(done)return;done=true;if(my===CT.seq&&o.onend)o.onend()};
     a.onerror=()=>{if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)};
     a.src=`a/${lang}/${h}.mp3`;a.playbackRate=o.slow?0.75:Math.min(1.1,Math.max(.7,S.rate||1));try{a.preservesPitch=true}catch(e){}
-    const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)})}).catch(()=>_sp(t,o))}}
+    /* حارس: إذا الصوت ما بلّش خلال ثانيتين ونص، أو علق بالنص، منكمّل بصوت الجهاز بدل ما يضل معلّق */
+    const fail=()=>{if(done||my!==CT.seq)return;done=true;try{a.pause();a.removeAttribute("src");a.load()}catch(e){}_sp(t,o)};
+    const wd=setTimeout(()=>{if(!ok)fail()},2500);
+    let stallT=null;a.onwaiting=a.onstalled=()=>{if(!ok||done)return;clearTimeout(stallT);stallT=setTimeout(()=>{if(!done&&a.paused===false&&a.currentTime<(a.duration||99)-.2&&a.readyState<3)fail()},3000)};
+    a.onplaying=()=>{ok=true;clearTimeout(wd);clearTimeout(stallT)};
+    const _end=a.onended;a.onended=()=>{clearTimeout(wd);clearTimeout(stallT);_end&&_end()};
+    const p=a.play();if(o.onstart)o.onstart();if(p&&p.catch)p.catch(()=>{clearTimeout(wd);if(ok||done||my!==CT.seq)return;done=true;_sp(t,o)})}).catch(()=>_sp(t,o))}}
 saLoad(LANG);
 {const _sw=switchLang;switchLang=function(){const r=_sw.apply(this,arguments);setTimeout(()=>saLoad(LANG),0);return r}}
 /* الصوت الجاهز صار يغطي كل المحتوى: ما عاد في داعي نطلب أصوات Google بالخلفية للحروف */
