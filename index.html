@@ -1499,6 +1499,18 @@ svg.toki.tk-poke{animation:tkPoke .7s cubic-bezier(.3,1.7,.4,1)!important}
 
 /* آخر بطاقة لحالها ما تضل معلّقة عالجنب: بتتوسّط */
 :root:not(#_) .abc-grid>.abc-card:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 6px)}
+
+/* ===== كمّل الناقص ===== */
+.cz{text-align:center}
+.cz-hint{background:var(--sky);border-radius:14px;padding:8px 12px;margin:8px 0;color:var(--soft)}.cz-hint b{color:var(--ink)}
+.cz-big{font-family:"Rubik",monospace;font-size:2.4rem;font-weight:800;letter-spacing:.06em;min-height:1.5em;margin:10px 0 4px}
+.cz-big.shake{animation:psShake .3s}
+.cz-typed{color:#16A34A}.cz-typed.ok{font-size:2.6rem}.cz-rest{color:var(--line);letter-spacing:.2em}
+.cz-sent{font-size:1.3rem;line-height:2.1;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px;margin:6px 0 12px;cursor:text}
+.cz-blank{display:inline-block;height:1.5em;vertical-align:-.35em;border:2px dashed var(--soft);border-radius:8px;margin:0 3px}
+.cz-blank.cur{border-color:var(--primary);background:var(--primary-soft);animation:tkpulse 1.6s infinite}
+.cz-ok{color:#16A34A;background:var(--good-bg);border-radius:8px;padding:0 4px}
+.ps-tabs{flex-wrap:wrap}.ps-tabs button{flex:1 1 40%}
 #toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.greet .toki,.hero .toki,.typing i{animation:none}.mic.on{animation:none;box-shadow:0 0 0 4px var(--hl)}.btn,.opt,.tile,.act{transition:none}}
@@ -7220,6 +7232,62 @@ setTimeout(()=>{const _vm=VIEWS.me;VIEWS.me=function(){let h=_vm();if(typeof ME=
     <p class="muted">${st==="on"?"توكي بيذكّرك الساعة 7 المسا إذا ما درست اليوم، وإذا غبت كم يوم.":st==="denied"?"التذكيرات مسكّرة من إعدادات الجوال. فعّلها للموقع من إعدادات المتصفح.":st==="ios-install"?"عالآيفون لازم تثبّت الموقع عالشاشة الرئيسية أول.":st==="nosupport"?"جهازك أو متصفحك ما بيدعم التذكيرات.":"فعّلها عشان ما تنقطع سلسلتك."}</p>
     ${st==="on"?`<div class="row"><button class="btn ghost" data-act="pushtest">📨 جرّب إشعار</button><button class="btn ghost" data-act="pushoff">🔕 وقّفها</button></div>`:st==="off"||st==="ios-install"?`<button class="btn hl wide" data-act="pushon">🔔 فعّل التذكيرات</button>`:""}</section>`;
   return h.replace('<div class="me-body me-settings">','<div class="me-body me-settings">'+row)}},30);
+/* ================== ✏️ كمّل الناقص: جملة مسموعة ناقصها كلمة أو كلمتين ================== */
+let CZ={q:[],i:0,b:0,typed:0,wrong:0,done:false,res:[]};
+const czFold=c=>String(c).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const czIsL=ch=>/[\p{L}\p{N}]/u.test(ch);
+function czPick(ex,key,two){const toks=[...ex.matchAll(/[\p{L}\p{N}'’]+/gu)].map(m=>({w:m[0],i:m.index}));if(!toks.length)return null;
+  let k=key?toks.find(t=>t.w.toLowerCase()===key.toLowerCase()):null;
+  if(!k){const c=toks.filter(t=>t.w.length>=4);if(!c.length)return null;k=c.sort((a,b)=>b.w.length-a.w.length)[0]}
+  const blanks=[k];if(two){const o=toks.filter(t=>t!==k&&t.w.length>=4&&Math.abs(t.i-k.i)>2);if(o.length)blanks.push(o[Math.floor(Math.random()*o.length)])}
+  return blanks.sort((a,b)=>a.i-b.i)}
+function czPool(){const lv=userLv(),hi=LVS.indexOf(lv)>=2,out=[];
+  if(LANG==="en"){CATS.filter(c=>LVS.indexOf(c.lv)<=LVS.indexOf(lv)).forEach(c=>c.w.forEach(w=>{const ex=(w[2]||"").trim();if(!ex||ex.length>70||!/^[A-Za-z][A-Za-z' -]{2,14}$/.test(w[0]))return;
+    if(!new RegExp("\\b"+w[0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i").test(ex))return;const b=czPick(ex,w[0].split(" ")[0],hi&&Math.random()<.35);if(b)out.push({ex,ar:w[1],hint:"word",blanks:b})}))}
+  else{SENT.forEach(s=>{const t=Array.isArray(s)?s[0]:s.en,ar=Array.isArray(s)?s[1]:s.ar,l=Array.isArray(s)?s[2]:s.lv;if(!t||LVS.indexOf(l)>LVS.indexOf(lv)||t.length>80||/[\u4e00-\u9fff]/.test(t))return;
+    const b=czPick(t,null,hi&&Math.random()<.35);if(b){const k=b[0].w,wo=WMAP[WKEY[k.toLowerCase()]];out.push({ex:t,ar:wo?wo.ar:ar,hint:wo?"word":"sent",blanks:b})}})}
+  return shuffle(out)}
+function czStart(){const pool=czPool();CZ={q:pool.slice(0,10),i:0,b:0,typed:0,wrong:0,done:!pool.length,res:[]};render();setTimeout(czSay,350)}
+const czCur=()=>CZ.q[CZ.i];
+function czSay(slow){const q=czCur();if(q)speak(q.ex,slow?{slow:true}:{})}
+function czSentence(){const q=czCur();let h="",p=0;q.blanks.forEach((bl,bi)=>{h+=esc(q.ex.slice(p,bl.i));
+    if(bi<CZ.b)h+=`<b class="cz-ok">${esc(bl.w)}</b>`;else h+=`<span class="cz-blank ${bi===CZ.b?"cur":""}" style="min-width:${Math.max(3,bl.w.length)*.62}em"></span>`;p=bl.i+bl.w.length});
+  return h+esc(q.ex.slice(p))}
+function czBig(){const q=czCur(),bl=q&&q.blanks[CZ.b];if(!bl)return"";return `<span class="cz-typed">${esc(bl.w.slice(0,CZ.typed))}</span><span class="cz-rest">${"·".repeat(Math.max(0,bl.w.length-CZ.typed))}</span>`}
+function vCloze(){const tabs=`<div class="pr-tabs ps-tabs"><button data-act="pstab" data-m="pic">🖼️ بالصور</button><button data-act="pstab" data-m="sent">📝 جمل</button><button aria-pressed="true">✏️ كمّل الناقص</button><button data-act="go" data-r="typing">👀 فوقها</button></div>`;
+  if(CZ.done||!CZ.q.length){const ok=CZ.res.filter(r=>r.ok).length;return `<section class="panel center">${tabs}${mascot(ok>=CZ.res.length*.7?"happy":"smile",86)}${CZ.q.length?`<h2>${ok} من ${CZ.res.length} بدون أخطاء</h2>`:`<p>ما لقيت جمل كفاية لمستواك.</p>`}
+    <div class="row" style="justify-content:center"><button class="btn hl" data-act="czstart">🔁 جولة جديدة</button><button class="btn ghost" data-act="go" data-r="practice">رجوع</button></div></section>`}
+  const q=czCur(),complete=CZ.b>=q.blanks.length;
+  return `<section class="panel cz">${tabs}
+    <div class="spread"><button class="back" data-act="go" data-r="practice" aria-label="رجوع">→</button><div class="progress" style="flex:1;margin:0 10px"><i style="width:${100*CZ.i/CZ.q.length}%"></i></div><span class="muted">${CZ.i+1}/${CZ.q.length}</span></div>
+    <p class="cz-hint">${q.hint==="word"?"💡 الكلمة الناقصة معناها:":"💡 معنى الجملة:"} <b>${esc(q.ar)}</b></p>
+    <div class="cz-big" dir="ltr">${complete?`<span class="cz-typed ok">✔</span>`:czBig()}</div>
+    <div class="cz-sent" dir="ltr" data-act="czfocus">${czSentence()}</div>
+    <div class="row" style="justify-content:center;gap:8px"><button class="chip" data-act="czsay">🔊</button><button class="chip" data-act="czslow">🐢</button><button class="chip" data-act="czhint">💡 حرف</button><button class="chip" data-act="czskip">تخطّي</button></div>
+    <input id="czIn" class="ps-in" data-keep autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" dir="ltr" aria-label="اكتب الكلمة الناقصة">
+    ${complete?`<div class="ps-done"><span>✔ ممتاز!</span><button class="btn good" data-act="cznext">الجملة الجاية ←</button></div>`:`<p class="muted center" style="font-size:.8rem">اضغط على الجملة ليفتح الكيبورد ⌨️</p>`}</section>`}
+VIEWS.cloze=vCloze;PARENT.cloze="practice";
+function czPaint(){const a=document.querySelector(".cz-big"),b=document.querySelector(".cz-sent");if(a)a.innerHTML=czBig();if(b)b.innerHTML=czSentence()}
+function czKey(ch){const q=czCur();if(!q||CZ.b>=q.blanks.length)return;const w=q.blanks[CZ.b].w;
+  if(czFold(ch)===czFold(w[CZ.typed])){CZ.typed++;
+    if(CZ.typed>=w.length){CZ.b++;CZ.typed=0;try{sfx("ok")}catch(e){}if(CZ.b>=q.blanks.length){speak(q.ex);render();czFocus();return}}
+    czPaint()}
+  else{CZ.wrong++;try{sfx("bad")}catch(e){}const el=document.querySelector(".cz-big");if(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}}}
+function czFocus(){setTimeout(()=>{const el=document.getElementById("czIn");if(el)el.focus({preventScroll:true})},30)}
+document.addEventListener("input",e=>{if(e.target&&e.target.id==="czIn"){const v=e.target.value;e.target.value="";for(const ch of v)if(czIsL(ch))czKey(ch)}},true);
+document.addEventListener("keydown",e=>{if(route==="cloze"&&e.target&&e.target.id==="czIn"&&e.key==="Enter"){const q=czCur();if(q&&CZ.b>=q.blanks.length)A.cznext()}},true);
+Object.assign(A,{czstart:()=>czStart(),czsay:()=>{czSay();czFocus()},czslow:()=>{czSay(true);czFocus()},
+  czfocus:()=>{const el=document.getElementById("czIn");if(el)el.focus({preventScroll:true})},
+  czhint:()=>{const q=czCur();if(!q||CZ.b>=q.blanks.length)return;CZ.wrong++;czKey(q.blanks[CZ.b].w[CZ.typed])},
+  czskip:()=>{const q=czCur();CZ.res.push({ok:false});quietMistake(q.blanks.map(b=>b.w).join(" / "),q.ar,"كمّل الناقص");save();czAdvance(true)},
+  cznext:()=>czAdvance(false)});
+function czAdvance(skipped){{const q=czCur();if(!skipped&&q){const ok=CZ.wrong===0;CZ.res.push({ok});if(!ok)quietMistake(q.blanks.map(b=>b.w).join(" / "),q.ar,"كمّل الناقص");addXP(ok?5:2);save()}
+    CZ.i++;CZ.b=0;CZ.typed=0;CZ.wrong=0;if(CZ.i>=CZ.q.length)CZ.done=true;render();if(!CZ.done){setTimeout(czSay,300);czFocus()}}}
+A.pstab=d=>{if(d.m==="cloze"){go("cloze");return}PS.mode=d.m;PS_MODE=d.m;go("picspell")};
+{const _go=go;go=function(r){const was=route;const out=_go.apply(this,arguments);if(r==="cloze"&&was!=="cloze")czStart();return out}}
+/* التبويب الجديد بصفحات «اسمع واكتب» */
+{const _v=VIEWS.picspell;VIEWS.picspell=function(){return _v().replace(/(<button data-act="psmode" data-m="sent"[^>]*>📝 جمل<\/button>)/,'$1<button data-act="go" data-r="cloze" aria-pressed="false">✏️ كمّل الناقص</button>').replace('>👀 اكتب فوقها<','>👀 فوقها<')}}
+{const _v=VIEWS.typing;VIEWS.typing=function(){return _v().replace('<button data-act="pstab" data-m="sent">📝 جمل</button>','<button data-act="pstab" data-m="sent">📝 جمل</button><button data-act="go" data-r="cloze">✏️ كمّل الناقص</button>').replace('>👀 اكتب فوقها<','>👀 فوقها<')}}
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
