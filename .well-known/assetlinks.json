@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.speakupar.app",
+        "sha256_cert_fingerprints": ["EE:6F:F2:E8:0F:BB:56:F0:6C:72:94:AE:41:B6:BB:49:FE:2B:B6:AC:B1:B4:27:78:89:21:B4:00:75:61:36:47"]
+      }
+    }]
