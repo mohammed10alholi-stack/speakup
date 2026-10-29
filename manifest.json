@@ -1,7 +1,7 @@
 {
-  "name": "SpeakUp — تعلّم الإنجليزي",
+  "name": "SpeakUp — تعلّم اللغات مع توكي",
   "short_name": "SpeakUp",
-  "description": "تعلّم الإنجليزي بالمحادثة: اختبار مستوى، معلم ذكي بصوت، كلمات، قواعد، قصص وشهادات.",
+  "description": "تعلّم الإنجليزي و6 لغات ثانية من الصفر للطلاقة: خطة زي المدرسة، معلم ذكي بصوت اسمه توكي، كلمات، قواعد، قصص، تمارين استماع ونطق، وتحضير IELTS و TOEFL.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
@@ -10,8 +10,63 @@
   "background_color": "#FFFFFF",
   "theme_color": "#2F6BFF",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/",
+  "orientation": "portrait",
+  "categories": [
+    "education"
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/1-home.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "الرئيسية"
+    },
+    {
+      "src": "screenshots/2-plan.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "خطتي للطلاقة"
+    },
+    {
+      "src": "screenshots/3-learn.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "تعلّم"
+    },
+    {
+      "src": "screenshots/4-practice.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "تدرّب"
+    },
+    {
+      "src": "screenshots/5-cloze.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "كمّل الناقص"
+    }
   ]
 }
