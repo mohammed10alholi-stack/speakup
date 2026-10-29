@@ -7288,6 +7288,199 @@ A.pstab=d=>{if(d.m==="cloze"){go("cloze");return}PS.mode=d.m;PS_MODE=d.m;go("pic
 /* التبويب الجديد بصفحات «اسمع واكتب» */
 {const _v=VIEWS.picspell;VIEWS.picspell=function(){return _v().replace(/(<button data-act="psmode" data-m="sent"[^>]*>📝 جمل<\/button>)/,'$1<button data-act="go" data-r="cloze" aria-pressed="false">✏️ كمّل الناقص</button>').replace('>👀 اكتب فوقها<','>👀 فوقها<')}}
 {const _v=VIEWS.typing;VIEWS.typing=function(){return _v().replace('<button data-act="pstab" data-m="sent">📝 جمل</button>','<button data-act="pstab" data-m="sent">📝 جمل</button><button data-act="go" data-r="cloze">✏️ كمّل الناقص</button>').replace('>👀 اكتب فوقها<','>👀 فوقها<')}}
+/* ================== المنهج المدرسي: من الصفر للطلاقة، وحدة ورا وحدة ================== */
+/* كل مستوى = صف. كل صف = وحدات مرتّبة. كل وحدة = كلمات + قاعدة + محادثة/قصة + اختبار وحدة.
+   الوحدة الجاية بتنفتح لما تنجح باختبار الوحدة (70%). آخر الصف: امتحان المستوى + شهادة.
+   اللي بيدخل بمستوى أعلى (تحديد المستوى) بتنحسبله الصفوف اللي قبل وبيكمّل من مكانه. */
+const FL_BAND={A1:[0,15],A2:[15,30],B1:[30,50],B2:[50,70],C1:[70,85],C2:[85,100]};
+const FL_NAME=p=>p>=100?"طليق 🏆":p>=85?"قريب جداً من الطلاقة":p>=70?"متقدّم":p>=50?"فوق المتوسط":p>=30?"متوسط":p>=15?"أساسي":"مبتدئ";
+/* ترتيب مدرسي للإنجليزي: كل قاعدة بتبني على اللي قبلها */
+const CU_ORDER={en:{
+  A1:["be","pron","art","pl","demo","havehas","there","prep","ps","freq","wh","can","imper"],
+  A2:["pc","objpron","wasw","past","pastc","count","comp","adverbs","tooenough","fut","modal"],
+  B1:["pp","b1_present_perf2","ppvsps","b1_used_to","gerund","b1_quantifiers","b1_articles2","rel","passive","cond1","cond2","b1_wish","b1_reported","qtags","sosuch","b1_purpose","b1_phrasal_g"],
+  B2:["pastperf","cond3","mixedcond","reported","deduct","wish","rather","usedto","b2_passive2","b2_participle","b2_cleft","b2_inversion","b2_nounphrase","b2_conn","b2_linking2","b2_hedging"],
+  C1:["c1_futurecont","c1_wish2","c1_mixed_cond","c1_modals2","c1_causative","c1_passive_rep","c1_relative2","c1_inversion2","c1_ellipsis","c1_emphasis","c1_emph2","c1_quant","c1_discourse","c1_nomin","c1_tone"],
+  C2:["c2_mixedmodal","c2_subjunctive","c2_inv3","c2_cleft2","c2_fronting","c2_nounclause","c2_nomin2","c2_collocation2","c2_hedge2","c2_nuance_neg","c2_register2","c2_irony","c2_ambiguity","c2_discourse2","c2_summary"]}};
+/* دروس مكرّرة بنفس الموضوع: بتنضم لنفس الوحدة كـ«تعمّق» */
+const CU_MERGE={en:{a1_this_that:"demo",a1_there_is:"there",a1_can:"can",a2_too_enough:"tooenough",a2_going_to:"fut",a2_adverbs:"adverbs",b1_relative_b1:"rel",b2_conditional3:"cond3"}};
+/* أول صف بالإنجليزي مرتّب يدوياً: كل قاعدة مع الكلمات اللي بتخدمها */
+const CU_A1EN={be:{c:["basics","a1_greet2","numbers2"],x:["d:meet"]},pron:{c:["family","feelings"],x:["s:s1"]},art:{c:["classroom","colors"],x:["d:xd1"]},
+  pl:{c:["fruits","animals"],x:["s:s16"]},demo:{c:["clothes","colors2"],x:["s:x1"]},havehas:{c:["body","body2"]},there:{c:["home","house2","a1_home3"],x:["d:xd2","s:s15"]},
+  prep:{c:["places","transport"],x:["d:dir"]},ps:{c:["verbs","routine","work"],x:["s:s11"]},freq:{c:["time","calendar","a1_clock"]},wh:{c:["food","drinks","a1_market"],x:["d:cafe","s:s2"]},
+  can:{c:["adj","opposites"],x:["d:bakery","s:x2"]},imper:{c:["weather","a1_numbers3"],x:["d:pharm"]}};
+let CU={cache:null,key:"",open:null,lvOpen:null};
+function cuStepDone(t,id){
+  if(t==="cat"){const c=CATS.find(x=>x.id===id);return !!c&&c.w.every(w=>S.known[c.id+":"+w[0]])}
+  if(t==="lesson")return !!S.done["g:"+id];if(t==="dialog")return !!S.done["d:"+id];if(t==="story")return !!S.done["s:"+id];
+  if(t==="abc")return typeof abcDone==="function"&&abcDone(id);return false}
+function cuStep(t,id){
+  if(t==="cat"){const c=CATS.find(x=>x.id===id);return c&&{type:"cat",id,name:c.name,icon:c.icon||"📚",kind:"كلمات"}}
+  if(t==="lesson"){const l=LESSONS.find(x=>x.id===id);return l&&{type:"lesson",id,name:l.t,icon:"📐",kind:"قواعد"}}
+  if(t==="dialog"){const d=DIALOGS.find(x=>x.id===id);return d&&{type:"dialog",id,name:d.t,icon:d.icon||"💬",kind:"محادثة"}}
+  if(t==="story"){const s=STORIES.find(x=>x.id===id);return s&&{type:"story",id,name:s.t+(s.ar?" — "+s.ar:""),icon:"📖",kind:"قراءة"}}
+  return null}
+/* يبني المنهج كامل لهاللغة (مرة وحدة، وبيتخزّن) */
+function cuBuild(){const k=LANG+"|"+CATS.length+"|"+LESSONS.length+"|"+DIALOGS.length+"|"+STORIES.length;if(CU.cache&&CU.key===k)return CU.cache;
+  const lvls=[];const ord=CU_ORDER[LANG]||{},mg=CU_MERGE[LANG]||{};
+  for(const lv of LVS){const units=[];
+    if(lv==="A1"&&typeof abcData==="function"){try{const gs=abcData().groups||[];if(gs.length)units.push({key:"A1-abc",lv,abc:true,title:LANG==="zh"?"الأصوات والنغمات":"الحروف والأصوات",
+      steps:gs.map(g=>({type:"abc",id:g.id,name:(LANG==="zh"?"الأصوات: ":"الحروف: ")+g.name,icon:"🔤",kind:LANG==="zh"?"نطق":"حروف"})),words:[],les:[]})}catch(e){}}
+    const cats=CATS.filter(x=>x.lv===lv),les=LESSONS.filter(x=>x.lv===lv),dl=DIALOGS.filter(x=>x.lv===lv),st=STORIES.filter(x=>x.lv===lv);
+    /* القواعد: بالترتيب المدرسي، والمكرّر بينضم لأخوه */
+    const o=ord[lv]||[],main=les.filter(l=>!mg[l.id]).sort((a,b)=>{const ia=o.indexOf(a.id),ib=o.indexOf(b.id);return (ia<0?999:ia)-(ib<0?999:ib)});
+    const extra={};les.filter(l=>mg[l.id]).forEach(l=>{const p=mg[l.id];if(main.some(m=>m.id===p))(extra[p]=extra[p]||[]).push(l.id);else main.push(l)});
+    const n=main.length||Math.ceil(cats.length/3);if(!n){lvls.push({lv,units});continue}
+    const used=new Set(),slots=[];
+    for(let i=0;i<n;i++)slots.push({les:main[i]?[main[i].id].concat(extra[main[i].id]||[]):[],c:[],x:[]});
+    if(LANG==="en"&&lv==="A1"){slots.forEach(s=>{const m=CU_A1EN[s.les[0]];if(m){s.c=m.c.filter(id=>cats.some(c=>c.id===id));s.x=(m.x||[]).slice();s.c.forEach(id=>used.add(id));s.x.forEach(id=>used.add(id))}})}
+    const restC=cats.filter(c=>!used.has(c.id));
+    /* الكلمات: بتتوزّع بالتساوي على الوحدات اللي ناقصها */
+    const needC=slots.filter(s=>!s.c.length);restC.forEach((c,i)=>{const t=needC.length?needC[Math.floor(i*needC.length/restC.length)]:slots[i%slots.length];t.c.push(c.id)});
+    const restX=dl.map(d=>"d:"+d.id).concat(st.map(s=>"s:"+s.id)).filter(x=>!used.has(x));
+    /* محادثة/قصة: وحدة ورا وحدة، بالتناوب */
+    const dd=restX.filter(x=>x[0]==="d"),ss=restX.filter(x=>x[0]==="s"),mix=[];while(dd.length||ss.length){if(dd.length)mix.push(dd.shift());if(ss.length)mix.push(ss.shift())}
+    mix.forEach((x,i)=>{slots[Math.min(n-1,Math.floor((i+.5)*n/mix.length))].x.push(x)});
+    slots.forEach((s,i)=>{const steps=[];const L=s.les.map(id=>cuStep("lesson",id)).filter(Boolean);L.slice(1).forEach(x=>{x.kind="قواعد · تعمّق"});
+      const C=s.c.map(id=>cuStep("cat",id)).filter(Boolean);
+      /* ترتيب الحصة: كلمات ← قاعدة ← كلمات ← محادثة/قصة */
+      if(C[0])steps.push(C[0]);L.forEach(x=>steps.push(x));C.slice(1).forEach(x=>steps.push(x));
+      s.x.forEach(x=>{const it=cuStep(x[0]==="d"?"dialog":"story",x.slice(2));if(it)steps.push(it)});
+      if(!steps.length)return;
+      const words=s.c.flatMap(id=>(CATS.find(c=>c.id===id)||{w:[]}).w),title=L[0]?noHtml(L[0].name):(C[0]?C[0].name:"وحدة");
+      units.push({key:lv+"-"+(s.les[0]||s.c[0]||i),lv,title,topic:C.map(x=>x.name).slice(0,2).join(" · "),steps,words,les:s.les})});
+    lvls.push({lv,units})}
+  let no=0;lvls.forEach(L=>L.units.forEach(u=>{u.n=no++}));
+  CU.cache={lvls};CU.key=k;return CU.cache}
+const cuS=()=>{S.cu=S.cu||{};return S.cu};
+const cuBelow=lv=>LVS.indexOf(lv)<LVS.indexOf(userLv());
+function cuPassed(u){return !!cuS()[u.key]||cuBelow(u.lv)}
+function cuLevel(lv){return cuBuild().lvls.find(x=>x.lv===lv)||{lv,units:[]}}
+/* وين الطالب هلأ بالمنهج */
+function cuState(){const lv=userLv(),L=cuLevel(lv),us=L.units;const i=us.findIndex(u=>!cuPassed(u));
+  const ex=!!(S.certs&&S.certs[lv]);const last=!cuBuild().lvls.some(x=>LVS.indexOf(x.lv)>LVS.indexOf(lv)&&x.units.length);
+  return{lv,units:us,cur:i<0?us.length:i,examReady:i<0&&us.length>0,ex,empty:!us.length,last}}
+/* نسبة الطلاقة: كل مستوى إله شريحة من 0 لـ 100 */
+function cuFluency(){const st=cuState(),b=FL_BAND[st.lv]||[0,15],w=b[1]-b[0];
+  if(st.empty)return b[0];const f=st.units.filter(cuPassed).length/st.units.length;return Math.min(100,Math.round(b[0]+w*(f*.9+(st.ex?.1:0))))}
+/* خطوات المستوى الحالي (هاي اللي توكي بيعلّمها وبتطلع بالرئيسية) */
+function cuItems(){const st=cuState(),out=[];
+  st.units.forEach((u,ui)=>{const pass=cuPassed(u);u.steps.forEach(s=>out.push(Object.assign({},s,{unit:u.key,done:pass||cuStepDone(s.type,s.id)})));
+    out.push({type:"utest",id:u.key,unit:u.key,name:`اختبار الوحدة ${ui+1}: ${u.title}`,icon:"✅",kind:"اختبار الوحدة",done:pass})});
+  if(st.units.length)out.push({type:"exam",id:st.lv,name:"امتحان نهاية المستوى "+st.lv+" + شهادة",icon:"🎓",kind:"امتحان",done:st.ex});
+  return out}
+planItems=cuItems;
+nextPath=function(){return cuItems().find(x=>!x.done)||null};
+/* ---------- اختبار الوحدة ---------- */
+function cuFind(key){for(const L of cuBuild().lvls){const u=L.units.find(x=>x.key===key);if(u)return u}return null}
+function cuQs(u){const qs=[];const pool=ALL.filter(w=>w.lv===u.lv);const other=w=>shuffle(pool.filter(x=>x.ar!==w[1]&&x.en!==w[0])).slice(0,3);
+  if(u.abc){const gs=(abcData().groups||[]).filter(g=>u.steps.some(s=>s.id===g.id));const L=shuffle(gs.flatMap(g=>g.L||[])).slice(0,10);
+    L.forEach(x=>{const o=shuffle(gs.flatMap(g=>g.L||[]).filter(y=>y[2]!==x[2])).slice(0,3);qs.push({t:"listen",p:x[2],opts:shuffle([x[2],...o.map(y=>y[2])]),a:x[2],ar:x[3]})});return qs}
+  const W=shuffle(u.words.slice()),nW=u.les.length?6:8;
+  W.slice(0,nW).forEach((w,i)=>{const o=other(w);if(o.length<3)return;qs.push(i%3===2?{t:"listen",p:w[0],opts:shuffle([w[0],...o.map(x=>x.en)]),a:w[0],ar:w[1]}:i%2?{t:"ar2en",p:w[1],opts:shuffle([w[0],...o.map(x=>x.en)]),a:w[0],ar:w[1]}:{t:"en2ar",p:w[0],opts:shuffle([w[1],...o.map(x=>x.ar)]),a:w[1]})});
+  shuffle(u.les.flatMap(id=>(LESSONS.find(l=>l.id===id)||{q:[]}).q||[])).slice(0,3).forEach(q=>qs.push({t:"gram",p:q[0],opts:shuffle(q[1].slice()),a:q[2]}));
+  /* مراجعة حلزونية: كلمتين من وحدات قبل، عشان ما تنسى */
+  const prev=cuBuild().lvls.flatMap(L=>L.units).filter(x=>x.n<u.n&&!x.abc).flatMap(x=>x.words);
+  shuffle(prev).slice(0,2).forEach(w=>{const o=other(w);if(o.length===3)qs.push({t:"en2ar",p:w[0],opts:shuffle([w[1],...o.map(x=>x.ar)]),a:w[1],rev:1})});
+  return shuffle(qs)}
+A.utest=d=>{const u=cuFind(d.id);if(!u)return;const qs=cuQs(u);if(qs.length<3){cuS()[u.key]={s:100,d:Date.now()};save();render();return}
+  const no=cuLevel(u.lv).units.indexOf(u)+1;
+  startPlayer({back:"plan",qs:qs.map(q=>({label:({en2ar:"شو معنى الكلمة؟",ar2en:`اختار الكلمة ${LADJ()}`,gram:"املا الفراغ",listen:"اسمع واختار"})[q.t]+(q.rev?" · مراجعة من قبل":"")+` · اختبار الوحدة ${no}`,
+      prompt:q.t==="en2ar"?wordPrompt(q.p):q.t==="ar2en"?`<div class="ar-big">${esc(q.p)}</div>`:q.t==="gram"?sentPrompt(q.p):listenPrompt(q.p),opts:q.opts,a:q.a,ltr:q.t!=="en2ar",say:q.t==="listen"?q.p:null,raw:q})),
+    onAnswer:(q,ok)=>{const r=q.raw;if(ok)sfx("ok");else quietMistake(r.t==="gram"?r.p.replace("___",r.a):r.t==="en2ar"?r.p:r.a,r.t==="en2ar"?r.a:(r.ar||"اختبار الوحدة"),"اختبار الوحدة")},
+    onFinish:P=>{const pct=Math.round(100*P.score/P.qs.length),ok=pct>=70,was=!!cuS()[u.key];
+      if(ok){const p=cuS()[u.key];if(!p||pct>=p.s)cuS()[u.key]={s:pct,d:Date.now()};
+        u.steps.forEach(s=>{if(s.type==="lesson")S.done["g:"+s.id]=S.done["g:"+s.id]||1});if(!was)addXP(10)}
+      save();const nx=cuLevel(u.lv).units[no];
+      showResult({title:ok?`نجحت باختبار الوحدة ${no} 🎉`:`اختبار الوحدة ${no}: بدك ${70}% عشان تنجح`,score:P.score,total:P.qs.length,back:"plan",
+        extra:`<div class="cu-res ${ok?"ok":""}">${ok?(nx?`<b>🔓 انفتحت الوحدة ${no+1}: ${esc(nx.title)}</b>`:`<b>🎓 خلّصت كل وحدات ${u.lv}! ضايل امتحان المستوى</b>`):`<b>قرّبت! 💪</b><span>الغلطات انضافت لدفتر أخطائك. راجع خطوات الوحدة وجرّب كمان مرة.</span>`}</div>`,
+        actions:ok?(nx?`<button class="btn big wide" data-act="cuopen" data-k="${esc(nx.key)}">▶ ابدأ الوحدة ${no+1}</button>`:`<button class="btn big wide" data-act="openpath" data-t="exam" data-id="${u.lv}">🎓 امتحان المستوى ${u.lv}</button>`)
+          :`<button class="btn big wide" data-act="utest" data-id="${esc(u.key)}">🔁 جرّب كمان مرة</button>`})}})};
+{const _op=openPath;openPath=function(t,id){if(t==="utest"){A.utest({id});return}_op(t,id)}}
+/* توكي: اختبار الوحدة بيعمله الطالب لحاله، توكي بيراجع معه بس */
+{const _c=tkStepContent;tkStepContent=function(it){if(it&&it.type==="utest"){const u=cuFind(it.id);if(!u)return"";
+  return `Unit review before the unit test — unit "${u.title}".\nWords:\n${u.words.slice(0,24).map(w=>w[0]+" = "+w[1]).join("\n")}\n${u.les.map(id=>{const l=LESSONS.find(x=>x.id===id);return l?"Grammar: "+noHtml(l.t):""}).join("\n")}\nQuiz the learner quickly on a mix of these (meaning, use in a sentence, grammar). Re-teach anything wrong. When they are ready, tell them to take «اختبار الوحدة» from their plan.`}
+  return _c(it)}}
+{const _m=tkMarkDone;tkMarkDone=function(it){if(it&&it.type==="utest"){TU.focus=null;toast("💪 إنت جاهز! اعمل «اختبار الوحدة» من خطتك");return}return _m(it)}}
+/* ---------- صفحة الخطة: المنهج ---------- */
+function cuTeacher(st,fl,u){const L=[];
+  if(st.empty)return[`خلّصت كل المحتوى المتوفّر بهاللغة لحد هلأ 👏 (${fl}%).`,"المستويات المتقدمة جاية قريباً. لهلأ كمّل حكي مع توكي ومراجعة كلماتك كل يوم عشان تحافظ على مستواك."];
+  if(fl===0&&!Object.keys(cuS()).length)L.push("أهلاً فيك بأول يوم مدرسة 🎒 رح نمشي مع بعض <b>حبة حبة</b>: كل وحدة فيها كلمات، وقاعدة وحدة، ومحادثة أو قصة، وبآخرها اختبار صغير. ما بننتقل للوحدة الجاية إلا لما تتقن اللي قبلها.");
+  else if(LVS.indexOf(st.lv)>0&&!st.units.some(x=>cuS()[x.key]))L.push(`حسب مستواك إنت بلّشت من <b>${FL_BAND[st.lv][0]}%</b> 👌 الصفوف اللي قبل انحسبتلك، ومن هون بنكمّل مع بعض لحد الطلاقة.`);
+  if(u)L.push(`إنت هلأ بـ<b>الوحدة ${st.cur+1} من ${st.units.length}</b> بصف ${st.lv}: «${esc(u.title)}».`);
+  else if(st.examReady&&!st.ex)L.push(`خلّصت كل وحدات ${st.lv} 🎉 ضايل <b>امتحان المستوى</b>. انجح فيه وبتنتقل للصف الجاي وبتاخد شهادة.`);
+  L.push(fl>=85?"إنت قريب كتير من الطلاقة، ركّز على النقاش والكتابة مع توكي 💙":"وما تنسى: دقيقتين حكي مع توكي كل يوم بيثبّتوا كل إشي 💙");return L}
+function cuUnitHTML(u,i,st,open){const pass=cuPassed(u),cur=i===st.cur&&LVS.indexOf(u.lv)===LVS.indexOf(st.lv),lock=!pass&&!cur;
+  const sd=u.steps.filter(s=>cuStepDone(s.type,s.id)).length,res=cuS()[u.key];
+  const cls=pass?"done":cur?"cur":"lock",lbl=pass?(res?`✓ ${res.s}%`:"✓ معفى"):cur?"إنت هون 📍":"🔒";
+  let h=`<div class="rm-unit cu-u ${cls}"><button class="rm-uh" data-act="${lock?"culock":"cuunit"}" data-k="${esc(u.key)}"><span class="rm-no">${pass?"✓":lock?"🔒":i+1}</span><span class="rm-ut"><b>الوحدة ${i+1}: ${esc(u.title)}</b><small>${esc(u.topic||"")}${u.topic?" · ":""}${pass?"مكتملة":`${sd}/${u.steps.length} خطوات`}</small>${cur?`<span class="qbar"><i style="width:${Math.round(100*sd/u.steps.length)}%"></i></span>`:""}</span><span class="rm-st">${lbl}</span></button>`;
+  if(open&&!lock){h+=`<div class="rm-ub cu-steps">${u.steps.map((s,j)=>{const d=pass||cuStepDone(s.type,s.id);return `<button class="plan-task sm ${d?"done":""}" data-act="openpath" data-t="${s.type}" data-id="${esc(String(s.id))}"><span class="cu-sn">${d?"✓":j+1}</span><span class="pi">${s.icon}</span><span class="pt"><b>${esc(noHtml(s.name))}</b><small>${s.kind}</small></span></button>`}).join("")}
+      <button class="plan-task sm cu-test ${pass?"done":""}" data-act="utest" data-id="${esc(u.key)}"><span class="cu-sn">${pass?"✓":"✅"}</span><span class="pt"><b>${pass?"أعد اختبار الوحدة":sd<u.steps.length?"بتعرف هالوحدة؟ امتحن وتخطّاها":"اختبار الوحدة"}</b><small>${res?`أفضل نتيجة ${res.s}%`:"10 أسئلة تقريباً · بدك 70% لتفتح الوحدة الجاية"}</small></span><span class="pc">›</span></button>
+      ${!pass?`<button class="plan-task sm" data-act="tkfocus" data-t="${u.steps.find(s=>!cuStepDone(s.type,s.id))?.type||"utest"}" data-id="${esc(String((u.steps.find(s=>!cuStepDone(s.type,s.id))||{id:u.key}).id))}"><span class="cu-sn">🎓</span><span class="pt"><b>علّمني هالوحدة يا توكي</b><small>بيشرح ويدرّبك ويتأكد إنك فهمت</small></span><span class="pc">›</span></button>`:""}</div>`}
+  return h+`</div>`}
+function vCurriculum(){const st=cuState(),fl=cuFluency(),u=st.units[st.cur],per=S.planPer||3,due=dueList().length;
+  const items=cuItems(),left=items.filter(x=>!x.done),today=left.slice(0,per),days=Math.ceil(left.length/per);
+  if(CU.open==null&&u)CU.open=u.key;
+  const track=`<div class="fl-track"><div class="fl-bar"><i style="width:${fl}%"></i></div><div class="fl-marks">${LVS.map(l=>{const a=FL_BAND[l][0],has=cuLevel(l).units.length;return `<span class="${LVS.indexOf(l)<LVS.indexOf(st.lv)?"past":l===st.lv?"now":""} ${has?"":"soon"}" style="inset-inline-start:${a}%"><b>${l}</b></span>`}).join("")}<span class="end" style="inset-inline-start:100%"><b>🏆</b></span></div></div>`;
+  const lvBlocks=cuBuild().lvls.filter(L=>L.units.length).map(L=>{const i=LVS.indexOf(L.lv),c=LVS.indexOf(st.lv);
+    if(L.lv===st.lv)return `<h2 class="sec">صف ${L.lv} · ${LVNAME[L.lv]} <small class="muted">(${L.units.filter(cuPassed).length}/${L.units.length} وحدة)</small></h2><section class="rm-units">${L.units.map((x,j)=>cuUnitHTML(x,j,st,CU.open===x.key)).join("")}
+      <div class="rm-unit exam ${st.ex?"done":""} ${st.examReady||st.ex?"":"cu-lockx"}"><button class="rm-uh" data-act="${st.examReady||st.ex?"openpath":"culock"}" data-t="exam" data-id="${L.lv}" data-k="exam"><span class="rm-no">🎓</span><span class="rm-ut"><b>امتحان نهاية الصف ${L.lv}</b><small>${st.ex?"نجحت وأخذت الشهادة ✓":st.examReady?"جاهز! انجح بـ 70% وبتنتقل للصف الجاي + شهادة":"بينفتح لما تخلّص كل وحدات الصف"}</small></span><span class="rm-st">${st.ex?"✓":st.examReady?"›":"🔒"}</span></button></div></section>`;
+    const open=CU.lvOpen===L.lv;
+    return `<div class="rm-unit cu-lv ${i<c?"done":"lock"}"><button class="rm-uh" data-act="culv" data-lv="${L.lv}"><span class="rm-no">${i<c?"✓":"🔒"}</span><span class="rm-ut"><b>صف ${L.lv} · ${LVNAME[L.lv]}</b><small>${L.units.length} وحدة · ${i<c?"مكتمل، افتحه للمراجعة":"بينفتح بعد امتحان "+LVS[i-1]}</small></span><span class="rm-st">${FL_BAND[L.lv][0]}–${FL_BAND[L.lv][1]}%</span></button>
+      ${open?`<div class="rm-ub">${L.units.map((x,j)=>`<button class="plan-task sm ${i<c?"done":""}" data-act="${i<c?"cuopen":"culock"}" data-k="${esc(x.key)}"><span class="cu-sn">${i<c?"✓":j+1}</span><span class="pt"><b>${esc(x.title)}</b><small>${esc(x.topic||"")}</small></span></button>`).join("")}</div>`:""}</div>`});
+  const cIdx=cuBuild().lvls.filter(L=>L.units.length).findIndex(L=>L.lv===st.lv);
+  const before=lvBlocks.slice(0,Math.max(0,cIdx)),after=lvBlocks.slice(cIdx<0?lvBlocks.length:cIdx);
+  return `<section class="panel">${topbar("خطتي للطلاقة","زي المدرسة: وحدة ورا وحدة، من الصفر لحد ما تصير طليق")}
+    <div class="plan-hero">${ring(fl,86)}<div><small>نسبة طلاقتك · ${FL_NAME(fl)}</small><b>${fl}% من الطريق للطلاقة</b>
+      <span>${st.empty?"وصلت لآخر المحتوى المتوفر 👏":u?`صف ${st.lv} · الوحدة ${st.cur+1} من ${st.units.length}`:st.ex?"":"ضايل امتحان الصف 🎓"}${!st.empty&&left.length?` · بهالوتيرة بتخلّص الصف خلال ~${days} يوم`:""}</span></div></div>
+    ${track}
+    <div class="rm-teacher">${mascot("happy",64)}<div class="rm-bub">${cuTeacher(st,fl,u).map(l=>`<p>${l}</p>`).join("")}</div></div>
+    <div class="set" style="margin-top:10px"><label for="planPer">كم خطوة باليوم؟</label><select id="planPer" data-set="planPer">${[2,3,5].map(n=>`<option value="${n}" ${per==n?"selected":""}>${n} خطوات · ${n===2?"خفيف":n===3?"متوازن":"مكثّف"}</option>`).join("")}</select></div>
+  </section>
+  <h2 class="sec">حصة اليوم</h2>
+  <section class="panel">
+    ${due?`<button class="plan-task" data-act="go" data-r="review"><span class="pi">${ico("review",22)}</span><span class="pt"><b>راجع ${due} كلمة</b><small>مراجعة ذكية · قبل ما تنساها</small></span><span class="pc">›</span></button>`:""}
+    ${today.length?today.map(it=>`<button class="plan-task" data-act="openpath" data-t="${it.type}" data-id="${esc(String(it.id))}"><span class="pi">${it.icon}</span><span class="pt"><b>${esc(noHtml(it.name))}</b><small>${it.kind}</small></span><span class="pc">›</span></button>`).join("")
+      :`<p class="muted center">${st.empty?"كمّل مع توكي والمحادثات 💙":"خلصت حصة اليوم 🎉"}</p>`}
+    ${today[0]&&today[0].type!=="exam"?`<button class="plan-task" data-act="tkfocus" data-t="${today[0].type}" data-id="${esc(String(today[0].id))}"><span class="pi">${mascot("happy",24)}</span><span class="pt"><b>خلّي توكي يعلّمك «${esc(noHtml(today[0].name)).slice(0,34)}»</b><small>بيشرح، بيدرّبك، وبيتأكد إنك فهمت</small></span><span class="pc">›</span></button>`:""}
+  </section>
+  ${before.length?`<h2 class="sec">الصفوف اللي خلّصتها</h2><section class="rm-units">${before.join("")}</section>`:""}
+  ${after.join("")}
+  ${st.last&&!st.empty&&LVS.indexOf(st.lv)<LVS.length-1?`<p class="muted center" style="margin:6px 0 18px">🔜 الصفوف المتقدمة بهاللغة جاية قريباً</p>`:""}`}
+VIEWS.plan=vCurriculum;
+Object.assign(A,{
+  cuunit:d=>{CU.open=CU.open===d.k?"":d.k;render()},
+  cuopen:d=>{const u=cuFind(d.k);CU.open=d.k;if(u&&LVS.indexOf(u.lv)!==LVS.indexOf(userLv())){/* مراجعة صف قديم: افتح أول خطوة */const s=u.steps[0];if(s){openPath(s.type,s.id);return}}go("plan");setTimeout(()=>{const e=document.querySelector(".cu-u.cur");if(e)e.scrollIntoView({block:"center",behavior:"smooth"})},80)},
+  culv:d=>{CU.lvOpen=CU.lvOpen===d.lv?null:d.lv;render()},
+  culock:d=>{const st=cuState();if(d.k==="exam"){toast(`🔒 خلّص كل وحدات ${st.lv} أول`);return}toast(`🔒 خلّص الوحدة ${st.cur+1} أول (أو امتحن فيها وتخطّاها)`)}});
+/* الرئيسية: نسبة الطلاقة والوحدة الحالية */
+{const _h=VIEWS.home;VIEWS.home=function(){let h=_h.apply(this,arguments);try{const st=cuState(),fl=cuFluency();
+  h=h.replace("شو خلّصت وشو ضايل لمستواك الجاي",`طلاقتك ${fl}% · ${st.units[st.cur]?`صف ${st.lv}، الوحدة ${st.cur+1} من ${st.units.length}`:st.empty?"خلّصت المتوفّر":"ضايل امتحان الصف"}`)
+   .replace('<span class="hub-ic">🗺️</span><span class="hub-tx"><b>خطتي</b>',`<span class="hub-ic cu-ring" style="--p:${fl}"><b>${fl}%</b></span><span class="hub-tx"><b>خطتي للطلاقة</b>`)}catch(e){}return h};vHome=VIEWS.home}
+document.head.insertAdjacentHTML("beforeend",`<style id="cu-css">
+.fl-track{margin:6px 4px 18px}
+.fl-bar{height:12px;border-radius:99px;background:var(--h3-track);overflow:hidden}
+.fl-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2F6BFF,#7C5CFF,#FF8A3D);transition:width .6s}
+[dir="rtl"] .fl-bar i{background:linear-gradient(270deg,#2F6BFF,#7C5CFF,#FF8A3D)}
+.fl-marks{position:relative;height:22px;margin-top:4px}
+.fl-marks span{position:absolute;top:0;transform:translateX(50%);font-size:.72rem;color:var(--soft);white-space:nowrap}
+.fl-marks span::before{content:"";position:absolute;top:-14px;inset-inline-start:50%;width:2px;height:12px;background:var(--card);opacity:.9}
+.fl-marks span.past b{color:var(--good-d)}.fl-marks span.now b{color:var(--primary);font-size:.82rem}.fl-marks span.soon{opacity:.45}
+.fl-marks span.end{transform:translateX(70%)}
+.cu-u.lock{opacity:.62}.cu-u.lock .rm-no{background:var(--line)}
+.cu-lockx{opacity:.6;border-style:dashed}
+.cu-sn{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.78rem;font-weight:800;background:var(--sky);color:var(--ink)}
+.plan-task.done .cu-sn{background:var(--good);color:#fff}
+.cu-test{background:var(--primary-soft)!important;border-radius:14px;margin-top:6px;padding-inline:10px!important;border-bottom:none!important}
+.cu-test b{color:var(--primary)}
+.cu-lv.done .rm-no{background:var(--good);color:#fff}
+.cu-res{margin:6px auto 14px;max-width:420px;padding:12px 14px;border-radius:16px;background:var(--gold-soft);display:flex;flex-direction:column;gap:4px;text-align:center}
+.cu-res.ok{background:var(--good-bg)}
+.hub-ic.cu-ring{background:conic-gradient(var(--primary) calc(var(--p)*1%),var(--h3-track) 0)!important;position:relative}
+.hub-ic.cu-ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--card)}
+.hub-ic.cu-ring b{position:relative;z-index:1;font-size:.7rem;color:var(--ink)}
+</style>`);
+
 /* ================== PLATFORM: حسابات + اشتراكات + مزامنة ================== */
 const CFG=window.APP_CONFIG;
 const sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
