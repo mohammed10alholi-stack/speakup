@@ -7880,6 +7880,36 @@ VIEWS.subscribe=()=>{MIN.kind="energy";return vMinutes()};PARENT.subscribe="me";
   window.__aiCharge=true;try{await _ts9(t)}finally{window.__aiCharge=false;setTimeout(enLoad,400)}}}
 
 /* ---------- التشغيل ---------- */
+/* ================== نسخة متجر Google Play: بدون أي شراء داخل التطبيق ================== */
+/* سياسة Google: ممنوع بيع إشي رقمي إلا بنظام دفعها. فبنسخة المتجر منخفي الشحن والدفع كلياً،
+   والتعلّم كله مجاني + الطاقة اليومية + النجوم اللي بتنكسب بالتعلّم. */
+const PLAY=(()=>{try{const q=new URLSearchParams(location.search);if(q.get("src")==="play")localStorage.setItem("su_play","1");
+  return localStorage.getItem("su_play")==="1"||String(document.referrer||"").startsWith("android-app://")}catch(e){return false}})();
+if(PLAY){
+  document.documentElement.classList.add("play");
+  document.head.insertAdjacentHTML("beforeend",`<style>.play .chip-plus,.play [data-act="lvtopup"],.play [data-r="subscribe"],.play .hlpanel [data-r="minutes"]{display:none!important}</style>`);
+  const earnView=()=>{const stars=Math.floor(((AUTH.profile&&AUTH.profile.live_balance_sec)||0)/60),e=EN.st||{};
+    return `<section class="panel">${topbar("⭐ رصيدك","طاقة 🔋 لشات توكي، ونجوم ⭐ لمكالمة توكي الحقيقي")}
+      <div class="minbal">${mascot("happy",70)}<div><small>طاقتك هلأ</small><b>${enLeft()} 🔋</b><span>${e.reset_at?`بتتجدد مجاناً ${enWhen(e.reset_at)}`:"بتتجدد مجاناً كل 24 ساعة"}</span></div></div>
+      <div class="minbal" style="margin-top:10px">${mascot("wow",70)}<div><small>نجوم توكي</small><b>${stars} ⭐</b><span>كل نجمة = دقيقة مكالمة مع توكي الحقيقي، فوق دقايقك المجانية اليومية.</span></div></div></section>
+    <section class="panel"><h2>كيف بتكسب نجوم؟ ⭐</h2>
+      <div class="lesson-ex"><div class="e"><b>🎯 خلّص هدف اليوم</b><span>نجمة كل يوم بتخلّص فيه هدفك</span></div></div>
+      <div class="lesson-ex"><div class="e"><b>🔥 كمّل 7 أيام ورا بعض</b><span>نجوم إضافية كل أسبوع حماس</span></div></div>
+      <div class="lesson-ex"><div class="e"><b>🎓 انجح بامتحان مستوى</b><span>نجوم مع كل شهادة جديدة</span></div></div>
+      <p class="muted" style="margin-top:10px">كل الدروس والتمارين مجانية بالكامل 💙</p>
+      <button class="btn hl wide" data-act="go" data-r="plan">▶ كمّل خطتك</button></section>`};
+  VIEWS.minutes=earnView;VIEWS.subscribe=earnView;
+  A.entop=()=>{const sh=$("#sheet");if(sh)sh.hidden=true;go("minutes")};
+  A.starsbuy=()=>go("minutes");
+  enEmpty=function(){const e=EN.st||{};showSheet(`<div class="en-sheet center">${mascot("sad",90)}<h2>خلصت طاقتك 🔋</h2>
+    <p>${e.reset_at?`بترجعلك <b>${e.quota||20} 🔋</b> مجاناً ${enWhen(e.reset_at)}.`:"بترجعلك مجاناً بعد 24 ساعة."}</p>
+    <p class="muted">لهلأ كمّل دروسك وتمارينك، كلها مجانية وما بتحتاج طاقة.</p>
+    <div class="row" style="justify-content:center"><button class="btn hl big" data-act="enplan">▶ كمّل خطتك</button></div></div>`)};
+  A.enplan=()=>{const sh=$("#sheet");if(sh)sh.hidden=true;go("plan")};
+  vPremiumBanner=function(){return ""};
+  {const _vm=VIEWS.me;VIEWS.me=function(){return _vm.apply(this,arguments).replace(/<span>اشحن ›<\/span>/g,"<span>›</span>")}}
+}
+
 applyTheme();fastBoot();if(!AUTH.ready)render();
 sb.auth.onAuthStateChange((ev,session)=>{
   if(ev==="PASSWORD_RECOVERY"){AUTH.recovery=true}
